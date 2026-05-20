@@ -1,0 +1,11 @@
+{
+    "description": "Test edition for kind",
+    "plugins": [
+        "tiddlywiki/jasmine",
+        "rimir/kind"
+    ],
+    "themes": [
+        "tiddlywiki/vanilla",
+        "tiddlywiki/snowwhite"
+    ]
+}
