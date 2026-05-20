@@ -33,12 +33,15 @@ type: text/vnd.tiddlywiki
 </span>
 
 <$list filter="[function[kind.stream-fields],<type-tid>]" variable="field-key">
+<!-- Stable per row (no dependency on the target field's value):
+     field-icon, field-cap, popup-state. Value-derived vars (display-val,
+     truncated) are scoped into a nested let around the button label only,
+     so the popup's <$edit-text> doesn't get torn down on every keystroke
+     when the field changes. (tw-gotchas-widget-context: edit-text inside
+     a let that re-binds on keystroke.) -->
 <$let
   field-icon={{{ [function[kind.field-icon],<type-tid>,<field-key>] }}}
   field-cap={{{ [function[kind.field-caption],<type-tid>,<field-key>] }}}
-  raw={{{ [<target-tid>get<field-key>] }}}
-  display-val={{{ [<target-tid>get<field-key>enlist-input[]] :map[function[kind.resolve-ref],<currentTiddler>] +[join[, ]] }}}
-  truncated={{{ [function[kind.display],<display-val>,<bar-max-length>] }}}
   popup-state={{{ [<target-tid>addsuffix[/kind-streambar/]addsuffix<field-key>] }}}
 >
 <%if [<edit-mode>match[inline]] %>
@@ -52,7 +55,12 @@ type: text/vnd.tiddlywiki
 <span class="kind-field-cell tc-popup-keep">
 <$button popup=<<popup-state>> class="tc-btn-invisible" tooltip=<<field-cap>>>
 <span class="kind-field-cell-icon"><<field-icon>></span>
+<$let
+  display-val={{{ [<target-tid>get<field-key>enlist-input[]] :map[function[kind.resolve-ref],<currentTiddler>] +[join[, ]] }}}
+  truncated={{{ [function[kind.display],<display-val>,<bar-max-length>] }}}
+>
  <<truncated>>
+</$let>
 </$button>
 </span>
 <$reveal state=<<popup-state>> type="popup" position="belowleft" animate="yes" class="tc-popup-keep">
