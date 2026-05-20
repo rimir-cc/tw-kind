@@ -1,0 +1,5 @@
+title: $:/plugins/rimir/kind/common-fields/birthday
+tags: $:/tags/rimir/kind/common-field
+def: {"key":"birthday","typed":"date","caption":"Birthday","icon":"🎂"}
+
+Date of birth — typically on person kinds.

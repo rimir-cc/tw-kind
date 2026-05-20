@@ -1,0 +1,487 @@
+title: $:/plugins/rimir/kind/type-builder
+type: text/vnd.tiddlywiki
+
+\whitespace trim
+\import $:/plugins/rimir/kind/engine
+
+<!-- Each cell procedure renders a static value + ✎ when not editing, and a
+     <$scribe>-wrapped input + ✗ when editing. The scribe widget handles all
+     state↔JSON sync (including empty-buffer = delete-property semantics).
+     ✎ click just flips the editing flag; the scribe sets up state on mount.
+     ✗ click just clears the flag; scribe unmounts.
+-->
+
+\procedure kind.cell-text(prop)
+<$let flag={{{ [<row-state-prefix>addsuffix[/editing/]addsuffix<prop>] }}}>
+<%if [<flag>get[text]match[yes]] %>
+<$scribe tiddler=<<type-tid>> field="kind.fields" path=`$(f-idx)$,$(prop)$`>
+<$edit-text tiddler=<<state>> field="text" tag="input" class="kind-input kind-cell-input"/>
+<$button class="kind-cell-x" tooltip="done"><$action-setfield $tiddler=<<flag>> text=""/>×</$button>
+</$scribe>
+<%else%>
+<$text text={{{ [function[kind.field-prop],<type-tid>,<field-key>,<prop>] }}}/>
+<$button class="kind-cell-pen" tooltip="edit"><$action-setfield $tiddler=<<flag>> text="yes"/>✎</$button>
+<%endif%>
+</$let>
+\end
+
+\procedure kind.cell-array(prop)
+<$let
+  flag={{{ [<row-state-prefix>addsuffix[/editing/]addsuffix<prop>] }}}
+  current-typed={{{ [function[kind.field-typed],<type-tid>,<field-key>] }}}
+  applicable={{{ [function[kind.array-applicable],<prop>,<current-typed>] }}}
+>
+<%if [<applicable>is[blank]] %>
+<span class="kind-cell-na">—</span>
+<%elseif [<flag>get[text]match[yes]] %>
+<$scribe tiddler=<<type-tid>> field="kind.fields" path=`$(f-idx)$,$(prop)$` type="application/x-string-array">
+<$edit-text tiddler=<<state>> field="text" tag="input" class="kind-input kind-cell-input"/>
+<$button class="kind-cell-x" tooltip="done"><$action-setfield $tiddler=<<flag>> text=""/>×</$button>
+</$scribe>
+<%else%>
+<$list filter="[function[kind.field-array-flat],<type-tid>,<f-idx>,<prop>]" variable="v" counter="cn"><%if [<cn-first>match[no]] %>, <%endif%><code><<v>></code></$list>
+<$button class="kind-cell-pen" tooltip="edit"><$action-setfield $tiddler=<<flag>> text="yes"/>✎</$button>
+<%endif%>
+</$let>
+\end
+
+\procedure kind.cell-typed()
+<$let flag={{{ [<row-state-prefix>addsuffix[/editing/typed]] }}}>
+<%if [<flag>get[text]match[yes]] %>
+<$scribe tiddler=<<type-tid>> field="kind.fields" path=`$(f-idx)$,typed`>
+<$select tiddler=<<state>> field="text" class="kind-input kind-cell-input">
+<option value="text">text</option>
+<option value="longtext">longtext</option>
+<option value="number">number</option>
+<option value="date">date</option>
+<option value="datetime">datetime</option>
+<option value="enum">enum</option>
+<option value="ref">ref</option>
+<option value="$title">$title</option>
+<option value="$calculated">$calculated</option>
+</$select>
+<$button class="kind-cell-x" tooltip="done"><$action-setfield $tiddler=<<flag>> text=""/>×</$button>
+</$scribe>
+<%else%>
+<code><$text text={{{ [function[kind.field-typed],<type-tid>,<field-key>] }}}/></code>
+<$button class="kind-cell-pen" tooltip="edit"><$action-setfield $tiddler=<<flag>> text="yes"/>✎</$button>
+<%endif%>
+</$let>
+\end
+
+\procedure kind.cell-constraints()
+<$let
+  flag={{{ [<row-state-prefix>addsuffix[/editing/constraints]] }}}
+  current-typed={{{ [function[kind.field-typed],<type-tid>,<field-key>] }}}
+  current-card={{{ [function[kind.field-cardinality],<type-tid>,<field-key>] }}}
+  computed={{{ [function[kind.is-computed-typed],<type-tid>,<field-key>] }}}
+>
+<%if [<computed>!is[blank]] %>
+<span class="kind-cell-na">—</span>
+<%elseif [<flag>get[text]match[yes]] %>
+<$scribe tiddler=<<type-tid>> field="kind.fields" path=`$(f-idx)$,constraints` type="application/x-string-array">
+<$let composer={{{ [<flag>addsuffix[/composer]] }}}>
+<span class="kind-constraint-row">
+<span class="kind-constraint-chips">
+<$list filter="[<state>get[text]enlist-input[]]" variable="c" emptyMessage="<em class='kind-cell-na'>(none)</em>">
+<span class="kind-pill"><code><<c>></code><$button class="kind-pill-x" tooltip="remove">
+<$action-listops $tiddler=<<state>> $field="text" $subfilter="+[remove<c>]"/>
+×
+</$button></span>
+</$list>
+</span>
+<span class="kind-constraint-composer">
+<$select tiddler=<<composer>> field="key" default="" class="kind-cell-input kind-constraint-select">
+<option value="">+ add…</option>
+<%if [function[kind.required-applicable],<current-typed>] %>
+<%if [<state>get[text]enlist-input[]match[required]] %><%else%>
+<option value="required" title="Value must not be empty.">required</option>
+<%endif%>
+<%endif%>
+<%if [function[kind.minmax-applicable],<current-typed>,<current-card>] %>
+<%if [<state>get[text]enlist-input[]prefix[min:]] +[first[]] %><%else%>
+<option value="min" title="Minimum length (text), value (number), or item count (multi).">min:N</option>
+<%endif%>
+<%if [<state>get[text]enlist-input[]prefix[max:]] +[first[]] %><%else%>
+<option value="max" title="Maximum length (text), value (number), or item count (multi).">max:N</option>
+<%endif%>
+<%endif%>
+<%if [function[kind.unique-applicable],<current-typed>] %>
+<%if [<state>get[text]enlist-input[]match[unique]] %><%else%>
+<option value="unique" title="Unique among instances of the same kind.">unique</option>
+<%endif%>
+<%if [<state>get[text]enlist-input[]match[unique:wiki]] %><%else%>
+<option value="unique:wiki" title="Unique wiki-wide across all tiddlers.">unique:wiki</option>
+<%endif%>
+<%endif%>
+<option value="custom" title="Custom constraint name — handled by a JS validator hook.">custom…</option>
+</$select>
+<$let key={{{ [<composer>get[key]] }}}>
+<%if [<key>match[min]] [<key>match[max]] %>
+<$edit-text tiddler=<<composer>> field="arg" tag="input" type="number" class="kind-cell-input kind-num-arg" placeholder="N" default="" min="0"/>
+<%elseif [<key>match[custom]] %>
+<$edit-text tiddler=<<composer>> field="arg" tag="input" class="kind-cell-input kind-text-arg" placeholder="name (e.g. starts-with-foo)" default=""/>
+<%endif%>
+<%if [<key>!is[blank]] %>
+<$let
+  arg={{{ [<composer>get[arg]trim[]] }}}
+  arg-needed={{{ [<key>match[min]] [<key>match[max]] [<key>match[custom]] +[first[]] }}}
+  payload={{{ [<key>match[min]then<arg>addprefix[min:]] [<key>match[max]then<arg>addprefix[max:]] [<key>match[custom]then<arg>] ~[<key>] +[first[]] }}}
+>
+<$button class="kind-builder-add kind-constraint-add" disabled={{{ [<arg-needed>!is[blank]] :filter[<arg>is[blank]] }}} tooltip="add this constraint">
+<$action-listops $tiddler=<<state>> $field="text" $subfilter="+[append<payload>]"/>
+<$action-setfield $tiddler=<<composer>> key="" arg=""/>
+add
+</$button>
+<$button class="kind-cell-x kind-constraint-cancel" tooltip="cancel">
+<$action-setfield $tiddler=<<composer>> key="" arg=""/>
+×
+</$button>
+</$let>
+<%endif%>
+</$let>
+</span>
+<$button class="kind-cell-x" tooltip="done editing">
+<$action-setfield $tiddler=<<flag>> text=""/>
+<$action-deletetiddler $tiddler=<<composer>>/>
+×
+</$button>
+</span>
+</$let>
+</$scribe>
+<%else%>
+<span class="kind-constraint-chips">
+<$list filter="[function[kind.constraints],<type-tid>,<field-key>]" variable="c" emptyMessage="">
+<span class="kind-pill kind-pill-readonly"><code><<c>></code></span>
+</$list>
+</span>
+<$button class="kind-cell-pen" tooltip="edit constraints"><$action-setfield $tiddler=<<flag>> text="yes"/>✎</$button>
+<%endif%>
+</$let>
+\end
+
+\procedure kind.cell-reftypes()
+<$let
+  flag={{{ [<row-state-prefix>addsuffix[/editing/ref-types]] }}}
+  current-typed={{{ [function[kind.field-typed],<type-tid>,<field-key>] }}}
+  applicable={{{ [<current-typed>match[ref]] }}}
+>
+<%if [<applicable>is[blank]] %>
+<span class="kind-cell-na">—</span>
+<%elseif [<flag>get[text]match[yes]] %>
+<$scribe tiddler=<<type-tid>> field="kind.fields" path=`$(f-idx)$,ref-types` type="application/x-string-array">
+<$let composer={{{ [<flag>addsuffix[/composer]] }}}>
+<span class="kind-constraint-row">
+<span class="kind-constraint-chips">
+<$list filter="[<state>get[text]enlist-input[]]" variable="r" emptyMessage="<em class='kind-cell-na'>(any kind)</em>">
+<span class="kind-pill"><code><<r>></code><$button class="kind-pill-x" tooltip="remove">
+<$action-listops $tiddler=<<state>> $field="text" $subfilter="+[remove<r>]"/>
+×
+</$button></span>
+</$list>
+</span>
+<span class="kind-constraint-composer">
+<$select tiddler=<<composer>> field="key" default="" class="kind-cell-input kind-constraint-select">
+<option value="">+ add kind…</option>
+<$list filter="[function[kind.types-all]get[kind.type]] -[<state>get[text]enlist-input[]] +[unique[]sort[]]" variable="tk">
+<option value=<<tk>>><<tk>></option>
+</$list>
+</$select>
+<$let key={{{ [<composer>get[key]] }}}>
+<%if [<key>!is[blank]] %>
+<$button class="kind-builder-add kind-constraint-add" tooltip="add this kind">
+<$action-listops $tiddler=<<state>> $field="text" $subfilter="+[append<key>]"/>
+<$action-setfield $tiddler=<<composer>> key=""/>
+add
+</$button>
+<%endif%>
+</$let>
+</span>
+<$button class="kind-cell-x" tooltip="done editing">
+<$action-setfield $tiddler=<<flag>> text=""/>
+<$action-deletetiddler $tiddler=<<composer>>/>
+×
+</$button>
+</span>
+</$let>
+</$scribe>
+<%else%>
+<span class="kind-constraint-chips">
+<$list filter="[function[kind.ref-types],<type-tid>,<field-key>]" variable="r" emptyMessage="<em class='kind-cell-na'>(any kind)</em>">
+<span class="kind-pill kind-pill-readonly"><code><<r>></code></span>
+</$list>
+</span>
+<$button class="kind-cell-pen" tooltip="edit allowed kinds"><$action-setfield $tiddler=<<flag>> text="yes"/>✎</$button>
+<%endif%>
+</$let>
+\end
+
+\procedure kind.cell-cardinality()
+<$let
+  flag={{{ [<row-state-prefix>addsuffix[/editing/cardinality]] }}}
+  current-typed={{{ [function[kind.field-typed],<type-tid>,<field-key>] }}}
+  applicable={{{ [function[kind.cardinality-applicable],<current-typed>] }}}
+>
+<%if [<applicable>is[blank]] %>
+<span class="kind-cell-na">—</span>
+<%elseif [<flag>get[text]match[yes]] %>
+<$scribe tiddler=<<type-tid>> field="kind.fields" path=`$(f-idx)$,cardinality`>
+<$select tiddler=<<state>> field="text" class="kind-input kind-cell-input">
+<option value="">(default)</option>
+<option value="single">single</option>
+<option value="multi">multi</option>
+</$select>
+<$button class="kind-cell-x" tooltip="done"><$action-setfield $tiddler=<<flag>> text=""/>×</$button>
+</$scribe>
+<%else%>
+<$text text={{{ [function[kind.field-cardinality],<type-tid>,<field-key>] }}}/>
+<$button class="kind-cell-pen" tooltip="edit"><$action-setfield $tiddler=<<flag>> text="yes"/>✎</$button>
+<%endif%>
+</$let>
+\end
+
+! Type Builder
+
+<$let
+  state-sel="$:/state/rimir/kind/type-builder/selected"
+  state-new-title="$:/state/rimir/kind/type-builder/new-title"
+  state-new-popup="$:/state/rimir/kind/type-builder/new-popup"
+>
+
+<div class="kind-ns-row">
+<strong>Edit existing:</strong>
+<$select tiddler=<<state-sel>>>
+<option value="">— choose —</option>
+<$list filter="[function[kind.types-all]] +[sort[kind.type]]" variable="t">
+<option value=<<t>>>
+<$text text={{{ [<t>get[kind.icon]] }}}/> <$text text={{{ [<t>get[kind.caption]!is[blank]] ~[<t>get[kind.type]] }}}/> (<$text text={{{ [<t>get[kind.namespaces]!is[blank]] ~[[all]] }}}/>)
+</option>
+</$list>
+</$select>
+
+<!-- "+ New type" popup -->
+<span class="tc-popup-keep">
+<$button popup=<<state-new-popup>> class="kind-builder-add tc-popup-keep" tooltip="Create a new type">+ New type</$button>
+</span>
+</div>
+
+<$reveal state=<<state-new-popup>> type="popup" position="belowleft" animate="yes" class="tc-popup-keep">
+<div class="kind-field-popup tc-popup-keep" style="min-width:340px;">
+<div style="font-size:0.9em;margin-bottom:6px;">
+Enter a short name (e.g. <code>task</code>) or a full <code>$:/...</code> title.
+</div>
+
+<!-- input in stable outer scope -->
+<$edit-text tiddler=<<state-new-title>> field="text" tag="input" class="kind-input" placeholder="short name or full $:/... title" default=""/>
+
+<$let
+  type-prefix={{{ [[$:/config/rimir/kind/type-prefix]get[text]trim[]] ~[[$:/config/rimir/kind/types/]] }}}
+  new-input={{{ [<state-new-title>get[text]] }}}
+  new-full-title={{{ [<new-input>prefix[$:/]] ~[<new-input>!is[blank]addprefix<type-prefix>] }}}
+  new-key={{{ [<new-full-title>split[/]last[]] }}}
+>
+<%if [<new-input>!is[blank]] %>
+<div style="font-size:0.8em;opacity:0.65;margin:4px 0;">
+will create: <code><<new-full-title>></code> &nbsp;·&nbsp; key: <code><<new-key>></code>
+</div>
+<%endif%>
+<div style="margin-top:6px;">
+<$button disabled={{{ [<new-input>is[blank]] }}}>
+<$action-createtiddler $basetitle=<<new-full-title>> kind.type=<<new-key>> kind.namespaces="" kind.caption=<<new-key>> kind.icon="🆕" kind.title-formula="[get[parent]][[/]][get[abbrev]]+[join[]]" kind.stream-fields="" kind.fields="[]"/>
+<$action-setfield $tiddler=<<state-sel>> text=<<new-full-title>>/>
+<$action-deletetiddler $tiddler=<<state-new-title>>/>
+<$action-deletetiddler $tiddler=<<state-new-popup>>/>
+Create
+</$button>
+&nbsp;
+<$button>
+<$action-deletetiddler $tiddler=<<state-new-title>>/>
+<$action-deletetiddler $tiddler=<<state-new-popup>>/>
+Cancel
+</$button>
+</div>
+</$let>
+</div>
+</$reveal>
+
+<$let type-tid={{{ [<state-sel>get[text]] }}}>
+<%if [<type-tid>!is[blank]is[tiddler]] %>
+
+<div class="kind-builder-section">
+<h3>Type metadata</h3>
+<table class="kind-editor">
+<tr><th class="kind-editor-label">key (kind.type)</th><td><$edit-text tiddler=<<type-tid>> field="kind.type" tag="input" class="kind-input"/></td></tr>
+<tr><th class="kind-editor-label">caption</th><td><$edit-text tiddler=<<type-tid>> field="kind.caption" tag="input" class="kind-input"/></td></tr>
+<tr><th class="kind-editor-label">icon (emoji/SVG ref)</th><td><$edit-text tiddler=<<type-tid>> field="kind.icon" tag="input" class="kind-input"/></td></tr>
+<tr><th class="kind-editor-label">namespaces (space-sep; empty = visible in every namespace)</th><td><$edit-text tiddler=<<type-tid>> field="kind.namespaces" tag="input" class="kind-input"/></td></tr>
+<tr><th class="kind-editor-label">title-formula (filter, see&nbsp;<$link to="$:/plugins/rimir/kind/doc/examples">examples</$link>)</th><td><$edit-text tiddler=<<type-tid>> field="kind.title-formula" tag="input" class="kind-input"/></td></tr>
+<tr><th class="kind-editor-label">stream-fields (space-sep field keys; empty = hide bar)</th><td><$edit-text tiddler=<<type-tid>> field="kind.stream-fields" tag="input" class="kind-input"/></td></tr>
+</table>
+</div>
+
+<div class="kind-builder-section">
+<h3>Field definitions</h3>
+
+<!-- Inline "+ Add field" form -->
+<!-- Add field, common-field-driven:
+     - Dropdown lists unused common-fields (tagged $:/tags/rimir/kind/common-field), filtered by
+       the search input (matched against key OR caption, case-insensitive).
+     - Click a row → copies that common-field's full def into kind.fields, with key, typed,
+       caption, icon all set in one go.
+     - "+ Add as new" fallback creates a minimal {key, typed:text} field for ad-hoc keys not
+       in the library. Disabled when the typed key collides with an existing kind field OR
+       with a common-field (in which case the dropdown shows it — pick that instead).
+     - Input lives in a stable outer scope so each keystroke doesn't recreate it
+       (tw-gotchas-widget-context#edit-text inside let that re-binds on keystroke).
+-->
+<$let state-add-search={{{ [<type-tid>addprefix[$:/state/rimir/kind/type-builder/]addsuffix[/add-field/search]] }}}>
+<div class="kind-ns-row" style="margin-top:0;">
+<strong>Add field:</strong>
+<$edit-text tiddler=<<state-add-search>> field="text" tag="input" class="kind-input" placeholder="pick a common field below, or type a brand-new key" default="" style="max-width:28em;"/>
+<$let
+  add-key={{{ [<state-add-search>get[text]trim[]] }}}
+  idx={{{ [function[kind.next-field-index],<type-tid>] }}}
+  new-obj={{{ [function[kind.new-field-json],<add-key>] }}}
+>
+<$button disabled={{{ [function[kind.add-as-new-disabled],<type-tid>,<add-key>] }}} class="kind-builder-add" tooltip="add a brand-new field with key '<<add-key>>' (bare text type; disabled if key is blank, collides with an existing kind field, or matches a common field below)">
+<$action-setfield $tiddler=<<type-tid>> kind.fields={{{ [<type-tid>get[kind.fields]jsonset:json<idx>,<new-obj>] }}}/>
+<$action-listops $tiddler=<<type-tid>> $field="kind.stream-fields" $subfilter="+[append<add-key>]"/>
+<$action-deletetiddler $tiddler=<<state-add-search>>/>
++ Add as new
+</$button>
+</$let>
+</div>
+
+<$let
+  search={{{ [<state-add-search>get[text]trim[]] }}}
+  search-re={{{ [<search>addprefix[(?i)]] }}}
+>
+<%if [<search>!is[blank]] :filter[function[kind.field-keys],<type-tid>match<search>] +[first[]] %>
+<div class="kind-err">a field with key "<<search>>" already exists in this kind</div>
+<%else%>
+<div class="kind-dropdown" style="max-width:36em;">
+<$list filter="[function[kind.common-fields-all]] :filter[function[kind.is-common-field-unused],<type-tid>,<currentTiddler>] :filter[function[kind.common-field-matches],<currentTiddler>,<search-re>] +[sort[]]" variable="cft" emptyMessage="<div class='kind-dropdown-empty'>no common field matches — use <em>+ Add as new</em> for a brand-new key</div>">
+<$let
+  cf-key={{{ [function[kind.common-field-key],<cft>] }}}
+  cf-caption={{{ [function[kind.common-field-caption],<cft>] }}}
+  cf-icon={{{ [function[kind.common-field-icon],<cft>] }}}
+  cf-typed={{{ [function[kind.common-field-typed],<cft>] }}}
+  cf-def={{{ [function[kind.common-field-def],<cft>] }}}
+  target-idx={{{ [function[kind.next-field-index],<type-tid>] }}}
+>
+<$button class="kind-dropdown-item tc-btn-invisible" tooltip={{{ [function[kind.common-field-tooltip],<cft>] }}}>
+<$action-setfield $tiddler=<<type-tid>> kind.fields={{{ [<type-tid>get[kind.fields]jsonset:json<target-idx>,<cf-def>] }}}/>
+<$action-listops $tiddler=<<type-tid>> $field="kind.stream-fields" $subfilter="+[append<cf-key>]"/>
+<$action-deletetiddler $tiddler=<<state-add-search>>/>
+<<cf-icon>> <code><<cf-key>></code>
+<span style="opacity:0.6;font-size:0.85em;">&nbsp;·&nbsp; <<cf-caption>> &nbsp;·&nbsp; typed=<code><<cf-typed>></code></span>
+</$button>
+</$let>
+</$list>
+</div>
+<%endif%>
+</$let>
+</$let>
+
+<h4 style="margin-top:12px;">Current fields</h4>
+<table class="kind-builder-fields">
+<thead><tr>
+<th title="field key — the field name on instance tiddlers (immutable here; delete + re-add to rename)">key</th>
+<th title="editor kind: text, longtext, number, date, datetime, enum, ref, $title, $calculated">typed</th>
+<th title="cardinality — for enum and ref only. single = one value, multi = list of values (space-separated). (default) means single">cardinality</th>
+<th title="display label shown next to the field in editor / view / stream-view">caption</th>
+<th title="emoji or short text shown alongside the caption">icon</th>
+<th title="validation rules — click ? for reference">constraints
+<span class="tc-popup-keep">
+<$button popup="$:/state/rimir/kind/help/constraints" class="kind-help-pop tc-popup-keep" tooltip="show constraint reference">?</$button>
+</span>
+</th>
+<th title="(enum only) space-separated list of allowed values">options</th>
+<th title="(ref only) space-separated list of allowed target kind keys">ref-types</th>
+<th></th>
+</tr></thead>
+<tbody>
+<$list filter="[function[kind.field-keys],<type-tid>]" variable="field-key" emptyMessage="<tr><td colspan='9'><em>no fields yet — use //Add field// above</em></td></tr>">
+<$let
+  f-idx={{{ [function[kind.field-idx],<type-tid>,<field-key>] }}}
+  row-state-prefix={{{ [<type-tid>addprefix[$:/state/rimir/kind/builder/]addsuffix[/row/]addsuffix<field-key>] }}}
+>
+<tr>
+<td><code><<field-key>></code></td>
+<td><$transclude $variable="kind.cell-typed"/></td>
+<td><$transclude $variable="kind.cell-cardinality"/></td>
+<td><$transclude $variable="kind.cell-text" prop="caption"/></td>
+<td><$transclude $variable="kind.cell-text" prop="icon"/></td>
+<td><$transclude $variable="kind.cell-constraints"/></td>
+<td><$transclude $variable="kind.cell-array" prop="options"/></td>
+<td><$transclude $variable="kind.cell-reftypes"/></td>
+<td style="white-space:nowrap;">
+<$button class="kind-builder-del" tooltip="remove this field">
+<$action-setfield $tiddler=<<type-tid>> kind.fields={{{ [function[kind.rebuilt-fields-without],<type-tid>,<f-idx>] }}}/>
+<$action-listops $tiddler=<<type-tid>> $field="kind.stream-fields" $subfilter="+[remove<field-key>]"/>
+×
+</$button>
+</td>
+</tr>
+</$let>
+</$list>
+</tbody>
+</table>
+
+<$reveal state="$:/state/rimir/kind/help/constraints" type="popup" position="below" animate="yes" class="tc-popup-keep">
+<div class="kind-help-card tc-popup-keep">
+<strong>Constraint reference</strong>
+<table class="kind-help-table">
+<tr><th>Name</th><th>Arg</th><th>Applies to</th><th>Effect</th></tr>
+<tr><td><code>required</code></td><td>—</td><td>value-bearing fields</td><td>field must not be empty</td></tr>
+<tr><td><code>min:N</code></td><td>integer</td><td>text/longtext/number/date (length / value) and multi enum/ref (count)</td><td>at least N</td></tr>
+<tr><td><code>max:N</code></td><td>integer</td><td>same as <code>min</code></td><td>at most N</td></tr>
+<tr><td><code>unique</code></td><td>—</td><td>value-bearing fields</td><td>no duplicates within instances of the same kind</td></tr>
+<tr><td><code>unique:wiki</code></td><td>—</td><td>value-bearing fields</td><td>no duplicates across all tiddlers wiki-wide</td></tr>
+<tr><td><code><em>custom</em></code></td><td>arbitrary</td><td>any</td><td>delegated to JS validator hook (not shipped by default)</td></tr>
+</table>
+<div class="kind-help-foot">Violations surface live in the editor and the bulk validator tab. Computed fields (<code>$title</code> / <code>$calculated</code>) have no constraints.</div>
+</div>
+</$reveal>
+
+<%if [function[kind.fields-valid],<type-tid>is[blank]] %>
+<div class="kind-err" style="margin-top:12px;padding:8px;border:1px solid <<colour alert-highlight>>;border-radius:4px;">
+⚠ <code>kind.fields</code> is empty or not valid JSON (must be an array like <code>[]</code> or <code>[{…},{…}]</code>). The fields table won't render and Add field won't work until this is fixed.
+<br/>
+<$button class="kind-builder-add" style="margin-top:6px;">
+<$action-setfield $tiddler=<<type-tid>> kind.fields="[]"/>
+Reset to []
+</$button>
+</div>
+<%endif%>
+
+<h4 style="margin-top:12px;">Raw JSON (for power-edits)</h4>
+<p style="font-size:0.82em;opacity:0.7;">Edit per-field constraints/options/ref-types/cardinality/icon/caption directly here. Schema per entry: <code>{"key":"...","typed":"text|longtext|number|date|datetime|enum|ref|$title|$calculated","caption":"...","icon":"...","constraints":["required","min:N","max:N","unique","unique:wiki"],"options":["a","b"] (enum),"ref-types":["task","person"] (ref),"cardinality":"single|multi"}</code></p>
+<$edit-text tiddler=<<type-tid>> field="kind.fields" tag="textarea" class="kind-input kind-textarea" style="min-height:12em;font-family:monospace;font-size:0.85em;"/>
+</div>
+
+<div class="kind-builder-section">
+<h3>Live editor preview</h3>
+<p style="font-size:0.85em;opacity:0.75;">What the editor will look like for an instance of this type. Edits write to a draft tiddler at <code>$:/state/rimir/kind/type-builder/preview-draft</code>. Click //Refresh// after changing the type's key or fields.</p>
+<$let target-tid="$:/state/rimir/kind/type-builder/preview-draft">
+<p>
+<$button>
+<$action-setfield $tiddler=<<target-tid>> kind.type={{{ [<type-tid>get[kind.type]] }}}/>
+Refresh preview
+</$button>
+&nbsp;
+<$button>
+<$action-deletetiddler $tiddler=<<target-tid>>/>
+Clear preview draft
+</$button>
+</p>
+<$transclude $tiddler="$:/plugins/rimir/kind/editor"/>
+</$let>
+</div>
+
+<%else%>
+<p><em>Select an existing type above, or click <strong>+ New type</strong> to create one.</em></p>
+<%endif%>
+</$let>
+
+</$let>

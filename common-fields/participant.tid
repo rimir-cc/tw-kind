@@ -1,0 +1,5 @@
+title: $:/plugins/rimir/kind/common-fields/participant
+tags: $:/tags/rimir/kind/common-field
+def: {"key":"participant","typed":"ref","caption":"Participant","icon":"🧑","cardinality":"multi"}
+
+People attending an event/meeting. Multi-cardinality by default.

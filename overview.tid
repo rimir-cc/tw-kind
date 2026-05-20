@@ -1,0 +1,36 @@
+title: $:/plugins/rimir/kind/overview
+type: text/vnd.tiddlywiki
+
+\whitespace trim
+\import $:/plugins/rimir/kind/engine
+
+! Types in scope
+
+<$let active-ns={{{ [function[kind.active-ns]] }}}>
+<p><strong>Namespace:</strong> <code><$text text={{{ [<active-ns>!is[blank]] ~[[(all)]] }}}/></code> · <em>switch in [[settings|$:/plugins/rimir/kind/settings]]</em></p>
+
+<div class="kind-overview-grid">
+<$list filter="[function[kind.types-all]] :filter[function[kind.belongs-to-ns],<active-ns>] +[sort[kind.type]]" variable="t">
+<div class="kind-overview-card">
+<h4>
+<$link to=<<t>>>
+<$text text={{{ [<t>get[kind.icon]] }}}/>
+ <$text text={{{ [<t>get[kind.caption]!is[blank]] ~[<t>get[kind.type]] }}}/>
+</$link>
+</h4>
+<$let tk={{{ [<t>get[kind.type]] }}}>
+<div style="font-size:0.85em;opacity:0.7;">
+key: <code><<tk>></code><br>
+namespaces: <code><$text text={{{ [<t>get[kind.namespaces]] }}}/></code><br>
+instances: <$count filter="[function[kind.instances-of],<tk>]"/>
+</div>
+</$let>
+</div>
+</$list>
+</div>
+
+<%if [function[kind.types-all]] :filter[function[kind.belongs-to-ns],<active-ns>] +[count[]match[0]] %>
+<p><em>No types in this namespace. Use the [[type-builder|$:/plugins/rimir/kind/type-builder]] tab to define one.</em></p>
+<%endif%>
+
+</$let>

@@ -1,0 +1,97 @@
+title: $:/plugins/rimir/kind/engine
+type: text/vnd.tiddlywiki
+
+\function kind.types-all() [all[shadows+tiddlers]has[kind.type]has[kind.fields]]
+\function kind.locate-type(type-key) [function[kind.types-all]] :filter[get[kind.type]match<type-key>] +[first[]]
+
+\function kind.active-ns() [[$:/config/rimir/kind/active-namespace]get[text]trim[]]
+\function kind.belongs-to-ns(active-ns) [<active-ns>is[blank]then[yes]] ~[<currentTiddler>get[kind.namespaces]is[blank]then[yes]] ~[<currentTiddler>get[kind.namespaces]enlist-input[]match<active-ns>]
+\function kind.namespaces-all() [function[kind.types-all]get[kind.namespaces]enlist-input[]] +[unique[]sort[]]
+
+\function kind.json(type-tid) [<type-tid>get[kind.fields]]
+\function kind.field-idx(type-tid, field-key) [function[kind.json],<type-tid>jsonindexes[]] :filter[function[kind.json],<type-tid>jsonget<currentTiddler>,[key]match<field-key>] +[first[]]
+\function kind.field-keys(type-tid) [function[kind.json],<type-tid>jsonindexes[]] :map[function[kind.json],<type-tid>jsonget<currentTiddler>,[key]]
+\function kind.field-prop(type-tid, field-key, prop) [function[kind.field-idx],<type-tid>,<field-key>] :map[function[kind.json],<type-tid>jsonget<currentTiddler>,<prop>]
+\function kind.field-typed(type-tid, field-key) [function[kind.field-prop],<type-tid>,<field-key>,[typed]]
+\function kind.field-caption(type-tid, field-key) [function[kind.field-prop],<type-tid>,<field-key>,[caption]] ~[<field-key>]
+\function kind.field-icon(type-tid, field-key) [function[kind.field-prop],<type-tid>,<field-key>,[icon]]
+\function kind.field-cardinality(type-tid, field-key) [function[kind.field-prop],<type-tid>,<field-key>,[cardinality]] ~[[single]]
+\function kind.field-formula(type-tid, field-key) [function[kind.field-prop],<type-tid>,<field-key>,[formula]]
+
+\function kind.field-array-flat(type-tid, idx, prop) [function[kind.json],<type-tid>jsonindexes<idx>,<prop>] :map[function[kind.json],<type-tid>jsonget<idx>,<prop>,<currentTiddler>]
+\function kind.constraints(type-tid, field-key) [function[kind.field-idx],<type-tid>,<field-key>] :map:flat[function[kind.field-array-flat],<type-tid>,<currentTiddler>,[constraints]]
+\function kind.options(type-tid, field-key) [function[kind.field-idx],<type-tid>,<field-key>] :map:flat[function[kind.field-array-flat],<type-tid>,<currentTiddler>,[options]]
+\function kind.ref-types(type-tid, field-key) [function[kind.field-idx],<type-tid>,<field-key>] :map:flat[function[kind.field-array-flat],<type-tid>,<currentTiddler>,[ref-types]]
+\function kind.has-constraint(type-tid, field-key, name) [function[kind.constraints],<type-tid>,<field-key>match<name>]
+\function kind.constraint-num(type-tid, field-key, prefix) [function[kind.constraints],<type-tid>,<field-key>] :filter[<currentTiddler>prefix<prefix>] :map[<currentTiddler>removeprefix<prefix>] +[first[]]
+
+\function kind.field-value-count(target-tid, field-key) [<target-tid>get<field-key>enlist-input[]count[]] ~[[0]]
+\function kind.field-value-length(target-tid, field-key) [<target-tid>get<field-key>length[]] ~[[0]]
+
+\function kind.is-ref-typed(type-tid, field-key) [function[kind.field-typed],<type-tid>,<field-key>match[ref]]
+\function kind.is-enum-typed(type-tid, field-key) [function[kind.field-typed],<type-tid>,<field-key>match[enum]]
+\function kind.is-computed-typed(type-tid, field-key) [function[kind.field-typed],<type-tid>,<field-key>match[$title]] [function[kind.field-typed],<type-tid>,<field-key>match[$calculated]]
+
+\function kind.fields-valid(type-tid) [<type-tid>get[kind.fields]!is[blank]prefix[[]]
+\function kind.cardinality-applicable(typed) [<typed>match[enum]] [<typed>match[ref]]
+\function kind.is-options-applicable(prop, typed) [<prop>match[options]] :filter[<typed>match[enum]]
+\function kind.is-reftypes-applicable(prop, typed) [<prop>match[ref-types]] :filter[<typed>match[ref]]
+\function kind.array-applicable(prop, typed) [<prop>match[constraints]] [function[kind.is-options-applicable],<prop>,<typed>] [function[kind.is-reftypes-applicable],<prop>,<typed>]
+
+\function kind.required-applicable(typed) [<typed>!match[$title]!match[$calculated]!is[blank]]
+\function kind.unique-applicable(typed) [<typed>!match[$title]!match[$calculated]!is[blank]]
+\function kind.minmax-applicable(typed, cardinality) [<typed>match[text]] [<typed>match[longtext]] [<typed>match[number]] [<typed>match[date]] [<typed>match[datetime]] [<cardinality>match[multi]]
+
+\function kind.ref-candidates(type-tid, field-key) [function[kind.ref-types],<type-tid>,<field-key>] :map:flat[all[shadows+tiddlers]kind.type<currentTiddler>!has[kind.fields]] +[unique[]]
+
+\function kind.instances-of(type-key) [all[shadows+tiddlers]kind.type<type-key>!has[kind.fields]]
+
+\function kind.new-field-json(key) [<key>] :map[<currentTiddler>addprefix[{"key":"]addsuffix[","typed":"text"}]]
+\function kind.next-field-index(type-tid) [<type-tid>get[kind.fields]jsonindexes[]count[]]
+
+\function kind.common-fields-all() [all[shadows+tiddlers]tag[$:/tags/rimir/kind/common-field]]
+\function kind.common-field-key(cft) [<cft>get[def]jsonget[key]]
+\function kind.common-field-caption(cft) [<cft>get[def]jsonget[caption]]
+\function kind.common-field-icon(cft) [<cft>get[def]jsonget[icon]]
+\function kind.common-field-typed(cft) [<cft>get[def]jsonget[typed]]
+\function kind.common-field-def(cft) [<cft>get[def]]
+\function kind.is-common-field-unused(type-tid, cft) [function[kind.common-field-key],<cft>] -[function[kind.field-keys],<type-tid>]
+\function kind.common-field-matches(cft, re) [function[kind.common-field-key],<cft>regexp<re>] [function[kind.common-field-caption],<cft>regexp<re>]
+\function kind.common-field-key-exists(key) [function[kind.common-fields-all]] :filter[function[kind.common-field-key],<currentTiddler>match<key>] +[first[]]
+\function kind.add-as-new-disabled(type-tid, key) [<key>is[blank]then[yes]] [function[kind.field-keys],<type-tid>match<key>then[yes]] [function[kind.common-field-key-exists],<key>then[yes]]
+\function kind.common-field-kv-line(cft, k) [<cft>get[def]jsonget<k>] +[join[, ]addprefix[: ]addprefix<k>]
+\function kind.common-field-tooltip(cft) [<cft>get[def]jsonindexes[]] :map[function[kind.common-field-kv-line],<cft>,<currentTiddler>] +[join[ · ]]
+
+\function kind.wrap-array(items) [<items>addprefix{$:/plugins/rimir/kind/_brackets!!lb}addsuffix{$:/plugins/rimir/kind/_brackets!!rb}]
+\function kind.empty-array() [[]] :map[<currentTiddler>addprefix{$:/plugins/rimir/kind/_brackets!!lb}addsuffix{$:/plugins/rimir/kind/_brackets!!rb}]
+\function kind.quote-string(s) [<s>addprefix{$:/plugins/rimir/kind/_brackets!!dq}addsuffix{$:/plugins/rimir/kind/_brackets!!dq}]
+\function kind.rebuilt-fields-without(type-tid, del-idx) [<type-tid>get[kind.fields]jsonindexes[]] -[<del-idx>] :map[<type-tid>get[kind.fields]jsonextract<currentTiddler>] +[join[,]] :map[function[kind.wrap-array],<currentTiddler>] ~[function[kind.empty-array]]
+\function kind.field-array-text(type-tid, idx, prop) [function[kind.field-array-flat],<type-tid>,<idx>,<prop>] +[join[ ]]
+\function kind.text-to-json-array(text) [<text>enlist-input[]] :map[function[kind.quote-string],<currentTiddler>] +[join[,]] :map[function[kind.wrap-array],<currentTiddler>] ~[function[kind.empty-array]]
+
+\function kind.eval-title(type-tid, target-tid) [<type-tid>get[kind.title-formula]] :map[<target-tid>subfilter<currentTiddler>]
+\function kind.eval-formula(formula, target-tid) [<target-tid>subfilter<formula>]
+
+\function kind.shorten(val, max) [<val>splitregexp[]first<max>join[]addsuffix[...]]
+\function kind.display(val, max) [<val>length[]compare:integer:gt<max>] :map[function[kind.shorten],<val>,<max>] ~[<val>]
+\function kind.resolve-ref(val) [<val>get[caption]!is[blank]] ~[<val>]
+
+\function kind.stream-fields(type-tid) [<type-tid>get[kind.stream-fields]enlist-input[]]
+
+\function kind.value-of(tid, field-key) [<tid>get<field-key>]
+\function kind.same-value-of(other-tid, target-tid, field-key) [function[kind.value-of],<target-tid>,<field-key>!is[blank]] :filter[function[kind.value-of],<other-tid>,<field-key>match<currentTiddler>]
+\function kind.dups-in-type(target-tid, type-key, field-key) [function[kind.instances-of],<type-key>] -[<target-tid>] :filter[function[kind.same-value-of],<currentTiddler>,<target-tid>,<field-key>] +[first[]]
+\function kind.dups-wiki(target-tid, field-key) [all[shadows+tiddlers]] -[<target-tid>] :filter[function[kind.same-value-of],<currentTiddler>,<target-tid>,<field-key>] +[first[]]
+
+\function kind.is-multi-counted(type-tid, field-key) [function[kind.field-cardinality],<type-tid>,<field-key>match[multi]]
+\function kind.field-size(type-tid, field-key, target-tid) [function[kind.is-multi-counted],<type-tid>,<field-key>!is[blank]] :map[function[kind.field-value-count],<target-tid>,<field-key>] ~[function[kind.field-value-length],<target-tid>,<field-key>]
+
+\function kind.viol-required(type-tid, field-key, target-tid) [function[kind.has-constraint],<type-tid>,<field-key>,[required]!is[blank]] :filter[<target-tid>get<field-key>is[blank]]
+\function kind.viol-min(type-tid, field-key, target-tid) [function[kind.constraint-num],<type-tid>,<field-key>,[min:]!is[blank]] :filter[function[kind.field-size],<type-tid>,<field-key>,<target-tid>compare:integer:lt<currentTiddler>]
+\function kind.viol-max(type-tid, field-key, target-tid) [function[kind.constraint-num],<type-tid>,<field-key>,[max:]!is[blank]] :filter[function[kind.field-size],<type-tid>,<field-key>,<target-tid>compare:integer:gt<currentTiddler>]
+\function kind.viol-unique(type-tid, type-key, field-key, target-tid) [function[kind.has-constraint],<type-tid>,<field-key>,[unique]!is[blank]] :filter[function[kind.dups-in-type],<target-tid>,<type-key>,<field-key>!is[blank]]
+\function kind.viol-unique-wiki(type-tid, field-key, target-tid) [function[kind.has-constraint],<type-tid>,<field-key>,[unique:wiki]!is[blank]] :filter[function[kind.dups-wiki],<target-tid>,<field-key>!is[blank]]
+\function kind.viol-title(type-tid, target-tid) [function[kind.eval-title],<type-tid>,<target-tid>!match<target-tid>]
+
+\function kind.viol-any(type-tid, type-key, field-key, target-tid) [function[kind.viol-required],<type-tid>,<field-key>,<target-tid>] [function[kind.viol-min],<type-tid>,<field-key>,<target-tid>] [function[kind.viol-max],<type-tid>,<field-key>,<target-tid>] [function[kind.viol-unique],<type-tid>,<type-key>,<field-key>,<target-tid>] [function[kind.viol-unique-wiki],<type-tid>,<field-key>,<target-tid>]
+\function kind.any-invalid(type-tid, type-key, target-tid) [function[kind.field-keys],<type-tid>] :filter[function[kind.viol-any],<type-tid>,<type-key>,<currentTiddler>,<target-tid>] +[first[]]

@@ -1,0 +1,5 @@
+title: $:/plugins/rimir/kind/common-fields/stakeholder
+tags: $:/tags/rimir/kind/common-field
+def: {"key":"stakeholder","typed":"ref","caption":"Stakeholder","icon":"👥","cardinality":"multi"}
+
+People or teams with an interest in this entity. Multi-cardinality by default.

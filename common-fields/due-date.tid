@@ -1,0 +1,5 @@
+title: $:/plugins/rimir/kind/common-fields/due-date
+tags: $:/tags/rimir/kind/common-field
+def: {"key":"due-date","typed":"date","caption":"Due","icon":"📅"}
+
+Deadline by which the entity must be completed.

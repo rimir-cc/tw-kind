@@ -1,0 +1,5 @@
+title: $:/plugins/rimir/kind/common-fields/date
+tags: $:/tags/rimir/kind/common-field
+def: {"key":"date","typed":"date","caption":"Date","icon":"⏰"}
+
+Generic single date — when the entity is anchored in time.

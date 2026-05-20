@@ -1,0 +1,27 @@
+title: $:/plugins/rimir/kind/readme
+type: text/vnd.tiddlywiki
+
+! kind
+
+Lightweight schema engine for TiddlyWiki. Define each type's fields, constraints, title formula, and namespace memberships on a single tiddler. Spawn, edit, view, and validate typed instances through hand-rolled UIs with zero plugin dependencies.
+
+!! Key features
+
+* ''One tiddler per type'' — schema lives in fields and a JSON-encoded `kind.fields` array on a single tiddler; body stays free for prose documentation
+* ''Namespaces'' — types declare `kind.namespaces` (multi-membership); a namespace switcher scopes what's visible
+* ''Auto-computed titles'' — types declare a `kind.title-formula` filter; new instances get their title computed from sibling fields
+* ''Live + bulk validation'' — inline errors as you edit, plus a wiki-wide validator report
+* ''Typeahead refs'' — filterable text input + dropdown + selected pills with × remove; scales to large option sets
+* ''Configurable stream-river view'' — each type chooses which fields appear in its in-river field bar; empty = bar hidden
+* ''Hand-rolled UI'' — zero dependency on other rimir plugins (theme/components/typed)
+
+!! Prerequisites
+
+No external prerequisites. Optional: `$:/plugins/rimir/doc-template` for the branded documentation hub.
+
+!! Quick start
+
+# Open the ''type-builder'' tab and define a new type (key, caption, icon, namespaces, title-formula, fields JSON).
+# Open the ''creator'' tab, pick the type, fill the fields, click Create.
+# Open the resulting tiddler in the story river — the stream-view field bar appears at the top.
+# Use the ''validator'' tab for a wiki-wide constraint scan.

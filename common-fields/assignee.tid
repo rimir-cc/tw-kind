@@ -1,0 +1,5 @@
+title: $:/plugins/rimir/kind/common-fields/assignee
+tags: $:/tags/rimir/kind/common-field
+def: {"key":"assignee","typed":"ref","caption":"Assignee","icon":"🙋","cardinality":"single"}
+
+Reference to the person responsible. After adding, set ''ref-types'' to ''person'' (or your relevant kind).

@@ -1,0 +1,43 @@
+title: $:/plugins/rimir/kind/settings
+type: text/vnd.tiddlywiki
+
+\whitespace trim
+\import $:/plugins/rimir/kind/engine
+
+!! Active namespace
+
+<div style="font-size:0.9em;opacity:0.75;margin-bottom:6px;">
+Restricts the //creator//, //overview//, and //validator// to a single namespace. Choose <em>(all)</em> to see every type regardless of namespace.
+</div>
+
+<div class="kind-ns-row">
+Namespace:
+<$select tiddler="$:/config/rimir/kind/active-namespace">
+<option value="">(all)</option>
+<$list filter="[function[kind.namespaces-all]]" variable="ns">
+<option value=<<ns>>><<ns>></option>
+</$list>
+</$select>
+</div>
+
+!! Default type prefix
+
+<div style="font-size:0.9em;opacity:0.75;margin-bottom:6px;">
+When you enter a short name in the //type-builder// (e.g. <code>task</code>), this prefix is prepended to form the full tiddler title. A title starting with <code>$:/</code> is used as-is.
+</div>
+
+<div class="kind-ns-row">
+<strong>Prefix:</strong>
+<$edit-text tiddler="$:/config/rimir/kind/type-prefix" field="text" tag="input" class="kind-input" default="$:/config/rimir/kind/types/"/>
+</div>
+
+!! Stream-view truncation
+
+<div style="font-size:0.9em;opacity:0.75;margin-bottom:6px;">
+Maximum characters per field value shown in the stream-river field bar. Longer values are truncated with an ellipsis. Click a field to pop up the full editor.
+</div>
+
+<div class="kind-ns-row">
+Max length:
+<$edit-text tiddler="$:/config/rimir/kind/streambar-max-length" field="text" tag="input" type="number" class="kind-input" default="20" style="width:6em;"/>
+</div>

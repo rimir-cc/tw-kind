@@ -1,0 +1,5 @@
+title: $:/plugins/rimir/kind/common-fields/completed-date
+tags: $:/tags/rimir/kind/common-field
+def: {"key":"completed-date","typed":"date","caption":"Completed","icon":"✅"}
+
+When the entity reached its done/completed state.

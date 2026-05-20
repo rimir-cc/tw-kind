@@ -1,0 +1,12 @@
+created: 20260520120000000
+modified: 20260520120000000
+list-after: $:/core/ui/ViewTemplate/title
+tags: $:/tags/ViewTemplate
+title: $:/plugins/rimir/kind/viewtemplate
+type: text/vnd.tiddlywiki
+
+<%if [<currentTiddler>has[kind.type]] %>
+<$let target-tid=<<currentTiddler>>>
+<$transclude $tiddler="$:/plugins/rimir/kind/stream-view"/>
+</$let>
+<%endif%>

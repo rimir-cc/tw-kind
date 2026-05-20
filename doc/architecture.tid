@@ -1,0 +1,78 @@
+rdt.order: 2
+rdt.plugin-key: kind
+rdt.plugin-name: kind
+rdt.plugin-subtitle: Lightweight schema engine — one tiddler per type, namespaced
+rdt.section: Architecture
+title: $:/plugins/rimir/kind/doc/architecture
+type: text/vnd.tiddlywiki
+
+<$transclude $tiddler="$:/plugins/rimir/doc-template/templates/page">
+<$fill $name="body">
+
+!! Schema model
+
+|!Element |!Stored as |!Discovery |
+|Type |One tiddler with fields `kind.type`, `kind.caption`, `kind.icon`, `kind.namespaces`, `kind.title-formula`, `kind.stream-fields`, `kind.fields` (JSON) |`[has[kind.type]has[kind.fields]]` |
+|Field def |Entry inside the type's `kind.fields` JSON array |`[<type-tid>get[kind.fields]jsonindexes[]]` |
+|Instance |Any tiddler with `kind.type: <type-key>` |`[kind.type<type-key>]` |
+
+There are no separate per-field tiddlers, no inheritance slots, no enum tiddlers. The type tiddler is the single source of truth for its schema.
+
+!! Namespace mechanism
+
+* Each type's `kind.namespaces` field is a space-separated list of namespace tokens — a type can belong to many at once.
+* The active namespace lives in `$:/config/rimir/kind/active-namespace` (single value; empty = all).
+* All UI surfaces that enumerate types — //creator//, //overview//, //validator// — filter via the `kind.belongs-to-ns` function in `engine.tid`.
+
+!! Field types (`typed` values)
+
+|!`typed` |!Editor |!Storage |
+|`text` |single-line `<$edit-text>` |plain string |
+|`longtext` |textarea |plain string |
+|`number` |numeric input |plain string |
+|`date` |`<$edit-date>` |TW date format |
+|`datetime` |`<$edit-date>` with time |TW datetime format |
+|`enum` |single: `<$select>`; multi: pill toggle row |single string or list-field |
+|`ref` |typeahead (filter input + dropdown + selected pills with ×) |single tiddler title or list-field |
+|`$title` |read-only |computed from `kind.title-formula` |
+|`$calculated` |read-only |computed from the field's `formula` |
+
+Extension point: `field-input.tid` is one `<%if [<typed>match[X]]%>` cascade. Adding a field type = one new branch.
+
+!! Constraints
+
+|!Constraint |!Meaning |
+|`required` |Must have a value (blocking) |
+|`min:N` |Min N characters (text/longtext) or N entries (multi-enum / multi-ref) |
+|`max:N` |Max N characters or entries |
+|`unique` |Unique among instances of the same type |
+|`unique:wiki` |Unique wiki-wide (across all tiddlers) |
+
+The validator reports any violation as a row in its bulk report. The editor shows live error messages below each input.
+
+!! Title generation
+
+When `kind.title-formula` is set, the creator computes a new instance's title by evaluating the formula against the draft state tiddler:
+
+```
+\function kind.eval-title(type-tid, target-tid)
+  [<type-tid>get[kind.title-formula]]
+  :map[<target-tid>subfilter<currentTiddler>]
+```
+
+Example formula: `[get[parent]][[/]][get[abbrev]]+[join[]]` produces `parent-title/abbrev` style titles.
+
+!! Stream-view (ViewTemplate auto-registration)
+
+`viewtemplate.tid` is tagged `$:/tags/ViewTemplate` with `list-after: $:/core/ui/ViewTemplate/title`. On any tiddler with a `kind.type` field, it renders `stream-view.tid`, which reads `kind.stream-fields` from the type and emits a compact bar. Empty/missing `kind.stream-fields` = bar renders nothing (self-disabling).
+
+A click on a field cell opens a popup containing the field's editor; a top-bar toggle switches to inline-edit mode (the editor replaces the cell directly).
+
+!! Shared infrastructure
+
+* ''engine.tid'' — all shared functions: type discovery, namespace filtering, JSON field-array accessors, constraint extraction, validation predicates, display helpers (truncation, ref resolution), title-formula evaluation
+* ''field-input.tid'' — typed-dispatch input widget used by editor, stream-view popup, stream-view inline, and type-builder live preview
+* ''editor.tid'' — 2-column table editor; takes only `target-tid` in scope; transcludes field-input per row
+
+</$fill>
+</$transclude>

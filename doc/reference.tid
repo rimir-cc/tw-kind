@@ -1,0 +1,105 @@
+rdt.order: 6
+rdt.plugin-key: kind
+rdt.plugin-name: kind
+rdt.plugin-subtitle: Lightweight schema engine — one tiddler per type, namespaced
+rdt.section: Reference
+title: $:/plugins/rimir/kind/doc/reference
+type: text/vnd.tiddlywiki
+
+<$transclude $tiddler="$:/plugins/rimir/doc-template/templates/page">
+<$fill $name="body">
+
+!! Type tiddler fields
+
+|!Field |!Required |!Description |
+|`kind.type` |Yes |Unique type key. Instances of this type carry `kind.type: <this-value>`. |
+|`kind.fields` |Yes |Stringified-JSON array of field definitions. See //Field def schema// below. |
+|`kind.caption` |No |Display name shown in dropdowns, validator headings, etc. |
+|`kind.icon` |No |Emoji or short text shown alongside the caption |
+|`kind.namespaces` |No |Space-separated namespace memberships. Empty = visible only when active namespace is //(all)//. |
+|`kind.title-formula` |No |TW filter expression evaluated with `<target-tid>` as the source. Result becomes the new instance's title. Omit for manually-titled types. |
+|`kind.stream-fields` |No |Space-separated field keys shown in the stream-river field bar. Empty / missing = bar is invisible for instances of this type. |
+
+!! Instance tiddler fields
+
+|!Field |!Required |!Description |
+|`kind.type` |Yes |The type key. Marks the tiddler as an instance. |
+|Field keys from `kind.fields` |Per field's `constraints` |Each field's value is stored as a tiddler field with the name `<key>`. Multi-cardinality values are stored as space-separated lists (TW list-field convention). |
+
+!! Field def schema (entries inside `kind.fields` JSON)
+
+|!Property |!Required |!Description |!Applies to `typed` |
+|`key` |Yes |Field key. Used as both the field name on instances and the identifier in `kind.stream-fields` / `kind.title-formula`. |all |
+|`typed` |Yes |Editor kind. See //typed values// table. |all |
+|`caption` |No |Display label. Falls back to `key` if absent. |all |
+|`icon` |No |Emoji or short text. |all |
+|`constraints` |No |Array of constraint strings. See //Constraints// table. |all (most relevant for editable types) |
+|`options` |Required for `enum` |Array of option strings. |`enum` |
+|`ref-types` |Required for `ref` |Array of `kind.type` values whose instances may be referenced. |`ref` |
+|`cardinality` |No (default `single`) |Either `single` or `multi`. Multi values are space-separated lists. |`enum`, `ref` |
+|`formula` |Required for `$calculated` |Filter expression evaluated with `<target-tid>` as source. |`$calculated` |
+
+!! `typed` values
+
+|!Value |!Editor |!Notes |
+|`text` |single-line input |Free-form short string |
+|`longtext` |textarea |Free-form long text |
+|`number` |numeric input |Stored as string; validate as needed |
+|`date` |TW date picker |TW date format |
+|`datetime` |TW date picker w/ time |TW datetime format, 24h |
+|`enum` |`<$select>` or pill toggle |`options` required; honour `cardinality` |
+|`ref` |Typeahead (search + dropdown + selected pills) |`ref-types` required; honour `cardinality`; display via target tiddler's caption (falls back to title) |
+|`$title` |Read-only |Marks the field as the title position; not editable. Title is computed from the type's `kind.title-formula`. |
+|`$calculated` |Read-only |Display-only derived field; value computed from the field's `formula` |
+
+!! Constraints
+
+|!String |!Meaning |
+|`required` |Field value must not be blank |
+|`min:N` |Minimum N characters (text/longtext) or N entries (multi enum/ref) |
+|`max:N` |Maximum N characters or entries |
+|`unique` |Field value must not equal another instance of the same type's same field |
+|`unique:wiki` |Field value must not equal any other tiddler's same field |
+
+All constraints are blocking — they show up in red in the validator and disable the Create button in the creator.
+
+!! Config tiddlers
+
+|!Path |!Purpose |
+|`$:/config/rimir/kind/active-namespace` |Active namespace; empty = all |
+|`$:/config/rimir/kind/streambar-max-length` |Truncation threshold for the stream-view field bar (default 20) |
+
+!! State tiddlers
+
+|!Path |!Purpose |
+|`$:/state/rimir/kind/draft/<type-key>` |Creator's draft for in-progress instance |
+|`$:/state/rimir/kind/edit-mode/<target-tid>` |Per-instance toggle between popup and inline edit mode in stream-view |
+|`$:/state/rimir/kind/ta/<target-tid>/<field-key>` |Typeahead search-input state for a ref field |
+|`$:/state/rimir/kind/creator/selected-type` |Currently-selected type in the creator |
+|`$:/state/rimir/kind/type-builder/selected` |Currently-edited type in the type-builder |
+|`$:/state/rimir/kind/type-builder/preview-draft` |Live editor preview's target |
+
+!! Engine functions (engine.tid)
+
+|!Function |!Returns |
+|`kind.types-all()` |All type tiddlers |
+|`kind.locate-type(type-key)` |The type tiddler with that key |
+|`kind.active-ns()` |Current active namespace string |
+|`kind.belongs-to-ns(active-ns)` |Filter predicate; non-empty if `<currentTiddler>` is in scope |
+|`kind.namespaces-all()` |Unique sorted list of all namespaces used by any type |
+|`kind.field-keys(type-tid)` |Ordered list of field keys |
+|`kind.field-typed(type-tid, field-key)` |`typed` value of the field |
+|`kind.field-caption(type-tid, field-key)` |Field caption (falls back to key) |
+|`kind.constraints(type-tid, field-key)` |All constraint strings |
+|`kind.has-constraint(type-tid, field-key, name)` |Non-empty if constraint present |
+|`kind.constraint-num(type-tid, field-key, prefix)` |Numeric value of `min:N` / `max:N` |
+|`kind.options(type-tid, field-key)` |Enum option strings |
+|`kind.ref-types(type-tid, field-key)` |Allowed ref target type keys |
+|`kind.ref-candidates(type-tid, field-key)` |All currently-existing target instances |
+|`kind.eval-title(type-tid, target-tid)` |Computed title for an instance |
+|`kind.viol-required(...)` `kind.viol-min(...)` `kind.viol-max(...)` `kind.viol-unique(...)` `kind.viol-unique-wiki(...)` `kind.viol-title(...)` |Validation predicates (non-empty = violation) |
+|`kind.any-invalid(type-tid, type-key, target-tid)` |Non-empty if any constraint is violated on any field |
+|`kind.shorten`, `kind.display`, `kind.resolve-ref` |Display helpers |
+
+</$fill>
+</$transclude>

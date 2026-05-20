@@ -1,0 +1,5 @@
+title: $:/plugins/rimir/kind/common-fields/status
+tags: $:/tags/rimir/kind/common-field
+def: {"key":"status","typed":"enum","caption":"Status","icon":"👁️","cardinality":"single","options":["open","active","done","archived"]}
+
+Lifecycle state — adjust the enum ''options'' on the field to match your kind's workflow.

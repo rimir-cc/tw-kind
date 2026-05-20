@@ -1,0 +1,5 @@
+title: $:/plugins/rimir/kind/common-fields/parent
+tags: $:/tags/rimir/kind/common-field
+def: {"key":"parent","typed":"ref","caption":"Parent","icon":"🔼","cardinality":"single"}
+
+Reference to a parent entity in a hierarchy. After adding, set ''ref-types'' on the field to restrict which kinds may be picked.

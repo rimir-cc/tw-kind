@@ -1,0 +1,5 @@
+title: $:/plugins/rimir/kind/common-fields/start-date
+tags: $:/tags/rimir/kind/common-field
+def: {"key":"start-date","typed":"date","caption":"Start","icon":"🟢"}
+
+Beginning of a date range.

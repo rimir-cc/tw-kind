@@ -1,0 +1,68 @@
+rdt.order: 3
+rdt.plugin-key: kind
+rdt.plugin-name: kind
+rdt.plugin-subtitle: Lightweight schema engine — one tiddler per type, namespaced
+rdt.section: Dev Workflow
+title: $:/plugins/rimir/kind/doc/dev-workflow
+type: text/vnd.tiddlywiki
+
+<$transclude $tiddler="$:/plugins/rimir/doc-template/templates/page">
+<$fill $name="body">
+
+!! Plugin files
+
+|!File |!Role |
+|`engine.tid` |Shared functions (type discovery, JSON access, validation predicates, helpers) |
+|`field-input.tid` |Per-field input dispatch (text/longtext/number/date/datetime/enum/ref/computed) |
+|`editor.tid` |2-column form for editing one instance |
+|`view.tid` |Read-only single-instance table view |
+|`stream-view.tid` |Field bar for the stream river; popup/inline edit toggle |
+|`viewtemplate.tid` |ViewTemplate hook that auto-renders stream-view on every `kind.type` instance |
+|`creator.tid` |Type picker + editor + Create button (computes title) |
+|`validator.tid` |Bulk wiki-wide constraint report |
+|`overview.tid` |Card grid of types in the active namespace |
+|`type-builder.tid` |Structured editor for type metadata + JSON textarea for fields |
+|`settings.tid` |Namespace switcher + stream-bar truncation preference |
+|`styles.tid` |All CSS, no rr-* dependency |
+
+!! Restart rules
+
+|!Change |!Restart needed? |
+|Edit any `.tid` (engine, editor, creator, …) |No — filesystem-watcher syncs |
+|Add a new type via type-builder |No — discovery is automatic |
+|Add a new field type (extend `field-input.tid`) |No |
+|Add a new constraint (extend `engine.tid` validation predicates) |No |
+
+There are no JS modules in `v0.1.0`, so no restarts are required for any plugin edit.
+
+!! Defining a new type
+
+# Open the //type-builder// tab (`$:/plugins/rimir/kind/type-builder`).
+# Use the ''Create blank type'' button, supplying a new title (e.g. `$:/myns/types/task`).
+# Fill the metadata section: `kind.type` (key), `kind.caption`, `kind.icon`, `kind.namespaces`, `kind.title-formula`, `kind.stream-fields`.
+# Edit the JSON in the //Field definitions// section. The //Parsed preview// table updates as you type; the //Live editor preview// shows what an instance editor will look like.
+# Open the //creator// tab and try creating an instance.
+
+!! Adding a new field type
+
+# Open `field-input.tid`.
+# Find the dispatch cascade (`<%elseif [<field-typed>match[X]]%>` chain).
+# Add a new branch for your new `typed` value.
+# (Optional) Update the //typed// reference table in `doc/architecture.tid`.
+
+!! Adding a new constraint
+
+# Open `engine.tid`.
+# Add a `kind.viol-<name>(type-tid, field-key, target-tid)` filter function that returns non-empty when the constraint is violated.
+# Add a corresponding `<%if [function[kind.viol-<name>]]%>` branch in `field-input.tid` (for live errors) and `validator.tid` (for bulk report).
+# Extend `kind.viol-any` so the creator's disabled-button predicate covers the new constraint.
+
+!! Known limitations (v0.1.0)
+
+* The type-builder's field-list editor is a textarea (raw JSON); a fully-structured row-by-row editor with add/delete/reorder is planned for v0.2.
+* Multi-value uniqueness is exact-string-equality, not set-equality. Two instances with assignees `"alice bob"` and `"bob alice"` are NOT considered duplicates.
+* No referential integrity: deleting a tiddler that other instances reference does not clean up the references.
+* No schema migration: changing a field's `typed` after instances exist may leave stale values.
+
+</$fill>
+</$transclude>

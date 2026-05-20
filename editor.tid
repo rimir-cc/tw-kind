@@ -1,0 +1,47 @@
+title: $:/plugins/rimir/kind/editor
+type: text/vnd.tiddlywiki
+
+\whitespace trim
+\import $:/plugins/rimir/kind/engine
+
+<!-- 2-column editor for any typed instance.
+     Required vars in scope:
+       target-tid — tiddler to edit (may not exist yet)
+     Optional:
+       type-key   — fallback when the target tiddler doesn't yet carry kind.type
+                    (creator passes this so the editor can render against an unborn draft)
+-->
+
+<$let
+  type-key={{{ [<target-tid>get[kind.type]] ~[<type-key>] }}}
+>
+<%if [<type-key>is[blank]] %>
+<div class="kind-err">target tiddler has no <code>kind.type</code> field</div>
+<%else%>
+<$let
+  type-tid={{{ [function[kind.locate-type],<type-key>] }}}
+>
+<%if [<type-tid>is[blank]] %>
+<div class="kind-err">no type definition found for kind.type="<<type-key>>"</div>
+<%else%>
+<table class="kind-editor">
+<$list filter="[function[kind.field-keys],<type-tid>]" variable="field-key">
+<%if [function[kind.is-computed-typed],<type-tid>,<field-key>!is[blank]] %>
+<!-- skip $title and $calculated; they render in view, not editor -->
+<%else%>
+<tr>
+<th class="kind-editor-label">
+<$text text={{{ [function[kind.field-icon],<type-tid>,<field-key>] }}}/>
+ <$text text={{{ [function[kind.field-caption],<type-tid>,<field-key>] }}}/>
+</th>
+<td class="kind-editor-value">
+<$transclude $tiddler="$:/plugins/rimir/kind/field-input"/>
+</td>
+</tr>
+<%endif%>
+</$list>
+</table>
+<%endif%>
+</$let>
+<%endif%>
+</$let>

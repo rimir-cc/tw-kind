@@ -1,0 +1,5 @@
+title: $:/plugins/rimir/kind/common-fields/color
+tags: $:/tags/rimir/kind/common-field
+def: {"key":"color","typed":"text","caption":"Color","icon":"🎨"}
+
+Color value — hex code (`#1f77b4`), named CSS color, or rgb/hsl. Used for theming/decoration in views.

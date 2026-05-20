@@ -1,0 +1,5 @@
+title: $:/plugins/rimir/kind/common-fields/datetime
+tags: $:/tags/rimir/kind/common-field
+def: {"key":"datetime","typed":"datetime","caption":"Date & Time","icon":"🕐"}
+
+Generic point in time including hour and minute.

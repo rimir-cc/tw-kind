@@ -1,0 +1,17 @@
+{
+    "title": "$:/plugins/rimir/kind",
+    "description": "Lightweight schema engine for TiddlyWiki — one tiddler per type, namespaced, hand-rolled UI",
+    "name": "kind",
+    "author": "rimir",
+    "version": "0.1.0",
+    "core-version": ">=5.4.0",
+    "source": "https://github.com/rimir-cc/tw-kind",
+    "plugin-type": "plugin",
+    "list": "readme documentation settings overview type-builder creator validator changelog license",
+    "dependents": [
+        "$:/plugins/rimir/scribe"
+    ],
+    "soft-dependents": [
+        "$:/plugins/rimir/doc-template"
+    ]
+}

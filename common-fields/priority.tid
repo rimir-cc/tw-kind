@@ -1,0 +1,5 @@
+title: $:/plugins/rimir/kind/common-fields/priority
+tags: $:/tags/rimir/kind/common-field
+def: {"key":"priority","typed":"enum","caption":"Priority","icon":"🔺","cardinality":"single","options":["low","medium","high"]}
+
+Importance level — adjust the enum ''options'' if your scale is different (e.g. P0–P3).

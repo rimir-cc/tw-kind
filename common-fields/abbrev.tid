@@ -1,0 +1,5 @@
+title: $:/plugins/rimir/kind/common-fields/abbrev
+tags: $:/tags/rimir/kind/common-field
+def: {"key":"abbrev","typed":"text","caption":"Abbreviation","icon":"✂️"}
+
+Short form of the name — useful in compact UI surfaces (tags, breadcrumbs, computed titles).

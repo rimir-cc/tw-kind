@@ -1,0 +1,5 @@
+title: $:/plugins/rimir/kind/common-fields/title
+tags: $:/tags/rimir/kind/common-field
+def: {"key":"title","typed":"text","caption":"Title","icon":"🏷️"}
+
+The label that identifies the thing. Note: this is a regular field — distinct from `kind.title-formula`, which computes the tiddler title from other fields.

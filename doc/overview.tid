@@ -1,0 +1,53 @@
+rdt.hub-category: ui-framework
+rdt.hub-category-name: UI Framework & Domain Model
+rdt.hub-order: 4
+rdt.order: 1
+rdt.plugin-key: kind
+rdt.plugin-name: kind
+rdt.plugin-subtitle: Lightweight schema engine — one tiddler per type, namespaced
+rdt.section: Overview
+title: $:/plugins/rimir/kind/doc/overview
+type: text/vnd.tiddlywiki
+
+<$transclude $tiddler="$:/plugins/rimir/doc-template/templates/page">
+<$fill $name="body">
+
+!! What it does
+
+''kind'' is a lightweight schema engine for TiddlyWiki. Each type's full definition — fields, constraints, title formula, icon, namespace memberships, and stream-river display config — lives on a single tiddler. Instances are plain tiddlers marked with a `kind.type` field. No inheritance, no separate per-field tiddlers, no central registry.
+
+!! Features
+
+* ''Schema-as-tiddler'' — one tiddler per type, with field defs as a JSON array in `kind.fields`
+* ''Discovery'' — `[all[shadows+tiddlers]has[kind.type]has[kind.fields]]` finds all type tiddlers
+* ''Namespaces'' — types declare `kind.namespaces`, the active scope picks one (or all)
+* ''Editor'' — 2-column form (label + input), table-style, with live validation messages
+* ''Field Bar'' — auto-rendered in the stream river on every instance; configurable per type; self-disabling
+* ''Creator'' — pick a type, fill fields, click Create; title computed from `kind.title-formula`
+* ''Validator'' — wiki-wide report of constraint violations
+* ''Type-builder'' — structured editor for type metadata + JSON textarea for fields, with live preview
+
+!! Schema model
+
+* ''Type tiddlers'' — fields `kind.type` (the key), `kind.caption`, `kind.icon`, `kind.namespaces`, `kind.title-formula`, `kind.stream-fields`, and `kind.fields` (JSON array)
+* ''Field defs'' — entries inside the JSON array with `key`, `typed`, `caption`, `icon`, `constraints`, `options` (enum), `ref-types` + `cardinality` (ref)
+* ''Instance tiddlers'' — any tiddler with `kind.type: <type-key>` is an instance
+
+!! Prerequisites
+
+TiddlyWiki ≥ 5.4.0 in Node.js server mode. No other plugin dependencies. Optional: `$:/plugins/rimir/doc-template` for the documentation hub you're reading right now.
+
+!! Quick start
+
+# Open the ''type-builder'' tab; create a blank type and fill its metadata
+# Paste a field-list JSON (see the Examples section)
+# Open the ''creator'' tab, pick the type, fill the fields, click Create
+# Open the resulting tiddler in the story river — the field bar appears at the top
+# Use the ''validator'' tab to scan the whole wiki for constraint violations
+
+<$transclude $tiddler="$:/plugins/rimir/doc-template/templates/callout" type="info">
+<$fill $name="body">''Why a new plugin alongside `rimir/typed`?'' typed has accumulated features (3-level inheritance, separate per-field tiddlers, two ref-editor modes, ~1600 lines). kind drops everything that doesn't pay rent in TiddlyWiki's bag-of-fields model and adds namespaces. See the FAQ for details.</$fill>
+</$transclude>
+
+</$fill>
+</$transclude>

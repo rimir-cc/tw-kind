@@ -1,0 +1,75 @@
+rdt.order: 4
+rdt.plugin-key: kind
+rdt.plugin-name: kind
+rdt.plugin-subtitle: Lightweight schema engine — one tiddler per type, namespaced
+rdt.section: Examples
+title: $:/plugins/rimir/kind/doc/examples
+type: text/vnd.tiddlywiki
+
+<$transclude $tiddler="$:/plugins/rimir/doc-template/templates/page">
+<$fill $name="body">
+
+!! A task type (orga namespace)
+
+Create a type tiddler with the following fields:
+
+```
+title: $:/orga/types/task
+kind.type: task
+kind.namespaces: orga
+kind.caption: Task
+kind.icon: 🧮
+kind.title-formula: [get[parent]][[/]][get[abbrev]]+[join[]]
+kind.stream-fields: status assignee due-date
+kind.fields: [{"key":"abbrev","caption":"Abbreviation","icon":"🔜","typed":"text","constraints":["required","min:3","unique"]},{"key":"description","caption":"Description","typed":"longtext"},{"key":"parent","caption":"Parent","icon":"📁","typed":"ref","ref-types":["project","workstream"],"cardinality":"single"},{"key":"status","caption":"Status","icon":"🚦","typed":"enum","options":["open","doing","done"],"cardinality":"single","constraints":["required"]},{"key":"assignee","caption":"Assignee","icon":"👤","typed":"ref","ref-types":["person"],"cardinality":"multi"},{"key":"due-date","caption":"Due","icon":"📅","typed":"date"}]
+```
+
+After saving, the //creator// tab shows ''Task'' in its type dropdown (when the active namespace is ''orga'' or blank). Filling fields and clicking Create produces a tiddler titled `<parent>/<abbrev>` with `kind.type: task` and the field values written through.
+
+!! A shared "note" type (orga and private namespaces)
+
+A type can belong to multiple namespaces:
+
+```
+title: $:/shared/types/note
+kind.type: note
+kind.namespaces: orga private
+kind.caption: Note
+kind.icon: 📝
+kind.title-formula: [[note-]] [get[topic]] +[join[]]
+kind.stream-fields: topic created
+kind.fields: [{"key":"topic","caption":"Topic","typed":"text","constraints":["required"]},{"key":"body","caption":"Body","typed":"longtext"}]
+```
+
+Switching the active namespace between ''orga'' and ''private'' (in //settings//) — this type appears in both.
+
+!! Multi-ref typeahead (large option sets)
+
+For ref fields with many possible targets, the typeahead UI shows a filterable search input. Selected values render as pills with × removal. Example field def:
+
+```json
+{"key":"stakeholders","caption":"Stakeholders","icon":"👥","typed":"ref","ref-types":["person","team"],"cardinality":"multi"}
+```
+
+The candidate set is `[enlist[person team]] :map:flat[all[shadows+tiddlers]kind.type<currentTiddler>] +[unique[]]` — every instance of `person` or `team` in the wiki. The search input filters by title and caption.
+
+!! Validator interpretation
+
+Open the //validator// tab. Each type heading shows the instance count. A table follows with one row per violation:
+
+* ''Red rows'' — blocking constraints (`required`, `min:N`, `max:N`, `unique`, `unique:wiki`, title mismatch)
+
+If a type has no violations, the table is empty (just the heading + "//No instances//" if applicable).
+
+!! Stream-view in action
+
+Once a type's `kind.stream-fields` is set (e.g. `status assignee due-date`), every instance opened in the story river renders a compact field bar above the body:
+
+```
+🧮  🚦 doing  👤 Mirko  📅 23rd May 2026  ✎ popup
+```
+
+Clicking a cell pops up the field's editor. Clicking the ✎ toggle switches to inline-edit mode (the editor replaces the cell directly).
+
+</$fill>
+</$transclude>

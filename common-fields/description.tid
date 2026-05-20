@@ -1,0 +1,5 @@
+title: $:/plugins/rimir/kind/common-fields/description
+tags: $:/tags/rimir/kind/common-field
+def: {"key":"description","typed":"longtext","caption":"Description","icon":"📝"}
+
+Longer prose describing the entity in detail.

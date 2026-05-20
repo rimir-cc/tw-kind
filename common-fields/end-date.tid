@@ -1,0 +1,5 @@
+title: $:/plugins/rimir/kind/common-fields/end-date
+tags: $:/tags/rimir/kind/common-field
+def: {"key":"end-date","typed":"date","caption":"End","icon":"🔴"}
+
+End of a date range.

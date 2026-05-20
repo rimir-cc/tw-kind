@@ -1,0 +1,99 @@
+title: $:/plugins/rimir/kind/validator
+type: text/vnd.tiddlywiki
+
+\whitespace trim
+\import $:/plugins/rimir/kind/engine
+
+! Validator
+
+<$let active-ns={{{ [function[kind.active-ns]] }}}>
+<p><strong>Scope:</strong> <code><$text text={{{ [<active-ns>!is[blank]] ~[[(all namespaces)]] }}}/></code></p>
+
+<$list filter="[function[kind.types-all]] :filter[function[kind.belongs-to-ns],<active-ns>] +[sort[kind.type]]" variable="type-tid">
+
+<$let
+  type-key={{{ [<type-tid>get[kind.type]] }}}
+  inst-count={{{ [function[kind.instances-of],<type-key>count[]] }}}
+>
+
+<h3 class="kind-validator-type-heading">
+<$text text={{{ [<type-tid>get[kind.icon]] }}}/>
+ <$text text={{{ [<type-tid>get[kind.caption]!is[blank]] ~[<type-key>] }}}/>
+ (<<inst-count>>)
+</h3>
+
+<%if [<inst-count>match[0]] %>
+//No instances//
+<%else%>
+<table class="kind-validator-table">
+<thead><tr><th>Instance</th><th>Field</th><th>Violation</th><th>Detail</th></tr></thead>
+<tbody>
+<$list filter="[function[kind.instances-of],<type-key>sort[title]]" variable="target-tid">
+
+<%if [function[kind.viol-title],<type-tid>,<target-tid>] %>
+<tr class="kind-validator-row-error">
+<td><$link to=<<target-tid>>><$view tiddler=<<target-tid>> field="title"/></$link></td>
+<td>(title)</td>
+<td>title mismatch</td>
+<td>expected "<$text text={{{ [function[kind.eval-title],<type-tid>,<target-tid>] }}}/>"</td>
+</tr>
+<%endif%>
+
+<$list filter="[function[kind.field-keys],<type-tid>]" variable="field-key">
+
+<%if [function[kind.viol-required],<type-tid>,<field-key>,<target-tid>] %>
+<tr class="kind-validator-row-error">
+<td><$link to=<<target-tid>>><$view tiddler=<<target-tid>> field="title"/></$link></td>
+<td><<field-key>></td>
+<td>required</td>
+<td>field is blank</td>
+</tr>
+<%endif%>
+
+<%if [function[kind.viol-min],<type-tid>,<field-key>,<target-tid>] %>
+<tr class="kind-validator-row-error">
+<td><$link to=<<target-tid>>><$view tiddler=<<target-tid>> field="title"/></$link></td>
+<td><<field-key>></td>
+<td>min</td>
+<td>need <$text text={{{ [function[kind.constraint-num],<type-tid>,<field-key>,[min:]] }}}/>, have <$text text={{{ [function[kind.field-size],<type-tid>,<field-key>,<target-tid>] }}}/></td>
+</tr>
+<%endif%>
+
+<%if [function[kind.viol-max],<type-tid>,<field-key>,<target-tid>] %>
+<tr class="kind-validator-row-error">
+<td><$link to=<<target-tid>>><$view tiddler=<<target-tid>> field="title"/></$link></td>
+<td><<field-key>></td>
+<td>max</td>
+<td>max <$text text={{{ [function[kind.constraint-num],<type-tid>,<field-key>,[max:]] }}}/>, have <$text text={{{ [function[kind.field-size],<type-tid>,<field-key>,<target-tid>] }}}/></td>
+</tr>
+<%endif%>
+
+<%if [function[kind.viol-unique],<type-tid>,<type-key>,<field-key>,<target-tid>] %>
+<tr class="kind-validator-row-error">
+<td><$link to=<<target-tid>>><$view tiddler=<<target-tid>> field="title"/></$link></td>
+<td><<field-key>></td>
+<td>unique (within type)</td>
+<td>value "<$text text={{{ [<target-tid>get<field-key>] }}}/>" used by another <<type-key>></td>
+</tr>
+<%endif%>
+
+<%if [function[kind.viol-unique-wiki],<type-tid>,<field-key>,<target-tid>] %>
+<tr class="kind-validator-row-error">
+<td><$link to=<<target-tid>>><$view tiddler=<<target-tid>> field="title"/></$link></td>
+<td><<field-key>></td>
+<td>unique (wiki-wide)</td>
+<td>value "<$text text={{{ [<target-tid>get<field-key>] }}}/>" used elsewhere in the wiki</td>
+</tr>
+<%endif%>
+
+</$list>
+
+</$list>
+</tbody>
+</table>
+<%endif%>
+
+</$let>
+
+</$list>
+</$let>

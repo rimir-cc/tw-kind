@@ -1,0 +1,5 @@
+title: $:/plugins/rimir/kind/common-fields/follow-up-date
+tags: $:/tags/rimir/kind/common-field
+def: {"key":"follow-up-date","typed":"date","caption":"Follow-up","icon":"🔔"}
+
+Reminder/check-in date — when to revisit this entity.

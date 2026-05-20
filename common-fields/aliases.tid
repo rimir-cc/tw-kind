@@ -1,0 +1,5 @@
+title: $:/plugins/rimir/kind/common-fields/aliases
+tags: $:/tags/rimir/kind/common-field
+def: {"key":"aliases","typed":"longtext","caption":"Aliases","icon":"🎭"}
+
+Alternate names for the same entity. Stored as longtext — one alias per line by convention.

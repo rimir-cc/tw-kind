@@ -1,0 +1,84 @@
+title: $:/plugins/rimir/kind/stream-view
+type: text/vnd.tiddlywiki
+
+\whitespace trim
+\import $:/plugins/rimir/kind/engine
+
+<!-- Compact field bar for the stream river.
+     Auto-rendered on tiddlers with kind.type via viewtemplate.tid.
+     Self-disables if the type has no kind.stream-fields configured.
+
+     Required vars in scope:
+       target-tid — instance tiddler to display
+-->
+
+<$let
+  type-key={{{ [<target-tid>get[kind.type]] }}}
+  bar-max-length={{{ [[$:/config/rimir/kind/streambar-max-length]get[text]trim[]] ~[[20]] }}}
+>
+<%if [<type-key>is[blank]] %>
+<!-- no kind.type — nothing to show -->
+<%else%>
+<$let type-tid={{{ [function[kind.locate-type],<type-key>] }}}>
+<$list filter="[function[kind.stream-fields],<type-tid>limit[1]]" variable="_first">
+
+<$let
+  mode-state={{{ [[$:/state/rimir/kind/edit-mode/]addsuffix<target-tid>] }}}
+  edit-mode={{{ [<mode-state>get[text]] ~[[popup]] }}}
+>
+<div class="kind-field-bar">
+
+<span class="kind-field-bar-icon" title={{{ [<type-tid>get[kind.caption]!is[blank]] ~[<type-key>] }}}>
+<$text text={{{ [<type-tid>get[kind.icon]] }}}/>
+</span>
+
+<$list filter="[function[kind.stream-fields],<type-tid>]" variable="field-key">
+<$let
+  field-icon={{{ [function[kind.field-icon],<type-tid>,<field-key>] }}}
+  field-cap={{{ [function[kind.field-caption],<type-tid>,<field-key>] }}}
+  raw={{{ [<target-tid>get<field-key>] }}}
+  display-val={{{ [<target-tid>get<field-key>enlist-input[]] :map[function[kind.resolve-ref],<currentTiddler>] +[join[, ]] }}}
+  truncated={{{ [function[kind.display],<display-val>,<bar-max-length>] }}}
+  popup-state={{{ [<target-tid>addsuffix[/kind-streambar/]addsuffix<field-key>] }}}
+>
+<%if [<edit-mode>match[inline]] %>
+<!-- inline edit mode: render field-input directly in the cell -->
+<span class="kind-field-cell">
+<span class="kind-field-cell-icon"><<field-icon>></span>
+<$transclude $tiddler="$:/plugins/rimir/kind/field-input" inline="yes"/>
+</span>
+<%else%>
+<!-- popup edit mode: click cell → field-input in popup -->
+<span class="kind-field-cell tc-popup-keep">
+<$button popup=<<popup-state>> class="tc-btn-invisible" tooltip=<<field-cap>>>
+<span class="kind-field-cell-icon"><<field-icon>></span>
+ <<truncated>>
+</$button>
+</span>
+<$reveal state=<<popup-state>> type="popup" position="belowleft" animate="yes" class="tc-popup-keep">
+<div class="kind-field-popup">
+<div class="kind-editor-label" style="margin-bottom:6px;"><<field-icon>> <<field-cap>></div>
+<$transclude $tiddler="$:/plugins/rimir/kind/field-input"/>
+</div>
+</$reveal>
+<%endif%>
+</$let>
+</$list>
+
+<$button class="kind-mode-toggle" tooltip="toggle inline/popup edit mode">
+<%if [<edit-mode>match[inline]] %>
+<$action-setfield $tiddler=<<mode-state>> text="popup"/>
+✎ popup
+<%else%>
+<$action-setfield $tiddler=<<mode-state>> text="inline"/>
+✎ inline
+<%endif%>
+</$button>
+
+</div>
+</$let>
+
+</$list>
+</$let>
+<%endif%>
+</$let>

@@ -1,0 +1,51 @@
+title: $:/plugins/rimir/kind/view
+type: text/vnd.tiddlywiki
+
+\whitespace trim
+\import $:/plugins/rimir/kind/engine
+
+<!-- Read-only single-instance view.
+     Required vars in scope:
+       target-tid — instance tiddler to view
+-->
+
+<$let type-key={{{ [<target-tid>get[kind.type]] }}}>
+<%if [<type-key>!is[blank]] %>
+<$let type-tid={{{ [function[kind.locate-type],<type-key>] }}}>
+<%if [<type-tid>!is[blank]] %>
+
+<table class="kind-view">
+<$list filter="[function[kind.field-keys],<type-tid>]" variable="field-key">
+<$let
+  field-typed={{{ [function[kind.field-typed],<type-tid>,<field-key>] }}}
+  raw={{{ [<target-tid>get<field-key>] }}}
+>
+<%if [<raw>is[blank]] [<field-typed>match[$title]] [<field-typed>match[$calculated]] +[first[]] %>
+<!-- skip blank values and computed fields -->
+<%else%>
+<tr>
+<td class="kind-view-label">
+<$text text={{{ [function[kind.field-icon],<type-tid>,<field-key>] }}}/>
+ <$text text={{{ [function[kind.field-caption],<type-tid>,<field-key>] }}}/>
+</td>
+<td class="kind-view-value">
+<%if [<field-typed>match[date]] %>
+<$text text={{{ [<raw>format:date[DDth MMM YYYY]] }}}/>
+<%elseif [<field-typed>match[datetime]] %>
+<$text text={{{ [<raw>format:date[DDth MMM YYYY 0hh:0mm]] }}}/>
+<%elseif [<field-typed>match[ref]] %>
+<$list filter="[<raw>enlist-input[]]" variable="r" counter="cnt"><%if [<cnt-first>match[no]] %>, <%endif%><$link to=<<r>>><$text text={{{ [function[kind.resolve-ref],<r>] }}}/></$link></$list>
+<%else%>
+<$text text=<<raw>>/>
+<%endif%>
+</td>
+</tr>
+<%endif%>
+</$let>
+</$list>
+</table>
+
+<%endif%>
+</$let>
+<%endif%>
+</$let>

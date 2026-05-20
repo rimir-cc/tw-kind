@@ -1,0 +1,127 @@
+title: $:/plugins/rimir/kind/field-input
+type: text/vnd.tiddlywiki
+
+\whitespace trim
+\import $:/plugins/rimir/kind/engine
+
+<!-- Per-field input dispatcher.
+     Required vars in scope (via $let from caller):
+       type-tid     — type definition tiddler
+       type-key     — type's kind.type value
+       target-tid   — instance tiddler being edited
+       field-key    — the field being edited
+     Optional:
+       inline       — if "yes", suppress validation messages (popup mode shows them; inline mode is terse)
+-->
+
+<$let
+  field-typed={{{[function[kind.field-typed],<type-tid>,<field-key>]}}}
+  field-card={{{[function[kind.field-cardinality],<type-tid>,<field-key>]}}}
+>
+
+<%if [<field-typed>match[$title]] [<field-typed>match[$calculated]] +[first[]] %>
+<!-- read-only computed; rendered elsewhere -->
+
+<%elseif [<field-typed>match[longtext]] %>
+<$edit-text tiddler=<<target-tid>> field=<<field-key>> tag="textarea" class="kind-input kind-textarea"/>
+
+<%elseif [<field-typed>match[number]] %>
+<$edit-text tiddler=<<target-tid>> field=<<field-key>> type="number" tag="input" class="kind-input"/>
+
+<%elseif [<field-typed>match[date]] %>
+<$edit-date tiddler=<<target-tid>> field=<<field-key>>/>
+
+<%elseif [<field-typed>match[datetime]] %>
+<$edit-date tiddler=<<target-tid>> field=<<field-key>> format="YYYY-MM-DD HH:mm" showTime="yes" use24hour="yes"/>
+
+<%elseif [<field-typed>match[enum]] %>
+<%if [<field-card>match[multi]] %>
+<div class="kind-pill-row">
+<$list filter="[function[kind.options],<type-tid>,<field-key>]" variable="opt">
+<$let active={{{[<target-tid>get<field-key>enlist-input[]match<opt>limit[1]]}}}>
+<$button class={{{[<active>!is[blank]then[kind-pill kind-pill-on]] ~[kind-pill]}}}>
+<$action-listops $tiddler=<<target-tid>> $field=<<field-key>> $subfilter="+[toggle<opt>]"/>
+<<opt>>
+</$button>
+</$let>
+</$list>
+</div>
+<%else%>
+<$select tiddler=<<target-tid>> field=<<field-key>> class="kind-input">
+<option value=""></option>
+<$list filter="[function[kind.options],<type-tid>,<field-key>]" variable="opt">
+<option value=<<opt>>><<opt>></option>
+</$list>
+</$select>
+<%endif%>
+
+<%elseif [<field-typed>match[ref]] %>
+<$let
+  search-state={{{ [[$:/state/rimir/kind/ta/]addsuffix<target-tid>addsuffix[/]addsuffix<field-key>] }}}
+  is-multi={{{ [<field-card>match[multi]] }}}
+  cur={{{ [<target-tid>get<field-key>] }}}
+>
+<%if [<is-multi>!is[blank]] %>
+<!-- multi-ref: show selected pills above search input -->
+<div class="kind-pill-row">
+<$list filter="[<cur>enlist-input[]]" variable="sel">
+<span class="kind-pill kind-pill-on">
+<$text text={{{ [function[kind.resolve-ref],<sel>] }}}/>
+<$button class="kind-pill-x" tooltip="remove">
+<$action-listops $tiddler=<<target-tid>> $field=<<field-key>> $subfilter="+[remove<sel>]"/>
+×
+</$button>
+</span>
+</$list>
+</div>
+<%else%>
+<!-- single-ref: show current selection as one pill, or input if blank -->
+<%if [<cur>!is[blank]] %>
+<span class="kind-pill kind-pill-on">
+<$text text={{{ [function[kind.resolve-ref],<cur>] }}}/>
+<$button class="kind-pill-x" tooltip="clear">
+<$action-setfield $tiddler=<<target-tid>> $field=<<field-key>> $value=""/>
+×
+</$button>
+</span>
+<%endif%>
+<%endif%>
+
+<!-- search input (always available for multi; only when empty for single) -->
+<%if [<is-multi>!is[blank]] [<cur>is[blank]] %>
+<$edit-text tiddler=<<search-state>> field="text" tag="input" placeholder="search…" class="kind-input"/>
+<$let search-val={{{ [<search-state>get[text]] }}}>
+<%if [<search-val>!is[blank]] %>
+<div class="kind-dropdown">
+<$list filter="[function[kind.ref-candidates],<type-tid>,<field-key>] :filter[search:caption,title<search-val>] +[limit[10]]" variable="opt" emptyMessage="<div class='kind-dropdown-empty'>no matches</div>">
+<$button class="kind-dropdown-item tc-btn-invisible">
+<%if [<is-multi>!is[blank]] %>
+<$action-listops $tiddler=<<target-tid>> $field=<<field-key>> $subfilter="+[toggle<opt>]"/>
+<%else%>
+<$action-setfield $tiddler=<<target-tid>> $field=<<field-key>> $value=<<opt>>/>
+<%endif%>
+<$action-deletetiddler $tiddler=<<search-state>>/>
+<$text text={{{ [function[kind.resolve-ref],<opt>] }}}/>
+</$button>
+</$list>
+</div>
+<%endif%>
+</$let>
+<%endif%>
+</$let>
+
+<%else%>
+<!-- default: single-line text -->
+<$edit-text tiddler=<<target-tid>> field=<<field-key>> tag="input" class="kind-input"/>
+<%endif%>
+
+<!-- validation messages (suppressed in inline mode for terseness) -->
+<%if [<inline>!match[yes]] %>
+<%if [function[kind.viol-required],<type-tid>,<field-key>,<target-tid>] %><div class="kind-err">⛔ required</div><%endif%>
+<%if [function[kind.viol-min],<type-tid>,<field-key>,<target-tid>] %><div class="kind-err">⛔ min <$text text={{{ [function[kind.constraint-num],<type-tid>,<field-key>,[min:]] }}}/></div><%endif%>
+<%if [function[kind.viol-max],<type-tid>,<field-key>,<target-tid>] %><div class="kind-err">⛔ max <$text text={{{ [function[kind.constraint-num],<type-tid>,<field-key>,[max:]] }}}/></div><%endif%>
+<%if [function[kind.viol-unique],<type-tid>,<type-key>,<field-key>,<target-tid>] %><div class="kind-err">⛔ value already used in this type</div><%endif%>
+<%if [function[kind.viol-unique-wiki],<type-tid>,<field-key>,<target-tid>] %><div class="kind-err">⛔ value already used in this wiki</div><%endif%>
+<%endif%>
+
+</$let>

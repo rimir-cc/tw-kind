@@ -1,0 +1,5 @@
+title: $:/plugins/rimir/kind/common-fields/caption
+tags: $:/tags/rimir/kind/common-field
+def: {"key":"caption","typed":"text","caption":"Caption","icon":"💬"}
+
+The display label shown alongside the entity in lists and references.

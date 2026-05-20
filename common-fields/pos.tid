@@ -1,0 +1,5 @@
+title: $:/plugins/rimir/kind/common-fields/pos
+tags: $:/tags/rimir/kind/common-field
+def: {"key":"pos","typed":"number","caption":"Position","icon":"🔢"}
+
+Numeric sort position within a parent — for manual ordering of siblings.

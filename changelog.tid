@@ -1,0 +1,7 @@
+title: $:/plugins/rimir/kind/changelog
+type: text/vnd.tiddlywiki
+
+! Changelog
+
+|!Version |!Date |!Changes |
+|v0.1.0 |2026-05-20 |Initial release. One-tiddler-per-type schema model with namespacing; hand-rolled editor/creator/view/stream-view/validator/type-builder; field types text/longtext/number/date/datetime/enum/ref ($title and $calculated for computed values); constraints required/min/max/unique/unique:wiki; auto-computed titles via filter formula |

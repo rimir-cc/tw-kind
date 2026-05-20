@@ -1,0 +1,5 @@
+title: $:/plugins/rimir/kind/common-fields/waiting-for
+tags: $:/tags/rimir/kind/common-field
+def: {"key":"waiting-for","typed":"text","caption":"Waiting for","icon":"⏳"}
+
+What's blocking progress — a free-text description of the dependency.

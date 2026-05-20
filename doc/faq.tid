@@ -1,0 +1,59 @@
+rdt.order: 5
+rdt.plugin-key: kind
+rdt.plugin-name: kind
+rdt.plugin-subtitle: Lightweight schema engine — one tiddler per type, namespaced
+rdt.section: FAQ
+title: $:/plugins/rimir/kind/doc/faq
+type: text/vnd.tiddlywiki
+
+<$transclude $tiddler="$:/plugins/rimir/doc-template/templates/page">
+<$fill $name="body">
+
+!! Q: Why a new plugin alongside `rimir/typed`?
+
+`typed` (~1600 lines) grew several features that don't pay rent inside TiddlyWiki's bag-of-fields model:
+
+* 3-level slot inheritance (`:0`/`:1`/`:2`) — needs `rrfunc` because native `function[]` leaks; needs `$importvariables` for the parent chain; capped at 3 levels by TW issue #9647
+* Separate per-field tiddlers (e.g. ~40 in `orga-data-model`)
+* Per-type field overrides via the `validity` field
+* Cross-plugin enum tiddlers with their own inheritance
+* Two object-ref editor modes (typeahead + pills)
+
+`kind` keeps the spirit (schema-as-tiddlers, JSON-friendly, validator) and drops all of the above. The result is ~50% the code with explicit namespace support added.
+
+!! Q: Why no inheritance?
+
+In real schemas the inheritance was mostly used for one thing: a shared base (`_node`) defining common fields like `title`, `caption`, `description`, `parent`. With flat schemas you copy those 4-5 fields into every type tiddler. That's <50 lines of JSON duplication across a 10-type domain model — cheap, especially when the type-builder makes copy-paste easy. The override pattern (subtype dropping a base field via `:0`) was clever but rare and often a smell. And `[has[kind.type]]` already gives you an "all instances" filter without needing a base type.
+
+!! Q: How do I share fields across types?
+
+You don't, structurally. You copy the field def into each type's `kind.fields` JSON. That's the price of KISS. If you find yourself maintaining the same 10-field block across 8 types, you can extract a shared `kind.fields` value into a config tiddler and reference it — but for v0.1.0 that's manual.
+
+!! Q: How do I migrate from `rimir/typed`?
+
+Both plugins can coexist (different field namespaces: `rrt.*` vs `kind.*`, different instance markers). To migrate one type at a time:
+
+# Read the typed type tiddler's `rrt.fields:0()`, `:1()`, `:2()` body
+# Look up each field's def in the corresponding `*-data-model` plugin
+# Compose a single `kind.fields` JSON array with the union
+# Move `validity`-restricted overrides into the relevant subtype's JSON directly
+# Update instance tiddlers from `rrt.type: X` to `kind.type: X` (one-line `$:/state/...` action filter)
+
+After migrating all types, you can remove the typed plugin.
+
+!! Q: What if I want a field type that's not in the list?
+
+Add it. Open `field-input.tid`, find the `<%elseif [<field-typed>match[X]]%>` cascade, add a new branch. Whatever wikitext renders an editable widget. The constraint and validation logic in `engine.tid` already covers the generic cases (required/min/max/unique); add a `kind.viol-<name>` function if your new type needs new constraints.
+
+!! Q: Why JSON for the field array instead of separate field tiddlers?
+
+The JSON-in-one-field approach trades reusability for locality. The whole schema for one type is in one tiddler — open it, see everything. With separate field tiddlers you'd be reading two or three tiddlers in parallel to understand a type. For the volume most users hit (single-digit types per namespace, 5-15 fields per type), locality wins.
+
+The `kind.fields` field stores stringified-JSON because storing as a `application/json` body would force the type tiddler to be saved as `.json + .json.meta` (two files), which breaks the convention of one-tiddler-per-file. The body stays free for prose documentation of the type.
+
+!! Q: Why aren't multi-value uniqueness checks set-aware?
+
+`unique` and `unique:wiki` use exact string equality on the whole field value. For multi-value refs/enums where order doesn't semantically matter (e.g. `assignee: "alice bob"` vs `assignee: "bob alice"`), this means a logical-duplicate isn't flagged. Fixing this properly would require value normalization (sort + dedupe before comparison) and a stronger uniqueness predicate. Planned for v0.2 if needed.
+
+</$fill>
+</$transclude>

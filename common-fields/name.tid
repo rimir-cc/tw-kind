@@ -1,0 +1,5 @@
+title: $:/plugins/rimir/kind/common-fields/name
+tags: $:/tags/rimir/kind/common-field
+def: {"key":"name","typed":"text","caption":"Name","icon":"📛"}
+
+Primary human-readable identifier of an entity (person, project, organisation, …).

@@ -1,0 +1,71 @@
+rdt.order: 7
+rdt.plugin-key: kind
+rdt.plugin-name: kind
+rdt.plugin-subtitle: Lightweight schema engine — one tiddler per type, namespaced
+rdt.section: TW Internals
+title: $:/plugins/rimir/kind/doc/tw-internals
+type: text/vnd.tiddlywiki
+
+<$transclude $tiddler="$:/plugins/rimir/doc-template/templates/page">
+<$fill $name="body">
+
+!! JSON-in-field via `jsonget` / `jsonindexes`
+
+The whole field-array lives in `kind.fields` as a stringified JSON. Read it with:
+
+```
+[<type-tid>get[kind.fields]]                       ← the JSON text
+[<type-tid>get[kind.fields]jsonindexes[]]          ← top-level array indices "0","1",…
+[<type-tid>get[kind.fields]jsonget<idx>,[key]]     ← scalar at path [idx].key
+[<type-tid>get[kind.fields]jsonindexes<idx>,[constraints]]  ← inner-array indices for constraints
+[<type-tid>get[kind.fields]jsonget<idx>,[constraints],<c-idx>]  ← one constraint string
+```
+
+The engine uses `multi-arg jsonget` (the form with comma-separated path arguments) consistently — chaining single-arg `jsonget` calls inside `:map` is a known TW gotcha that returns empty. See `[[tw-gotchas-filters#jsonget chained inside :map`]].
+
+!! Discovery via `kind.type` + `kind.fields`
+
+`[has[kind.type]has[kind.fields]]` finds tiddlers that look like type definitions — they need both fields. The `kind.fields` requirement filters out instance tiddlers (which have `kind.type` but no `kind.fields`).
+
+`all[shadows+tiddlers]` is implicit in `engine.tid`'s `kind.types-all`; plugin-bundled types ARE shadows.
+
+!! ViewTemplate auto-registration
+
+`viewtemplate.tid` is tagged `$:/tags/ViewTemplate` with `list-after: $:/core/ui/ViewTemplate/title`. TiddlyWiki's ViewTemplate cascade renders all matching templates in order; ours runs right after the title, so the field bar appears at the very top of the body.
+
+The `<%if [<currentTiddler>has[kind.type]] %>` guard means the template is silently a no-op for non-instance tiddlers.
+
+!! Title-formula evaluation pattern
+
+`kind.eval-title` mirrors the pattern from `rimir/typed`:
+
+```
+\function kind.eval-title(type-tid, target-tid)
+  [<type-tid>get[kind.title-formula]]   ← gets the filter STRING
+  :map[<target-tid>subfilter<currentTiddler>]   ← runs filter against target
+```
+
+The `<target-tid>subfilter<currentTiddler>` form makes `<target-tid>` the input source to the filter, and `<currentTiddler>` (the formula string from the outer map iteration) supplies the filter string to run.
+
+''Formula authoring note'': each top-level run inside the formula starts with the subfilter source (the target instance). So write `[get[parent]]` (operates on source) NOT `[<currentTiddler>get[parent]]` (would override the source with the OUTER renderer's currentTiddler). The first form gets the target's parent; the second gets whatever tiddler is currently rendering the validator/creator UI — almost never what you want.
+
+!! Live + bulk validation sharing predicates
+
+Both `field-input.tid` (editor) and `validator.tid` (bulk) use the same `kind.viol-*` functions from `engine.tid`. The same constraint logic gives identical results in both surfaces, avoiding the typed-plugin trap where editor and validator drift apart over time.
+
+The predicates are filter functions, so they participate in `:filter` / `<%if%>` predicates naturally and don't require JS.
+
+!! Why no `rrfunc`
+
+`rrfunc` exists in `rimir/typed` to defend against the inheritance slot pattern: `rrt.fields:1()` and `:2()` may legitimately not exist on a base type, and native `function[]` would leak input titles in that case. With flat schemas (no slot pattern), every function we call is guaranteed to be defined — native `function[]` is safe. `kind` ships zero JS modules in v0.1.0.
+
+!! Restricted-wiki considerations
+
+There are none. `kind` doesn't touch the `rimir/llm-connect` restricted-wiki sandbox; tools running in that sandbox can read instances via the standard `get` filter operator, but the kind editor/creator/validator UIs are not meant to render inside a restricted-wiki tool execution. If a future use case needs that, the editor would need to be self-contained (no `\import`) — see `[[tw-gotchas-plugin-quirks#`rimir/llm-connect` restricted wiki blocks `\import`]]`.
+
+!! TW 5.4.0 compatibility
+
+Variables avoid colon-named identifiers (which 5.4.0 parses as dynamic-arg macro calls — see `[[tw-gotchas-540-migration#`<<name:value>>` parses as macro dynamic arg]]`). Config tiddlers omit `type: text/plain` to avoid the filesystem-adapter's `.txt + .txt.meta` split (see `[[feedback-tid-vs-txt-meta]]`).
+
+</$fill>
+</$transclude>

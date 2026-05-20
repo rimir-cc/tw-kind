@@ -1,0 +1,60 @@
+title: $:/plugins/rimir/kind/creator
+type: text/vnd.tiddlywiki
+
+\whitespace trim
+\import $:/plugins/rimir/kind/engine
+
+! Create instance
+
+<$let
+  active-ns={{{ [function[kind.active-ns]] }}}
+  state-type="$:/state/rimir/kind/creator/selected-type"
+>
+
+<div class="kind-ns-row">
+<strong>Namespace:</strong> <code><$text text={{{ [<active-ns>!is[blank]] ~[[(all)]] }}}/></code>
+<span style="opacity:0.6;font-size:0.85em;">(change in [[settings|$:/plugins/rimir/kind/settings]])</span>
+</div>
+
+<div class="kind-ns-row">
+<strong>Type:</strong>
+<$select tiddler=<<state-type>>>
+<option value="">— choose —</option>
+<$list filter="[function[kind.types-all]] :filter[function[kind.belongs-to-ns],<active-ns>] +[sort[kind.type]]" variable="t">
+<option value=<<t>>>
+<$text text={{{ [<t>get[kind.icon]] }}}/>
+ <$text text={{{ [<t>get[kind.caption]!is[blank]] ~[<t>get[kind.type]] }}}/>
+</option>
+</$list>
+</$select>
+</div>
+
+<$let type-tid={{{ [<state-type>get[text]] }}}>
+<%if [<type-tid>!is[blank]] %>
+<$let
+  type-key={{{ [<type-tid>get[kind.type]] }}}
+  target-tid={{{ [[$:/state/rimir/kind/draft/]addsuffix<type-key>] }}}
+>
+
+<$transclude $tiddler="$:/plugins/rimir/kind/editor"/>
+
+<p>
+<$button disabled={{{ [function[kind.any-invalid],<type-tid>,<type-key>,<target-tid>!is[blank]] }}}>
+<$action-createtiddler $basetitle={{{ [function[kind.eval-title],<type-tid>,<target-tid>] }}} $template=<<target-tid>> kind.type=<<type-key>>/>
+<$action-deletetiddler $tiddler=<<target-tid>>/>
+Create
+</$button>
+&nbsp;
+<$button>
+<$action-deletetiddler $tiddler=<<target-tid>>/>
+Clear draft
+</$button>
+&nbsp;
+<span style="opacity:0.6;font-size:0.85em;">computed title: <code><$text text={{{ [function[kind.eval-title],<type-tid>,<target-tid>] }}}/></code></span>
+</p>
+
+</$let>
+<%endif%>
+</$let>
+
+</$let>

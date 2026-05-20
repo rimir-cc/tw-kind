@@ -1,0 +1,5 @@
+title: $:/plugins/rimir/kind/common-fields/subtitle
+tags: $:/tags/rimir/kind/common-field
+def: {"key":"subtitle","typed":"text","caption":"Subtitle","icon":"📑"}
+
+Secondary line shown under the main title — a tagline or contextual qualifier.

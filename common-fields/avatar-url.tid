@@ -1,0 +1,5 @@
+title: $:/plugins/rimir/kind/common-fields/avatar-url
+tags: $:/tags/rimir/kind/common-field
+def: {"key":"avatar-url","typed":"text","caption":"Avatar","icon":"🖼️"}
+
+URL of a small image representing the entity (gravatar, internal asset path, etc.).
