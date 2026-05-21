@@ -1,0 +1,10 @@
+title: $:/plugins/rimir/kind/actions/edit-fields
+tags: $:/tags/rimir/cascade-palette/action
+ca-entity-type: kind-entity
+ca-name: Edit fields
+ca-hint: Show each editable field as a menu entry
+ca-icon: ✏
+ca-kind: drill
+ca-order: 50
+ca-next-title: Edit fields
+ca-items-from: [function[kind.cascade-fields-for-edit],<parent-picked>]

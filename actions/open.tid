@@ -1,0 +1,10 @@
+title: $:/plugins/rimir/kind/actions/open
+tags: $:/tags/rimir/cascade-palette/action
+ca-entity-type: kind-entity
+ca-name: Open
+ca-hint: Open the entity in the story river
+ca-icon: 📖
+ca-kind: leaf
+ca-order: 10
+ca-default: yes
+ca-actions: <$action-navigate $to=<<parent-picked>>/>

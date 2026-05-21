@@ -1,5 +1,9 @@
 title: $:/plugins/rimir/kind/_brackets
 lb: [
 rb: ]
+oc: {
+cc: }
 dq: "
+comma: ,
+colon: :
 

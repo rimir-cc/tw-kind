@@ -1,0 +1,12 @@
+title: $:/plugins/rimir/kind/templates/kind-entity
+tags: $:/tags/rimir/cascade-palette/template
+ca-template-applies: [<currentTiddler>has[kind.type]]
+ca-template-name: Fields
+ca-order: 50
+type: text/vnd.tiddlywiki
+
+\import $:/plugins/rimir/kind/engine
+
+<$let target-tid=<<currentTiddler>>>
+<$transclude $tiddler="$:/plugins/rimir/kind/view"/>
+</$let>

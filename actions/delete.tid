@@ -1,0 +1,11 @@
+title: $:/plugins/rimir/kind/actions/delete
+tags: $:/tags/rimir/cascade-palette/action
+ca-entity-type: kind-entity
+ca-name: Delete
+ca-hint: Delete the entity (with confirmation)
+ca-icon: 🗑
+ca-kind: leaf
+ca-order: 900
+ca-confirm: yes
+ca-confirm-consequence: This will permanently delete the tiddler `<<parent-picked>>`.
+ca-actions: <$action-deletetiddler $tiddler=<<parent-picked>>/>

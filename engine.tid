@@ -1,4 +1,5 @@
 title: $:/plugins/rimir/kind/engine
+tags: $:/tags/Macro
 type: text/vnd.tiddlywiki
 
 \function kind.types-all() [all[shadows+tiddlers]has[kind.type]has[kind.fields]]

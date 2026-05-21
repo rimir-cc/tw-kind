@@ -1,0 +1,9 @@
+title: $:/plugins/rimir/kind/entries/find-by-kind
+tags: $:/tags/rimir/cascade-palette/entry
+ca-name: Find by kind
+ca-hint: Pick a kind, then drill into its instances
+ca-icon: 🗂
+ca-kind: drill
+ca-order: 110
+ca-next-title: Kinds
+ca-items-from: [function[kind.find-by-kind-items]]

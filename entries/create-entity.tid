@@ -1,0 +1,9 @@
+title: $:/plugins/rimir/kind/entries/create-entity
+tags: $:/tags/rimir/cascade-palette/entry
+ca-name: Create entity
+ca-hint: Create a new instance of any kind
+ca-icon: ➕
+ca-kind: drill
+ca-order: 120
+ca-next-title: Kinds
+ca-items-from: [function[kind.create-entity-items]]
