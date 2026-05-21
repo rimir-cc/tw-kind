@@ -5,6 +5,7 @@ ca-hint: Search any kind instance by caption or title
 ca-icon: 🔍
 ca-kind: drill
 ca-order: 100
+ca-group: Kind Actions
 ca-next-title: All entities
 ca-next-entity-type: kind-entity
 ca-next-scope: [all[shadows+tiddlers]has[kind.type]!has[kind.fields]] :filter[search:caption,title<query>] +[sort[caption]limit[60]]
