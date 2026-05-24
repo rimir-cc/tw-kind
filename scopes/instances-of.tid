@@ -1,0 +1,10 @@
+title: $:/plugins/rimir/kind/scopes/instances-of
+tags: $:/tags/rimir/cascade-palette/scope
+ca-scope-name: Instances of a kind
+ca-scope-prefix: ,
+ca-scope-arg: tiddler
+ca-scope-filter: +[tag<scope-arg>]
+ca-scope-chip: kind: <<scope-arg>>
+ca-scope-hint: Restrict results to instances of the named kind.
+ca-scope-help: The argument should be a kind tiddler (e.g. `node`, `person`). Filters results to tiddlers tagged with that kind, i.e. instances of it. Use after `Find entity` to narrow by kind without re-running the drill.
+ca-order: 200
