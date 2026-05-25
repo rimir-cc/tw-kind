@@ -2,7 +2,9 @@ title: $:/plugins/rimir/kind/palette/cascade-helpers
 tags: $:/tags/Macro
 type: text/vnd.tiddlywiki
 
-\function kind.cascade-manage-kinds-items() [function[kind.types-all]] :map[function[kind.cascade-manage-kind-row],<currentTiddler>]
+\function kind.cascade-manage-kinds-items() [function[kind.types-all]] :map[function[kind.cascade-manage-kind-row],<currentTiddler>] [function[kind.cascade-create-new-kind-row]]
+
+\function kind.cascade-create-new-kind-row() [[{"ca-name":"+ Create new kind…","ca-icon":"✚","ca-order":"1000","ca-group":"Kind Actions","ca-hint":"Type the type key (e.g. widget) and ↵ — creates a new kind tiddler with defaults and opens it.","ca-kind":"text","ca-on-commit":"<$transclude $variable=\"kind.cascade-create-kind\" key=<<picked>>/>"}]]
 \function kind.cascade-manage-kind-row(kind-tid) [<kind-tid>get[kind.caption]!is[blank]] ~[<kind-tid>get[kind.type]] ~[<kind-tid>] :map[function[kind.cascade-manage-kind-with-caption],<kind-tid>,<currentTiddler>]
 \function kind.cascade-manage-kind-with-caption(kind-tid, caption) [<kind-tid>get[kind.icon]] ~[[]] :map[function[kind.cascade-manage-kind-build],<kind-tid>,<caption>,<currentTiddler>]
 \function kind.cascade-manage-kind-build(kind-tid, caption, icon) [<kind-tid>] +[addprefix[{"title":"]] +[addsuffix[","ca-name":"]] +[addsuffix<caption>] +[addsuffix[","ca-icon":"]] +[addsuffix<icon>] +[addsuffix[","ca-kind":"drill","ca-next-title":"]] +[addsuffix<caption>] +[addsuffix[","ca-items-from":"]] +[addsuffix{$:/plugins/rimir/kind/_brackets!!lb}] +[addsuffix[function]] +[addsuffix{$:/plugins/rimir/kind/_brackets!!lb}] +[addsuffix[kind.cascade-kind-edit-items]] +[addsuffix{$:/plugins/rimir/kind/_brackets!!rb}] +[addsuffix[,]] +[addsuffix{$:/plugins/rimir/kind/_brackets!!lb}] +[addsuffix<kind-tid>] +[addsuffix{$:/plugins/rimir/kind/_brackets!!rb}] +[addsuffix{$:/plugins/rimir/kind/_brackets!!rb}] +[addsuffix["}]]
@@ -67,4 +69,10 @@ type: text/vnd.tiddlywiki
 <$action-setfield $tiddler=<<target-tid>> kind.fields={{{ [<target-tid>get[kind.fields]jsonset:json<next-idx>,<cf-def>] }}}/>
 <$action-listops $tiddler=<<target-tid>> $field="kind.stream-fields" $subfilter="+[append<cf-key>]"/>
 </$let>
+\end
+
+\procedure kind.cascade-create-kind(key)
+<$list filter="[<key>!is[blank]]">
+<$action-createtiddler $basetitle={{{ [[$:/config/rimir/kind/types/]] +[addsuffix<key>] }}} kind.type=<<key>> kind.icon="🆕" kind.title-formula="[get[parent]][[/]][get[abbrev]]+[join[]]" kind.fields="[]" kind.stream-fields="" type="text/vnd.tiddlywiki"/>
+</$list>
 \end
