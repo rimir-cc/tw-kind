@@ -26,7 +26,7 @@ type: text/vnd.tiddlywiki
 * ''Creator'' — pick a type, fill fields, click Create; title computed from `kind.title-formula`
 * ''Validator'' — wiki-wide report of constraint violations
 * ''Type-builder'' — structured editor for type metadata + JSON textarea for fields, with live preview
-* ''Cascade-palette integration'' (soft-dep) — when `rimir/cascade-palette` is installed, kind contributes ''Find by kind'', ''Find entity'', and ''Create entity'' root entries to the palette. Drilling into a kind lists/edits its instances; create-entity opens a draft with one row per editable field (text / number / date / ref-picker / enum-picker) plus a Save leaf that materialises the draft into a new instance via `kind.title-formula`.
+* ''Cascade-palette integration'' (soft-dep) — when `rimir/cascade-palette` is installed, kind contributes ''Find by kind'', ''Find entity'', ''Create entity'', and ''Manage kinds'' root entries to the palette. ''Manage kinds'' is the cascade-mode equivalent of the Type-builder tab: drill into a kind to edit metadata (caption / icon / namespaces / title-formula / stream-fields), drill into one of its fields to set typed / caption / icon / cardinality / constraints / options / ref-types via picker sub-stages, ''+ Add field from library…'' picks from common-field defs, ''+ Add new field…'' captures a new field key, DEL on a field row removes it with a confirm step. Find by kind / Find entity drill kind → instance lists; Create entity opens a draft form with one row per editable field and a Save leaf that materialises the draft into a new instance via `kind.title-formula`.
 
 !! Schema model
 
