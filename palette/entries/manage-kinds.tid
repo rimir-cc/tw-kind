@@ -1,0 +1,10 @@
+title: $:/plugins/rimir/kind/palette/entries/manage-kinds
+tags: $:/tags/rimir/cascade-palette/entry
+ca-name: Manage kinds
+ca-hint: Edit a type-definition's metadata or delete it
+ca-icon: 🧰
+ca-kind: drill
+ca-order: 130
+ca-group: Kind Actions
+ca-next-title: Kinds
+ca-items-from: [function[kind.cascade-manage-kinds-items]]
