@@ -61,7 +61,7 @@ type: text/vnd.tiddlywiki
 \function kind.cascade-field-custom-constraint-row(kind-tid, field-idx) [<kind-tid>get[kind.fields]jsonget<field-idx>,[typed]] :filter[function[kind.required-applicable],<currentTiddler>] :map[function[kind.cascade-custom-constraint-row-build],<kind-tid>,<field-idx>]
 \function kind.cascade-custom-constraint-row-build(kind-tid, field-idx) [<kind-tid>] +[addprefix[{"ca-name":"+ Add custom constraint…","ca-icon":"✚","ca-order":"200","ca-group":"constraint-num","ca-kind":"text","ca-hint":"Type a constraint expression (e.g. min:5, max:100, regex:[a-z]+) and ↵ — appended to constraints array","ca-on-commit":"<$transclude $variable=\"kind.cascade-append-constraint\" target-tid=\"]] +[addsuffix[\" idx=\"]] +[addsuffix<field-idx>] +[addsuffix[\" value=<<picked>>/>"}]]
 
-\function kind.computed-constraints-with-valid-picked(target-tid, idx, prefix, valid-picked) [<target-tid>get[kind.fields]jsonindexes<idx>,[constraints]] :map[<target-tid>get[kind.fields]jsonget<idx>,[constraints],<currentTiddler>] -[prefix<prefix>] [<valid-picked>!is[blank]addprefix<prefix>] :map[function[kind.quote-string],<currentTiddler>] +[join[,]] :map[function[kind.wrap-array],<currentTiddler>] ~[function[kind.empty-array]]
+\function kind.computed-constraints-with-valid-picked(target-tid, idx, prefix, valid-picked) [<target-tid>get[kind.fields]jsonindexes<idx>,[constraints]] :map[<target-tid>get[kind.fields]jsonget<idx>,[constraints],<currentTiddler>] :filter[<currentTiddler>!prefix<prefix>] [<valid-picked>!is[blank]addprefix<prefix>] :map[function[kind.quote-string],<currentTiddler>] +[join[,]] :map[function[kind.wrap-array],<currentTiddler>] ~[function[kind.empty-array]]
 
 \function kind.cascade-constraint-applicable(kind-tid, field-idx, constraint) [<kind-tid>get[kind.fields]jsonget<field-idx>,[typed]] :filter[function[kind.required-applicable],<currentTiddler>]
 
@@ -121,7 +121,7 @@ type: text/vnd.tiddlywiki
 \end
 
 \procedure kind.cascade-set-constraint-num(target-tid, idx, prefix, value)
-<$list filter="[<value>match[]] [<value>compare:integer:gteq[0]] +[first[]]">
+<$list filter="[<value>] ~[[]] +[is[blank]] [<value>regexp{$:/plugins/rimir/kind/_patterns!!digits}] +[first[]]">
 <$let new-constraints={{{ [function[kind.computed-constraints-with-valid-picked],<target-tid>,<idx>,<prefix>,<value>] }}}>
 <$action-setfield $tiddler=<<target-tid>> kind.fields={{{ [<target-tid>get[kind.fields]jsonset:json<idx>,[constraints],<new-constraints>] }}}/>
 </$let>

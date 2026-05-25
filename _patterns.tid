@@ -1,4 +1,5 @@
 title: $:/plugins/rimir/kind/_patterns
+digits: ^[0-9]+$
 email: ^[^@\s]+@[^@\s]+\.[^@\s]+$
 phone-de: ^(\+49|0)[ 0-9()\/\-]{6,}$
 
