@@ -1,0 +1,5 @@
+title: $:/plugins/rimir/kind/common-fields/phone
+tags: $:/tags/rimir/kind/common-field
+def: {"key":"phone","typed":"phone","caption":"Phone","icon":"📞"}
+
+Phone number (German format). Validation: must start with `+49` or `0`, followed by at least six chars from {digit, space, `-`, `/`, `(`, `)`}.

@@ -1,0 +1,5 @@
+title: $:/plugins/rimir/kind/_patterns
+email: ^[^@\s]+@[^@\s]+\.[^@\s]+$
+phone-de: ^(\+49|0)[ 0-9()\/\-]{6,}$
+
+Regex patterns referenced via textref `{$:/plugins/rimir/kind/_patterns!!<name>}` from engine.tid format-validation predicates. Stored as fields (not inline filter operands) so character classes `[…]` don't trip the filter-parser bracket counter — see [[tw-gotchas-parser-pragma#Backtick-template operand]].

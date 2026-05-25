@@ -1,0 +1,5 @@
+title: $:/plugins/rimir/kind/common-fields/url
+tags: $:/tags/rimir/kind/common-field
+def: {"key":"url","typed":"url","caption":"URL","icon":"🔗"}
+
+Web address. Validation: must start with `http://` or `https://`.

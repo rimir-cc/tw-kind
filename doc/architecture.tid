@@ -32,6 +32,9 @@ There are no separate per-field tiddlers, no inheritance slots, no enum tiddlers
 |`number` |numeric input |plain string |
 |`date` |`<$edit-date>` |TW date format |
 |`datetime` |`<$edit-date>` with time |TW datetime format |
+|`url` |single-line `<$edit-text type="url">` |plain string; live format check requires `http://` or `https://` prefix |
+|`email` |single-line `<$edit-text type="email">` |plain string; live format check `local@domain.tld` |
+|`phone` |single-line `<$edit-text type="tel">` |plain string; live format check for German numbers (`+49` or `0` prefix) |
 |`enum` |single: `<$select>`; multi: pill toggle row |single string or list-field |
 |`ref` |typeahead (filter input + dropdown + selected pills with ×) |single tiddler title or list-field |
 |`$title` |read-only |computed from `kind.title-formula` |
@@ -43,10 +46,11 @@ Extension point: `field-input.tid` is one `<%if [<typed>match[X]]%>` cascade. Ad
 
 |!Constraint |!Meaning |
 |`required` |Must have a value (blocking) |
-|`min:N` |Min N characters (text/longtext) or N entries (multi-enum / multi-ref) |
+|`min:N` |Min N characters (text/longtext/url/email/phone) or N entries (multi-enum / multi-ref) |
 |`max:N` |Max N characters or entries |
 |`unique` |Unique among instances of the same type |
 |`unique:wiki` |Unique wiki-wide (across all tiddlers) |
+|''(intrinsic)'' |`url` / `email` / `phone` fields carry a built-in format check that fires when the value is non-blank. See `kind.viol-format-url` / `-email` / `-phone` in `engine.tid`. Regex patterns live in `_patterns.tid`. |
 
 The validator reports any violation as a row in its bulk report. The editor shows live error messages below each input.
 

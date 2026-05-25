@@ -34,6 +34,15 @@ type: text/vnd.tiddlywiki
 <%elseif [<field-typed>match[datetime]] %>
 <$edit-date tiddler=<<target-tid>> field=<<field-key>> format="YYYY-MM-DD HH:mm" showTime="yes" use24hour="yes"/>
 
+<%elseif [<field-typed>match[url]] %>
+<$edit-text tiddler=<<target-tid>> field=<<field-key>> type="url" tag="input" class="kind-input" placeholder="https://…"/>
+
+<%elseif [<field-typed>match[email]] %>
+<$edit-text tiddler=<<target-tid>> field=<<field-key>> type="email" tag="input" class="kind-input" placeholder="name@example.com"/>
+
+<%elseif [<field-typed>match[phone]] %>
+<$edit-text tiddler=<<target-tid>> field=<<field-key>> type="tel" tag="input" class="kind-input" placeholder="+49 30 12345678"/>
+
 <%elseif [<field-typed>match[enum]] %>
 <%if [<field-card>match[multi]] %>
 <div class="kind-pill-row">
@@ -122,6 +131,9 @@ type: text/vnd.tiddlywiki
 <%if [function[kind.viol-max],<type-tid>,<field-key>,<target-tid>] %><div class="kind-err">⛔ max <$text text={{{ [function[kind.constraint-num],<type-tid>,<field-key>,[max:]] }}}/></div><%endif%>
 <%if [function[kind.viol-unique],<type-tid>,<type-key>,<field-key>,<target-tid>] %><div class="kind-err">⛔ value already used in this type</div><%endif%>
 <%if [function[kind.viol-unique-wiki],<type-tid>,<field-key>,<target-tid>] %><div class="kind-err">⛔ value already used in this wiki</div><%endif%>
+<%if [function[kind.viol-format-url],<type-tid>,<field-key>,<target-tid>] %><div class="kind-err">⛔ must start with http:// or https://</div><%endif%>
+<%if [function[kind.viol-format-email],<type-tid>,<field-key>,<target-tid>] %><div class="kind-err">⛔ not a valid email address</div><%endif%>
+<%if [function[kind.viol-format-phone],<type-tid>,<field-key>,<target-tid>] %><div class="kind-err">⛔ not a valid German phone number (start with +49 or 0)</div><%endif%>
 <%endif%>
 
 </$let>

@@ -1,0 +1,5 @@
+title: $:/plugins/rimir/kind/common-fields/email
+tags: $:/tags/rimir/kind/common-field
+def: {"key":"email","typed":"email","caption":"Email","icon":"📧"}
+
+Email address. Validation: `local@domain.tld` shape — non-empty local part, non-empty domain, at least one dot in the domain, no whitespace, no extra `@`.

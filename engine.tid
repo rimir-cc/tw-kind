@@ -41,7 +41,7 @@ type: text/vnd.tiddlywiki
 
 \function kind.required-applicable(typed) [<typed>!match[$title]!match[$calculated]!is[blank]]
 \function kind.unique-applicable(typed) [<typed>!match[$title]!match[$calculated]!is[blank]]
-\function kind.minmax-applicable(typed, cardinality) [<typed>match[text]] [<typed>match[longtext]] [<typed>match[number]] [<typed>match[date]] [<typed>match[datetime]] [<cardinality>match[multi]]
+\function kind.minmax-applicable(typed, cardinality) [<typed>match[text]] [<typed>match[longtext]] [<typed>match[number]] [<typed>match[date]] [<typed>match[datetime]] [<typed>match[url]] [<typed>match[email]] [<typed>match[phone]] [<cardinality>match[multi]]
 
 \function kind.ref-candidates(type-tid, field-key) [function[kind.ref-types],<type-tid>,<field-key>] :map:flat[all[shadows+tiddlers]kind.type<currentTiddler>!has[kind.fields]] +[unique[]]
 
@@ -94,5 +94,9 @@ type: text/vnd.tiddlywiki
 \function kind.viol-unique-wiki(type-tid, field-key, target-tid) [function[kind.has-constraint],<type-tid>,<field-key>,[unique:wiki]!is[blank]] :filter[function[kind.dups-wiki],<target-tid>,<field-key>!is[blank]]
 \function kind.viol-title(type-tid, target-tid) [function[kind.eval-title],<type-tid>,<target-tid>!match<target-tid>]
 
-\function kind.viol-any(type-tid, type-key, field-key, target-tid) [function[kind.viol-required],<type-tid>,<field-key>,<target-tid>] [function[kind.viol-min],<type-tid>,<field-key>,<target-tid>] [function[kind.viol-max],<type-tid>,<field-key>,<target-tid>] [function[kind.viol-unique],<type-tid>,<type-key>,<field-key>,<target-tid>] [function[kind.viol-unique-wiki],<type-tid>,<field-key>,<target-tid>]
+\function kind.viol-format-url(type-tid, field-key, target-tid) [function[kind.field-typed],<type-tid>,<field-key>match[url]] :filter[<target-tid>get<field-key>!is[blank]] :filter[<target-tid>get<field-key>!prefix[http://]!prefix[https://]]
+\function kind.viol-format-email(type-tid, field-key, target-tid) [function[kind.field-typed],<type-tid>,<field-key>match[email]] :filter[<target-tid>get<field-key>!is[blank]] :filter[<target-tid>get<field-key>!regexp{$:/plugins/rimir/kind/_patterns!!email}]
+\function kind.viol-format-phone(type-tid, field-key, target-tid) [function[kind.field-typed],<type-tid>,<field-key>match[phone]] :filter[<target-tid>get<field-key>!is[blank]] :filter[<target-tid>get<field-key>!regexp{$:/plugins/rimir/kind/_patterns!!phone-de}]
+
+\function kind.viol-any(type-tid, type-key, field-key, target-tid) [function[kind.viol-required],<type-tid>,<field-key>,<target-tid>] [function[kind.viol-min],<type-tid>,<field-key>,<target-tid>] [function[kind.viol-max],<type-tid>,<field-key>,<target-tid>] [function[kind.viol-unique],<type-tid>,<type-key>,<field-key>,<target-tid>] [function[kind.viol-unique-wiki],<type-tid>,<field-key>,<target-tid>] [function[kind.viol-format-url],<type-tid>,<field-key>,<target-tid>] [function[kind.viol-format-email],<type-tid>,<field-key>,<target-tid>] [function[kind.viol-format-phone],<type-tid>,<field-key>,<target-tid>]
 \function kind.any-invalid(type-tid, type-key, target-tid) [function[kind.field-keys],<type-tid>] :filter[function[kind.viol-any],<type-tid>,<type-key>,<currentTiddler>,<target-tid>] +[first[]]

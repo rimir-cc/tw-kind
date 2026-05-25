@@ -43,6 +43,30 @@ kind.fields: [{"key":"topic","caption":"Topic","typed":"text","constraints":["re
 
 Switching the active namespace between ''orga'' and ''private'' (in //settings//) — this type appears in both.
 
+!! Format-validated fields (url / email / phone)
+
+A `person` type with contact fields demonstrates the three format-validated typed values:
+
+```
+title: $:/orga/types/person
+kind.type: person
+kind.namespaces: orga
+kind.caption: Person
+kind.icon: 👤
+kind.stream-fields: email phone homepage
+kind.fields: [{"key":"name","typed":"text","constraints":["required"]},{"key":"email","caption":"Email","icon":"📧","typed":"email","constraints":["required"]},{"key":"phone","caption":"Phone","icon":"📞","typed":"phone"},{"key":"homepage","caption":"Homepage","icon":"🔗","typed":"url"}]
+```
+
+Each format-validated field surfaces a live error in the editor and a row in the bulk validator if its value doesn't fit the expected shape:
+
+* ''url'' — must start with `http://` or `https://`
+* ''email'' — must look like `local@domain.tld` (no spaces, no extra `@`)
+* ''phone'' — German format: must start with `+49` or `0`, then at least six chars from digits/spaces/`-`/`/`/`(`/`)`
+
+Empty values don't trigger the format error (use a `required` constraint if the field is mandatory). Character-length constraints work too: `min:8` on an email enforces an 8-character minimum.
+
+You can also grab these as ready-made library entries via type-builder's ''Add field'' dropdown or cascade-mode's ''+ Add field from library…'' — the three common-fields `url` / `email` / `phone` ship with the plugin.
+
 !! Multi-ref typeahead (large option sets)
 
 For ref fields with many possible targets, the typeahead UI shows a filterable search input. Selected values render as pills with × removal. Example field def:

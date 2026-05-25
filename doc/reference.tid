@@ -47,6 +47,9 @@ type: text/vnd.tiddlywiki
 |`number` |numeric input |Stored as string; validate as needed |
 |`date` |TW date picker |TW date format |
 |`datetime` |TW date picker w/ time |TW datetime format, 24h |
+|`url` |Single-line input (`type="url"`) |Format-checked: must start with `http://` or `https://` (when non-blank) |
+|`email` |Single-line input (`type="email"`) |Format-checked: `local@domain.tld` shape (when non-blank) |
+|`phone` |Single-line input (`type="tel"`) |Format-checked for German numbers (`+49` or `0` prefix, when non-blank) |
 |`enum` |`<$select>` or pill toggle |`options` required; honour `cardinality` |
 |`ref` |Typeahead (search + dropdown + selected pills) |`ref-types` required; honour `cardinality`; display via target tiddler's caption (falls back to title) |
 |`$title` |Read-only |Marks the field as the title position; not editable. Title is computed from the type's `kind.title-formula`. |
@@ -97,7 +100,7 @@ All constraints are blocking — they show up in red in the validator and disabl
 |`kind.ref-types(type-tid, field-key)` |Allowed ref target type keys |
 |`kind.ref-candidates(type-tid, field-key)` |All currently-existing target instances |
 |`kind.eval-title(type-tid, target-tid)` |Computed title for an instance |
-|`kind.viol-required(...)` `kind.viol-min(...)` `kind.viol-max(...)` `kind.viol-unique(...)` `kind.viol-unique-wiki(...)` `kind.viol-title(...)` |Validation predicates (non-empty = violation) |
+|`kind.viol-required(...)` `kind.viol-min(...)` `kind.viol-max(...)` `kind.viol-unique(...)` `kind.viol-unique-wiki(...)` `kind.viol-title(...)` `kind.viol-format-url(...)` `kind.viol-format-email(...)` `kind.viol-format-phone(...)` |Validation predicates (non-empty = violation) |
 |`kind.any-invalid(type-tid, type-key, target-tid)` |Non-empty if any constraint is violated on any field |
 |`kind.shorten`, `kind.display`, `kind.resolve-ref` |Display helpers |
 

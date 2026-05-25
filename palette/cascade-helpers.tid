@@ -25,8 +25,8 @@ type: text/vnd.tiddlywiki
 \function kind.cascade-issue-no-typed(kind-tid, field-idx) [<kind-tid>get[kind.fields]jsonget<field-idx>,[typed]] ~[[]] :filter[<currentTiddler>is[blank]] :map[[⚠ typed is not set]]
 \function kind.cascade-issue-dup-key(kind-tid, field-idx) [<kind-tid>get[kind.fields]jsonget<field-idx>,[key]!is[blank]] :filter[function[kind.cascade-key-has-dup],<kind-tid>,<field-idx>,<currentTiddler>] :map[<currentTiddler>addprefix[⚠ duplicate key ']addsuffix[']]
 \function kind.cascade-key-has-dup(kind-tid, field-idx, key) [<kind-tid>get[kind.fields]jsonindexes[]] -[<field-idx>] :filter[<kind-tid>get[kind.fields]jsonget<currentTiddler>,[key]match<key>] +[first[]]
-\function kind.cascade-issue-enum-no-options(kind-tid, field-idx) [<kind-tid>get[kind.fields]jsonget<field-idx>,[typed]match[enum]] :filter[<kind-tid>get[kind.fields]jsonget<field-idx>,[options]jsonindexes[]count[]match[0]] :map[[⚠ enum has no options]]
-\function kind.cascade-issue-ref-no-reftypes(kind-tid, field-idx) [<kind-tid>get[kind.fields]jsonget<field-idx>,[typed]match[ref]] :filter[<kind-tid>get[kind.fields]jsonget<field-idx>,[ref-types]jsonindexes[]count[]match[0]] :map[[⚠ ref has no ref-types]]
+\function kind.cascade-issue-enum-no-options(kind-tid, field-idx) [<kind-tid>get[kind.fields]jsonget<field-idx>,[typed]match[enum]] :filter[<kind-tid>get[kind.fields]jsonindexes<field-idx>,[options]count[]match[0]] :map[[⚠ enum has no options]]
+\function kind.cascade-issue-ref-no-reftypes(kind-tid, field-idx) [<kind-tid>get[kind.fields]jsonget<field-idx>,[typed]match[ref]] :filter[<kind-tid>get[kind.fields]jsonindexes<field-idx>,[ref-types]count[]match[0]] :map[[⚠ ref has no ref-types]]
 
 \function kind.cascade-field-edit-items(kind-tid, field-idx) [function[kind.cascade-field-drill-row],<kind-tid>,<field-idx>,[typed],[typed],[🔤],[10],[kind.cascade-field-typed-picker-items]] [function[kind.cascade-field-prop-row],<kind-tid>,<field-idx>,[caption],[caption],[🏷],[20]] [function[kind.cascade-field-prop-row],<kind-tid>,<field-idx>,[icon],[icon],[🖼],[30]] [function[kind.cascade-field-cardinality-drill-row],<kind-tid>,<field-idx>] [function[kind.cascade-field-constraints-drill-row],<kind-tid>,<field-idx>] [function[kind.cascade-field-options-row],<kind-tid>,<field-idx>] [function[kind.cascade-field-reftypes-drill-row],<kind-tid>,<field-idx>] [function[kind.cascade-field-delete-row],<kind-tid>,<field-idx>]
 
@@ -44,11 +44,24 @@ type: text/vnd.tiddlywiki
 
 \function kind.cascade-field-reftypes-drill-row(kind-tid, field-idx) [<kind-tid>get[kind.fields]jsonget<field-idx>,[typed]] :filter[match[ref]] :map[function[kind.cascade-field-drill-row],<kind-tid>,<field-idx>,[ref-types],[ref-types],[🔗],[70],[kind.cascade-field-reftypes-picker-items]]
 
-\function kind.cascade-field-typed-picker-items(kind-tid, field-idx) [[text]] [[longtext]] [[number]] [[date]] [[datetime]] [[enum]] [[ref]] [[$title]] [[$calculated]] :map[function[kind.cascade-jsonset-leaf-build],<kind-tid>,<field-idx>,[typed],<currentTiddler>]
+\function kind.cascade-field-typed-picker-items(kind-tid, field-idx) [[text]] [[longtext]] [[number]] [[date]] [[datetime]] [[url]] [[email]] [[phone]] [[enum]] [[ref]] [[$title]] [[$calculated]] :map[function[kind.cascade-jsonset-leaf-build],<kind-tid>,<field-idx>,[typed],<currentTiddler>]
 
 \function kind.cascade-field-cardinality-picker-items(kind-tid, field-idx) [[single]] [[multi]] :map[function[kind.cascade-jsonset-leaf-build],<kind-tid>,<field-idx>,[cardinality],<currentTiddler>]
 
-\function kind.cascade-field-constraints-picker-items(kind-tid, field-idx) [[required]] [[unique]] [[unique:wiki]] :filter[function[kind.cascade-constraint-applicable],<kind-tid>,<field-idx>,<currentTiddler>] :map[function[kind.cascade-array-toggle-build],<kind-tid>,<field-idx>,[constraints],<currentTiddler>]
+\function kind.cascade-field-constraints-picker-items(kind-tid, field-idx) [[required]] [[unique]] [[unique:wiki]] :filter[function[kind.cascade-constraint-applicable],<kind-tid>,<field-idx>,<currentTiddler>] :map[function[kind.cascade-array-toggle-build],<kind-tid>,<field-idx>,[constraints],<currentTiddler>] [function[kind.cascade-field-minmax-row],<kind-tid>,<field-idx>,[min:],[min],[≥],[100]] [function[kind.cascade-field-minmax-row],<kind-tid>,<field-idx>,[max:],[max],[≤],[110]] [function[kind.cascade-field-custom-constraint-row],<kind-tid>,<field-idx>]
+
+\function kind.cascade-minmax-applicable-here(kind-tid, field-idx) [<kind-tid>get[kind.fields]jsonget<field-idx>,[typed]] :map[function[kind.cascade-minmax-applicable-with-typed],<kind-tid>,<field-idx>,<currentTiddler>] +[first[]]
+\function kind.cascade-minmax-applicable-with-typed(kind-tid, field-idx, typed) [<kind-tid>get[kind.fields]jsonget<field-idx>,[cardinality]] ~[[single]] :filter[function[kind.minmax-applicable],<typed>,<currentTiddler>] +[first[]]
+\function kind.cascade-current-constraint-num(kind-tid, field-idx, prefix) [<kind-tid>get[kind.fields]jsonindexes<field-idx>,[constraints]] :map[<kind-tid>get[kind.fields]jsonget<field-idx>,[constraints],<currentTiddler>] :filter[<currentTiddler>prefix<prefix>] :map[<currentTiddler>removeprefix<prefix>] +[first[]]
+
+\function kind.cascade-field-minmax-row(kind-tid, field-idx, prefix, label, icon, order) [function[kind.cascade-minmax-applicable-here],<kind-tid>,<field-idx>] :map[function[kind.cascade-minmax-row-with-value],<kind-tid>,<field-idx>,<prefix>,<label>,<icon>,<order>]
+\function kind.cascade-minmax-row-with-value(kind-tid, field-idx, prefix, label, icon, order) [function[kind.cascade-current-constraint-num],<kind-tid>,<field-idx>,<prefix>] ~[[(none)]] :map[function[kind.cascade-constraint-num-row-build],<kind-tid>,<field-idx>,<prefix>,<label>,<icon>,<order>,<currentTiddler>]
+\function kind.cascade-constraint-num-row-build(kind-tid, field-idx, prefix, label, icon, order, current-value) [<label>] +[addprefix[{"ca-name":"]] +[addsuffix[: ]] +[addsuffix<current-value>] +[addsuffix[","ca-icon":"]] +[addsuffix<icon>] +[addsuffix[","ca-order":"]] +[addsuffix<order>] +[addsuffix[","ca-group":"constraint-num","ca-kind":"text","ca-hint":"Type a non-negative integer to set ]] +[addsuffix<label>] +[addsuffix[, blank to clear, non-digits ignored","ca-on-commit":"<$transclude $variable=\"kind.cascade-set-constraint-num\" target-tid=\"]] +[addsuffix<kind-tid>] +[addsuffix[\" idx=\"]] +[addsuffix<field-idx>] +[addsuffix[\" prefix=\"]] +[addsuffix<prefix>] +[addsuffix[\" value=<<picked>>/>"}]]
+
+\function kind.cascade-field-custom-constraint-row(kind-tid, field-idx) [<kind-tid>get[kind.fields]jsonget<field-idx>,[typed]] :filter[function[kind.required-applicable],<currentTiddler>] :map[function[kind.cascade-custom-constraint-row-build],<kind-tid>,<field-idx>]
+\function kind.cascade-custom-constraint-row-build(kind-tid, field-idx) [<kind-tid>] +[addprefix[{"ca-name":"+ Add custom constraint…","ca-icon":"✚","ca-order":"200","ca-group":"constraint-num","ca-kind":"text","ca-hint":"Type a constraint expression (e.g. min:5, max:100, regex:[a-z]+) and ↵ — appended to constraints array","ca-on-commit":"<$transclude $variable=\"kind.cascade-append-constraint\" target-tid=\"]] +[addsuffix[\" idx=\"]] +[addsuffix<field-idx>] +[addsuffix[\" value=<<picked>>/>"}]]
+
+\function kind.computed-constraints-with-valid-picked(target-tid, idx, prefix, valid-picked) [<target-tid>get[kind.fields]jsonindexes<idx>,[constraints]] :map[<target-tid>get[kind.fields]jsonget<idx>,[constraints],<currentTiddler>] -[prefix<prefix>] [<valid-picked>!is[blank]addprefix<prefix>] :map[function[kind.quote-string],<currentTiddler>] +[join[,]] :map[function[kind.wrap-array],<currentTiddler>] ~[function[kind.empty-array]]
 
 \function kind.cascade-constraint-applicable(kind-tid, field-idx, constraint) [<kind-tid>get[kind.fields]jsonget<field-idx>,[typed]] :filter[function[kind.required-applicable],<currentTiddler>]
 
@@ -105,4 +118,20 @@ type: text/vnd.tiddlywiki
 <$action-listops $tiddler=<<target-tid>> $field="kind.stream-fields" $subfilter="+[remove<field-key>]"/>
 </$list>
 </$let>
+\end
+
+\procedure kind.cascade-set-constraint-num(target-tid, idx, prefix, value)
+<$list filter="[<value>match[]] [<value>compare:integer:gteq[0]] +[first[]]">
+<$let new-constraints={{{ [function[kind.computed-constraints-with-valid-picked],<target-tid>,<idx>,<prefix>,<value>] }}}>
+<$action-setfield $tiddler=<<target-tid>> kind.fields={{{ [<target-tid>get[kind.fields]jsonset:json<idx>,[constraints],<new-constraints>] }}}/>
+</$let>
+</$list>
+\end
+
+\procedure kind.cascade-append-constraint(target-tid, idx, value)
+<$list filter="[<value>!is[blank]]">
+<$let new-constraints={{{ [<target-tid>get[kind.fields]jsonindexes<idx>,[constraints]] :map[<target-tid>get[kind.fields]jsonget<idx>,[constraints],<currentTiddler>] [<value>] +[unique[]] :map[function[kind.quote-string],<currentTiddler>] +[join[,]] :map[function[kind.wrap-array],<currentTiddler>] ~[function[kind.empty-array]] }}}>
+<$action-setfield $tiddler=<<target-tid>> kind.fields={{{ [<target-tid>get[kind.fields]jsonset:json<idx>,[constraints],<new-constraints>] }}}/>
+</$let>
+</$list>
 \end

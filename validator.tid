@@ -86,6 +86,33 @@ type: text/vnd.tiddlywiki
 </tr>
 <%endif%>
 
+<%if [function[kind.viol-format-url],<type-tid>,<field-key>,<target-tid>] %>
+<tr class="kind-validator-row-error">
+<td><$link to=<<target-tid>>><$view tiddler=<<target-tid>> field="title"/></$link></td>
+<td><<field-key>></td>
+<td>url format</td>
+<td>"<$text text={{{ [<target-tid>get<field-key>] }}}/>" must start with http:// or https://</td>
+</tr>
+<%endif%>
+
+<%if [function[kind.viol-format-email],<type-tid>,<field-key>,<target-tid>] %>
+<tr class="kind-validator-row-error">
+<td><$link to=<<target-tid>>><$view tiddler=<<target-tid>> field="title"/></$link></td>
+<td><<field-key>></td>
+<td>email format</td>
+<td>"<$text text={{{ [<target-tid>get<field-key>] }}}/>" is not a valid email address</td>
+</tr>
+<%endif%>
+
+<%if [function[kind.viol-format-phone],<type-tid>,<field-key>,<target-tid>] %>
+<tr class="kind-validator-row-error">
+<td><$link to=<<target-tid>>><$view tiddler=<<target-tid>> field="title"/></$link></td>
+<td><<field-key>></td>
+<td>phone format</td>
+<td>"<$text text={{{ [<target-tid>get<field-key>] }}}/>" is not a valid German phone number (start with +49 or 0)</td>
+</tr>
+<%endif%>
+
 </$list>
 
 </$list>

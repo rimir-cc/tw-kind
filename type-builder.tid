@@ -55,6 +55,9 @@ type: text/vnd.tiddlywiki
 <option value="number">number</option>
 <option value="date">date</option>
 <option value="datetime">datetime</option>
+<option value="url">url</option>
+<option value="email">email</option>
+<option value="phone">phone</option>
 <option value="enum">enum</option>
 <option value="ref">ref</option>
 <option value="$title">$title</option>
@@ -387,7 +390,7 @@ Cancel
 <table class="kind-builder-fields">
 <thead><tr>
 <th title="field key — the field name on instance tiddlers (immutable here; delete + re-add to rename)">key</th>
-<th title="editor kind: text, longtext, number, date, datetime, enum, ref, $title, $calculated">typed</th>
+<th title="editor kind: text, longtext, number, date, datetime, url, email, phone, enum, ref, $title, $calculated">typed</th>
 <th title="cardinality — for enum and ref only. single = one value, multi = list of values (space-separated). (default) means single">cardinality</th>
 <th title="display label shown next to the field in editor / view / stream-view">caption</th>
 <th title="emoji or short text shown alongside the caption">icon</th>
@@ -456,7 +459,7 @@ Reset to []
 <%endif%>
 
 <h4 style="margin-top:12px;">Raw JSON (for power-edits)</h4>
-<p style="font-size:0.82em;opacity:0.7;">Edit per-field constraints/options/ref-types/cardinality/icon/caption directly here. Schema per entry: <code>{"key":"...","typed":"text|longtext|number|date|datetime|enum|ref|$title|$calculated","caption":"...","icon":"...","constraints":["required","min:N","max:N","unique","unique:wiki"],"options":["a","b"] (enum),"ref-types":["task","person"] (ref),"cardinality":"single|multi"}</code></p>
+<p style="font-size:0.82em;opacity:0.7;">Edit per-field constraints/options/ref-types/cardinality/icon/caption directly here. Schema per entry: <code>{"key":"...","typed":"text|longtext|number|date|datetime|url|email|phone|enum|ref|$title|$calculated","caption":"...","icon":"...","constraints":["required","min:N","max:N","unique","unique:wiki"],"options":["a","b"] (enum),"ref-types":["task","person"] (ref),"cardinality":"single|multi"}</code></p>
 <$edit-text tiddler=<<type-tid>> field="kind.fields" tag="textarea" class="kind-input kind-textarea" style="min-height:12em;font-family:monospace;font-size:0.85em;"/>
 </div>
 
