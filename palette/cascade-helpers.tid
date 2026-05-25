@@ -15,8 +15,18 @@ type: text/vnd.tiddlywiki
 
 \function kind.cascade-kind-field-rows(kind-tid) [<kind-tid>get[kind.fields]jsonindexes[]] :map[function[kind.cascade-field-row],<kind-tid>,<currentTiddler>]
 \function kind.cascade-field-row(kind-tid, field-idx) [<kind-tid>get[kind.fields]jsonget<field-idx>,[key]] :map[function[kind.cascade-field-row-with-key],<kind-tid>,<field-idx>,<currentTiddler>]
-\function kind.cascade-field-row-with-key(kind-tid, field-idx, field-key) [<kind-tid>get[kind.fields]jsonget<field-idx>,[typed]] ~[[?]] :map[function[kind.cascade-field-row-build],<kind-tid>,<field-idx>,<field-key>,<currentTiddler>]
-\function kind.cascade-field-row-build(kind-tid, field-idx, field-key, field-typed) [<field-key>] +[addprefix[{"ca-name":"]] +[addsuffix[ · ]] +[addsuffix<field-typed>] +[addsuffix[","ca-icon":"·","ca-order":"]] +[addsuffix<field-idx>] +[addsuffix[","ca-group":"fields","ca-kind":"drill","ca-next-title":"]] +[addsuffix<field-key>] +[addsuffix[","ca-items-from":"]] +[addsuffix{$:/plugins/rimir/kind/_brackets!!lb}] +[addsuffix[function]] +[addsuffix{$:/plugins/rimir/kind/_brackets!!lb}] +[addsuffix[kind.cascade-field-edit-items]] +[addsuffix{$:/plugins/rimir/kind/_brackets!!rb}] +[addsuffix[,]] +[addsuffix{$:/plugins/rimir/kind/_brackets!!lb}] +[addsuffix<kind-tid>] +[addsuffix{$:/plugins/rimir/kind/_brackets!!rb}] +[addsuffix[,]] +[addsuffix{$:/plugins/rimir/kind/_brackets!!lb}] +[addsuffix<field-idx>] +[addsuffix{$:/plugins/rimir/kind/_brackets!!rb}] +[addsuffix{$:/plugins/rimir/kind/_brackets!!rb}] +[addsuffix[","ca-on-delete":"<$action-setfield $tiddler=\"]] +[addsuffix<kind-tid>] +[addsuffix[\" kind.fields={{{ ]] +[addsuffix{$:/plugins/rimir/kind/_brackets!!lb}] +[addsuffix[function]] +[addsuffix{$:/plugins/rimir/kind/_brackets!!lb}] +[addsuffix[kind.rebuilt-fields-without]] +[addsuffix{$:/plugins/rimir/kind/_brackets!!rb}] +[addsuffix[,]] +[addsuffix{$:/plugins/rimir/kind/_brackets!!lb}] +[addsuffix<kind-tid>] +[addsuffix{$:/plugins/rimir/kind/_brackets!!rb}] +[addsuffix[,]] +[addsuffix{$:/plugins/rimir/kind/_brackets!!lb}] +[addsuffix<field-idx>] +[addsuffix{$:/plugins/rimir/kind/_brackets!!rb}] +[addsuffix{$:/plugins/rimir/kind/_brackets!!rb}] +[addsuffix[ }}}/>","ca-on-delete-consequence":"Remove field ']] +[addsuffix<field-key>] +[addsuffix[' from this kind. Existing instances are NOT touched (the value on each instance becomes orphaned)."}]]
+\function kind.cascade-field-row-with-key(kind-tid, field-idx, field-key) [<kind-tid>get[kind.fields]jsonget<field-idx>,[typed]] ~[[?]] :map[function[kind.cascade-field-row-with-typed],<kind-tid>,<field-idx>,<field-key>,<currentTiddler>]
+\function kind.cascade-field-row-with-typed(kind-tid, field-idx, field-key, field-typed) [function[kind.cascade-field-hint],<kind-tid>,<field-idx>] ~[[]] :map[function[kind.cascade-field-row-build],<kind-tid>,<field-idx>,<field-key>,<field-typed>,<currentTiddler>]
+\function kind.cascade-field-row-build(kind-tid, field-idx, field-key, field-typed, field-hint) [<field-key>] +[addprefix[{"ca-name":"]] +[addsuffix[ · ]] +[addsuffix<field-typed>] +[addsuffix[","ca-icon":"·","ca-order":"]] +[addsuffix<field-idx>] +[addsuffix[","ca-group":"fields","ca-kind":"drill","ca-next-title":"]] +[addsuffix<field-key>] +[addsuffix[","ca-hint":"]] +[addsuffix<field-hint>] +[addsuffix[","ca-items-from":"]] +[addsuffix{$:/plugins/rimir/kind/_brackets!!lb}] +[addsuffix[function]] +[addsuffix{$:/plugins/rimir/kind/_brackets!!lb}] +[addsuffix[kind.cascade-field-edit-items]] +[addsuffix{$:/plugins/rimir/kind/_brackets!!rb}] +[addsuffix[,]] +[addsuffix{$:/plugins/rimir/kind/_brackets!!lb}] +[addsuffix<kind-tid>] +[addsuffix{$:/plugins/rimir/kind/_brackets!!rb}] +[addsuffix[,]] +[addsuffix{$:/plugins/rimir/kind/_brackets!!lb}] +[addsuffix<field-idx>] +[addsuffix{$:/plugins/rimir/kind/_brackets!!rb}] +[addsuffix{$:/plugins/rimir/kind/_brackets!!rb}] +[addsuffix[","ca-on-delete":"<$transclude $variable=\"kind.cascade-delete-field\" target-tid=\"]] +[addsuffix<kind-tid>] +[addsuffix[\" idx=\"]] +[addsuffix<field-idx>] +[addsuffix[\"/>","ca-on-delete-consequence":"Remove field ']] +[addsuffix<field-key>] +[addsuffix[' from this kind. Existing instances are NOT touched (the value on each instance becomes orphaned). Stream-fields entry is also removed."}]]
+
+\function kind.cascade-field-hint(kind-tid, field-idx) [function[kind.cascade-field-issues],<kind-tid>,<field-idx>] +[join[ · ]]
+\function kind.cascade-field-issues(kind-tid, field-idx) [function[kind.cascade-issue-blank-key],<kind-tid>,<field-idx>] [function[kind.cascade-issue-dup-key],<kind-tid>,<field-idx>] [function[kind.cascade-issue-no-typed],<kind-tid>,<field-idx>] [function[kind.cascade-issue-enum-no-options],<kind-tid>,<field-idx>] [function[kind.cascade-issue-ref-no-reftypes],<kind-tid>,<field-idx>]
+\function kind.cascade-issue-blank-key(kind-tid, field-idx) [<kind-tid>get[kind.fields]jsonget<field-idx>,[key]] ~[[]] :filter[<currentTiddler>is[blank]] :map[[⚠ key is empty]]
+\function kind.cascade-issue-no-typed(kind-tid, field-idx) [<kind-tid>get[kind.fields]jsonget<field-idx>,[typed]] ~[[]] :filter[<currentTiddler>is[blank]] :map[[⚠ typed is not set]]
+\function kind.cascade-issue-dup-key(kind-tid, field-idx) [<kind-tid>get[kind.fields]jsonget<field-idx>,[key]!is[blank]] :filter[function[kind.cascade-key-has-dup],<kind-tid>,<field-idx>,<currentTiddler>] :map[<currentTiddler>addprefix[⚠ duplicate key ']addsuffix[']]
+\function kind.cascade-key-has-dup(kind-tid, field-idx, key) [<kind-tid>get[kind.fields]jsonindexes[]] -[<field-idx>] :filter[<kind-tid>get[kind.fields]jsonget<currentTiddler>,[key]match<key>] +[first[]]
+\function kind.cascade-issue-enum-no-options(kind-tid, field-idx) [<kind-tid>get[kind.fields]jsonget<field-idx>,[typed]match[enum]] :filter[<kind-tid>get[kind.fields]jsonget<field-idx>,[options]jsonindexes[]count[]match[0]] :map[[⚠ enum has no options]]
+\function kind.cascade-issue-ref-no-reftypes(kind-tid, field-idx) [<kind-tid>get[kind.fields]jsonget<field-idx>,[typed]match[ref]] :filter[<kind-tid>get[kind.fields]jsonget<field-idx>,[ref-types]jsonindexes[]count[]match[0]] :map[[⚠ ref has no ref-types]]
 
 \function kind.cascade-field-edit-items(kind-tid, field-idx) [function[kind.cascade-field-drill-row],<kind-tid>,<field-idx>,[typed],[typed],[🔤],[10],[kind.cascade-field-typed-picker-items]] [function[kind.cascade-field-prop-row],<kind-tid>,<field-idx>,[caption],[caption],[🏷],[20]] [function[kind.cascade-field-prop-row],<kind-tid>,<field-idx>,[icon],[icon],[🖼],[30]] [function[kind.cascade-field-cardinality-drill-row],<kind-tid>,<field-idx>] [function[kind.cascade-field-constraints-drill-row],<kind-tid>,<field-idx>] [function[kind.cascade-field-options-row],<kind-tid>,<field-idx>] [function[kind.cascade-field-reftypes-drill-row],<kind-tid>,<field-idx>] [function[kind.cascade-field-delete-row],<kind-tid>,<field-idx>]
 
@@ -48,14 +58,14 @@ type: text/vnd.tiddlywiki
 
 \function kind.cascade-jsonset-leaf-build(kind-tid, field-idx, prop, value) [<value>] +[addprefix[{"ca-name":"]] +[addsuffix[","ca-kind":"leaf","ca-after-fire":"pop","ca-actions":"<$action-setfield $tiddler=\"]] +[addsuffix<kind-tid>] +[addsuffix[\" kind.fields={{{ ]] +[addsuffix{$:/plugins/rimir/kind/_brackets!!lb}] +[addsuffix{$:/plugins/rimir/kind/_brackets!!lb}] +[addsuffix<kind-tid>] +[addsuffix{$:/plugins/rimir/kind/_brackets!!rb}] +[addsuffix[get]] +[addsuffix{$:/plugins/rimir/kind/_brackets!!lb}] +[addsuffix[kind.fields]] +[addsuffix{$:/plugins/rimir/kind/_brackets!!rb}] +[addsuffix[jsonset]] +[addsuffix{$:/plugins/rimir/kind/_brackets!!lb}] +[addsuffix<field-idx>] +[addsuffix{$:/plugins/rimir/kind/_brackets!!rb}] +[addsuffix[,]] +[addsuffix{$:/plugins/rimir/kind/_brackets!!lb}] +[addsuffix<prop>] +[addsuffix{$:/plugins/rimir/kind/_brackets!!rb}] +[addsuffix[,]] +[addsuffix{$:/plugins/rimir/kind/_brackets!!lb}] +[addsuffix<value>] +[addsuffix{$:/plugins/rimir/kind/_brackets!!rb}] +[addsuffix{$:/plugins/rimir/kind/_brackets!!rb}] +[addsuffix[ }}}/>"}]]
 
-\function kind.cascade-field-delete-row(kind-tid, field-idx) [<kind-tid>] +[addprefix[{"ca-name":"🗑 Delete this field","ca-order":"800","ca-group":"danger","ca-kind":"leaf","ca-confirm":"yes","ca-confirm-consequence":"Remove this field from the kind definition. Existing instances are NOT touched (but the field value on each instance becomes orphaned).","ca-actions":"<$action-setfield $tiddler=\"]] +[addsuffix[\" kind.fields={{{ ]] +[addsuffix{$:/plugins/rimir/kind/_brackets!!lb}] +[addsuffix[function]] +[addsuffix{$:/plugins/rimir/kind/_brackets!!lb}] +[addsuffix[kind.rebuilt-fields-without]] +[addsuffix{$:/plugins/rimir/kind/_brackets!!rb}] +[addsuffix[,]] +[addsuffix{$:/plugins/rimir/kind/_brackets!!lb}] +[addsuffix<kind-tid>] +[addsuffix{$:/plugins/rimir/kind/_brackets!!rb}] +[addsuffix[,]] +[addsuffix{$:/plugins/rimir/kind/_brackets!!lb}] +[addsuffix<field-idx>] +[addsuffix{$:/plugins/rimir/kind/_brackets!!rb}] +[addsuffix{$:/plugins/rimir/kind/_brackets!!rb}] +[addsuffix[ }}}/>"}]]
+\function kind.cascade-field-delete-row(kind-tid, field-idx) [<kind-tid>] +[addprefix[{"ca-name":"🗑 Delete this field","ca-order":"800","ca-group":"danger","ca-kind":"leaf","ca-confirm":"yes","ca-confirm-consequence":"Remove this field from the kind definition. Existing instances are NOT touched (but the field value on each instance becomes orphaned). Stream-fields entry is also removed.","ca-actions":"<$transclude $variable=\"kind.cascade-delete-field\" target-tid=\"]] +[addsuffix[\" idx=\"]] +[addsuffix<field-idx>] +[addsuffix[\"/>"}]]
 
 \function kind.cascade-delete-kind-row(target-tid) [<target-tid>] +[addprefix[{"ca-name":"🗑 Delete this kind","ca-order":"900","ca-group":"danger","ca-kind":"leaf","ca-confirm":"yes","ca-confirm-consequence":"Delete this type-definition tiddler permanently. Existing instances are NOT touched.","ca-actions":"<$action-deletetiddler $tiddler=\"]] +[addsuffix[\"/>"}]]
 
 \function kind.cascade-add-from-library-row(kind-tid) [<kind-tid>] +[addprefix[{"ca-name":"+ Add field from library…","ca-icon":"📚","ca-order":"700","ca-group":"fields","ca-kind":"drill","ca-next-title":"Common fields library","ca-items-from":"]] +[addsuffix{$:/plugins/rimir/kind/_brackets!!lb}] +[addsuffix[function]] +[addsuffix{$:/plugins/rimir/kind/_brackets!!lb}] +[addsuffix[kind.cascade-add-from-library-items]] +[addsuffix{$:/plugins/rimir/kind/_brackets!!rb}] +[addsuffix[,]] +[addsuffix{$:/plugins/rimir/kind/_brackets!!lb}] +[addsuffix<kind-tid>] +[addsuffix{$:/plugins/rimir/kind/_brackets!!rb}] +[addsuffix{$:/plugins/rimir/kind/_brackets!!rb}] +[addsuffix["}]]
 
 \function kind.cascade-add-new-field-row(kind-tid) [<kind-tid>get[kind.fields]jsonindexes[]count[]] :map[function[kind.cascade-add-new-field-build],<kind-tid>,<currentTiddler>]
-\function kind.cascade-add-new-field-build(kind-tid, next-idx) [<kind-tid>] +[addprefix[{"ca-name":"+ Add new field…","ca-icon":"✚","ca-order":"710","ca-group":"fields","ca-hint":"Type the field key and ↵ to add — then drill into the new row to set typed and other props","ca-kind":"text","ca-bind-tiddler":"]] +[addsuffix[","ca-bind-field":"kind.fields","ca-bind-path":"]] +[addsuffix<next-idx>] +[addsuffix[,key","ca-bind-type":"text/plain"}]]
+\function kind.cascade-add-new-field-build(kind-tid, next-idx) [<kind-tid>] +[addprefix[{"ca-name":"+ Add new field…","ca-icon":"✚","ca-order":"710","ca-group":"fields","ca-hint":"Type the field key and ↵ to add — typed defaults to text; drill into the new row to set caption / typed / constraints","ca-kind":"text","ca-bind-tiddler":"]] +[addsuffix[","ca-bind-field":"kind.fields","ca-bind-path":"]] +[addsuffix<next-idx>] +[addsuffix[,key","ca-bind-type":"text/plain","ca-on-commit":"<$transclude $variable=\"kind.cascade-finalize-new-field\" target-tid=\"]] +[addsuffix<kind-tid>] +[addsuffix[\" idx=\"]] +[addsuffix<next-idx>] +[addsuffix[\"/>"}]]
 
 \function kind.cascade-add-from-library-items(kind-tid) [function[kind.common-fields-all]] :filter[function[kind.is-common-field-unused],<kind-tid>,<currentTiddler>] :map[function[kind.cascade-cf-leaf-build],<kind-tid>,<currentTiddler>]
 
@@ -67,7 +77,9 @@ type: text/vnd.tiddlywiki
 \procedure kind.cascade-add-cf-to-kind(target-tid, cf-tid)
 <$let cf-def={{{ [<cf-tid>get[def]] }}} cf-key={{{ [<cf-tid>get[def]jsonget[key]] }}} next-idx={{{ [<target-tid>get[kind.fields]jsonindexes[]count[]] }}}>
 <$action-setfield $tiddler=<<target-tid>> kind.fields={{{ [<target-tid>get[kind.fields]jsonset:json<next-idx>,<cf-def>] }}}/>
-<$action-listops $tiddler=<<target-tid>> $field="kind.stream-fields" $subfilter="+[append<cf-key>]"/>
+<$list filter="[<cf-key>!is[blank]]">
+<$action-listops $tiddler=<<target-tid>> $field="kind.stream-fields" $subfilter="+[remove<cf-key>] +[append<cf-key>]"/>
+</$list>
 </$let>
 \end
 
@@ -75,4 +87,22 @@ type: text/vnd.tiddlywiki
 <$list filter="[<key>!is[blank]]">
 <$action-createtiddler $basetitle={{{ [[$:/config/rimir/kind/types/]] +[addsuffix<key>] }}} kind.type=<<key>> kind.icon="🆕" kind.title-formula="[get[parent]][[/]][get[abbrev]]+[join[]]" kind.fields="[]" kind.stream-fields="" type="text/vnd.tiddlywiki"/>
 </$list>
+\end
+
+\procedure kind.cascade-finalize-new-field(target-tid, idx)
+<$let field-key={{{ [<target-tid>get[kind.fields]jsonget<idx>,[key]] }}}>
+<$action-setfield $tiddler=<<target-tid>> kind.fields={{{ [<target-tid>get[kind.fields]jsonset<idx>,[typed],[text]] }}}/>
+<$list filter="[<field-key>!is[blank]]">
+<$action-listops $tiddler=<<target-tid>> $field="kind.stream-fields" $subfilter="+[remove<field-key>] +[append<field-key>]"/>
+</$list>
+</$let>
+\end
+
+\procedure kind.cascade-delete-field(target-tid, idx)
+<$let field-key={{{ [<target-tid>get[kind.fields]jsonget<idx>,[key]] }}}>
+<$action-setfield $tiddler=<<target-tid>> kind.fields={{{ [function[kind.rebuilt-fields-without],<target-tid>,<idx>] }}}/>
+<$list filter="[<field-key>!is[blank]]">
+<$action-listops $tiddler=<<target-tid>> $field="kind.stream-fields" $subfilter="+[remove<field-key>]"/>
+</$list>
+</$let>
 \end
