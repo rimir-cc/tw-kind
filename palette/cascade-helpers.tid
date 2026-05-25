@@ -2,50 +2,11 @@ title: $:/plugins/rimir/kind/palette/cascade-helpers
 tags: $:/tags/Macro
 type: text/vnd.tiddlywiki
 
-\import $:/plugins/rimir/kind/engine
-
-<!-- ============================================================
-     Cascade helpers — TYPE-DEFINITION management layer.
-
-     Sibling to `$:/plugins/rimir/kind/cascade-helpers` (which drives
-     INSTANCE creation/editing). This file drives the SCHEMA layer:
-     `Ctrl-Space → Manage kinds` lists every existing kind type-def;
-     drilling into one opens a stage of text-edit rows for its flat
-     fields (caption / icon / namespaces / title-formula /
-     stream-fields) plus a confirm-wrapped delete leaf.
-
-     The `kind.fields` JSON array (per-field definitions) is a
-     follow-up — for now, the existing `$:/plugins/rimir/kind/type-builder`
-     tab remains the place to add/remove field definitions.
-
-     Implementation mirrors the existing helpers: progressive
-     addprefix/addsuffix to assemble one JSON string per filter
-     result. `_brackets` supplies literal `[` and `]` so they don't
-     terminate filter operators.
-     ============================================================ -->
-
-<!-- ---------- Stage: kinds list ----------
-     One drill row per existing kind type-def. Each row's `title`
-     field is the kind-tid so the next stage's `<<parent-picked>>`
-     resolves to that tiddler. The drill points all rows at one
-     shared items-from filter that reads `<<parent-picked>>` at
-     evaluation time. -->
-
 \function kind.cascade-manage-kinds-items() [function[kind.types-all]] :map[function[kind.cascade-manage-kind-row],<currentTiddler>]
-
 \function kind.cascade-manage-kind-row(kind-tid) [<kind-tid>get[kind.caption]!is[blank]] ~[<kind-tid>get[kind.type]] ~[<kind-tid>] :map[function[kind.cascade-manage-kind-with-caption],<kind-tid>,<currentTiddler>]
-
 \function kind.cascade-manage-kind-with-caption(kind-tid, caption) [<kind-tid>get[kind.icon]] ~[[]] :map[function[kind.cascade-manage-kind-build],<kind-tid>,<caption>,<currentTiddler>]
-
 \function kind.cascade-manage-kind-build(kind-tid, caption, icon) [<kind-tid>] +[addprefix[{"title":"]] +[addsuffix[","ca-name":"]] +[addsuffix<caption>] +[addsuffix[","ca-icon":"]] +[addsuffix<icon>] +[addsuffix[","ca-kind":"drill","ca-next-title":"]] +[addsuffix<caption>] +[addsuffix[","ca-items-from":"]] +[addsuffix{$:/plugins/rimir/kind/_brackets!!lb}] +[addsuffix[function]] +[addsuffix{$:/plugins/rimir/kind/_brackets!!lb}] +[addsuffix[kind.cascade-kind-edit-items]] +[addsuffix{$:/plugins/rimir/kind/_brackets!!rb}] +[addsuffix{$:/plugins/rimir/kind/_brackets!!rb}] +[addsuffix["}]]
 
-<!-- ---------- Stage: per-kind metadata edit ----------
-     `<<parent-picked>>` here = the picked kind type-def tiddler.
-     Five text-edit rows for the flat `kind.*` fields + a
-     confirm-wrapped delete leaf at the bottom (order 900). -->
-
 \function kind.cascade-kind-edit-items() [function[kind.cascade-meta-row],<parent-picked>,[kind.caption],[caption],[🏷],[100]] [function[kind.cascade-meta-row],<parent-picked>,[kind.icon],[icon],[🖼],[110]] [function[kind.cascade-meta-row],<parent-picked>,[kind.namespaces],[namespaces],[🗂],[120]] [function[kind.cascade-meta-row],<parent-picked>,[kind.title-formula],[title-formula],[⚙],[130]] [function[kind.cascade-meta-row],<parent-picked>,[kind.stream-fields],[stream-fields],[≣],[140]] [function[kind.cascade-delete-kind-row],<parent-picked>]
-
 \function kind.cascade-meta-row(target-tid, field, caption, icon, order) [<caption>] +[addprefix[{"ca-name":"]] +[addsuffix[","ca-icon":"]] +[addsuffix<icon>] +[addsuffix[","ca-order":"]] +[addsuffix<order>] +[addsuffix[","ca-kind":"text","ca-bind-tiddler":"]] +[addsuffix<target-tid>] +[addsuffix[","ca-bind-field":"]] +[addsuffix<field>] +[addsuffix[","ca-bind-type":"text/plain"}]]
-
 \function kind.cascade-delete-kind-row(target-tid) [<target-tid>] +[addprefix[{"ca-name":"🗑 Delete this kind","ca-order":"900","ca-kind":"leaf","ca-confirm":"yes","ca-confirm-consequence":"Delete this type-definition tiddler permanently. Existing instances are NOT touched.","ca-actions":"<$action-deletetiddler $tiddler=\"]] +[addsuffix[\"/>"}]]
