@@ -1,0 +1,34 @@
+title: $:/plugins/rimir/kind/palette/preview/kind-form
+type: text/vnd.tiddlywiki
+
+\whitespace trim
+\import $:/plugins/rimir/kind/engine
+
+<!-- Side-preview template for the "Manage kinds" cascade flow.
+     <<currentTiddler>> = the kind type-definition tiddler that the
+     user just drilled into (e.g. $:/config/rimir/kind/types/node).
+     Renders the same create-instance form that creator.tid renders,
+     against a per-kind preview-draft tiddler. Any edit to the
+     type-def (kind.fields, kind.title-formula, …) invalidates the
+     side-preview cache via the wiki change hook, so the form mirrors
+     the live schema as the user authors it. -->
+
+<$let
+  type-tid=<<currentTiddler>>
+  type-key={{{ [<type-tid>get[kind.type]] }}}
+>
+<%if [<type-key>is[blank]] %>
+<div class="kind-err">No <code>kind.type</code> on this tiddler — cannot render a form preview.</div>
+<%else%>
+<$let target-tid={{{ [[$:/state/rimir/kind/cascade-preview-draft/]addsuffix<type-key>] }}}>
+
+<$transclude $tiddler="$:/plugins/rimir/kind/editor"/>
+
+<p style="opacity:0.65;font-size:0.85em;margin-top:0.6em;">
+Computed title:
+<code><$text text={{{ [function[kind.eval-title],<type-tid>,<target-tid>] }}}/></code>
+</p>
+
+</$let>
+<%endif%>
+</$let>

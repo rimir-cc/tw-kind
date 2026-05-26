@@ -81,6 +81,8 @@ All constraints are blocking — they show up in red in the validator and disabl
 |`$:/state/rimir/kind/creator/selected-type` |Currently-selected type in the creator |
 |`$:/state/rimir/kind/type-builder/selected` |Currently-edited type in the type-builder |
 |`$:/state/rimir/kind/type-builder/preview-draft` |Live editor preview's target |
+|`$:/state/rimir/kind/cascade-draft/<type-key>` |Manage-kinds ''+ Create new instance'' draft (per type) |
+|`$:/state/rimir/kind/cascade-preview-draft/<type-key>` |Manage-kinds side-preview form draft (per type — survives drill-in/out) |
 
 !! Engine functions (engine.tid)
 
