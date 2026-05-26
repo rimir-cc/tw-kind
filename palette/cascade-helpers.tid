@@ -4,6 +4,8 @@ type: text/vnd.tiddlywiki
 
 \function kind.cascade-manage-kinds-items() [function[kind.types-all]] :map[function[kind.cascade-manage-kind-row],<currentTiddler>] [function[kind.cascade-create-new-kind-row]]
 
+\function kind.cascade-edit-kind-schema-items(entity-tid) [<entity-tid>get[kind.type]] :map[function[kind.locate-type],<currentTiddler>] :map:flat[function[kind.cascade-kind-edit-items],<currentTiddler>]
+
 \function kind.cascade-create-new-kind-row() [[{"ca-name":"+ Create new kind…","ca-icon":"✚","ca-order":"1000","ca-group":"Kind Actions","ca-hint":"Type the type key (e.g. widget) and ↵ — creates a new kind tiddler with defaults and opens it.","ca-kind":"text","ca-on-commit":"<$transclude $variable=\"kind.cascade-create-kind\" key=<<picked>>/>"}]]
 \function kind.cascade-manage-kind-row(kind-tid) [<kind-tid>get[kind.caption]!is[blank]] ~[<kind-tid>get[kind.type]] ~[<kind-tid>] :map[function[kind.cascade-manage-kind-with-caption],<kind-tid>,<currentTiddler>]
 \function kind.cascade-manage-kind-with-caption(kind-tid, caption) [<kind-tid>get[kind.icon]] ~[[]] :map[function[kind.cascade-manage-kind-build],<kind-tid>,<caption>,<currentTiddler>]

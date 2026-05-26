@@ -1,0 +1,10 @@
+title: $:/plugins/rimir/kind/actions/edit-kind-schema
+tags: $:/tags/rimir/cascade-palette/action
+ca-entity-type: kind-entity
+ca-name: Edit kind schema
+ca-hint: Drill into this entity's type-definition to edit metadata, fields, and constraints
+ca-icon: 🧰
+ca-kind: drill
+ca-order: 60
+ca-next-title: Schema
+ca-items-from: [function[kind.cascade-edit-kind-schema-items],<parent-picked>]
