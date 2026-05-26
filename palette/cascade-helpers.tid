@@ -30,7 +30,10 @@ type: text/vnd.tiddlywiki
 \function kind.cascade-issue-enum-no-options(kind-tid, field-idx) [<kind-tid>get[kind.fields]jsonget<field-idx>,[typed]match[enum]] :filter[<kind-tid>get[kind.fields]jsonindexes<field-idx>,[options]count[]match[0]] :map[[⚠ enum has no options]]
 \function kind.cascade-issue-ref-no-reftypes(kind-tid, field-idx) [<kind-tid>get[kind.fields]jsonget<field-idx>,[typed]match[ref]] :filter[<kind-tid>get[kind.fields]jsonindexes<field-idx>,[ref-types]count[]match[0]] :map[[⚠ ref has no ref-types]]
 
-\function kind.cascade-field-edit-items(kind-tid, field-idx) [function[kind.cascade-field-drill-row],<kind-tid>,<field-idx>,[typed],[typed],[🔤],[10],[kind.cascade-field-typed-picker-items]] [function[kind.cascade-field-prop-row],<kind-tid>,<field-idx>,[caption],[caption],[🏷],[20]] [function[kind.cascade-field-prop-row],<kind-tid>,<field-idx>,[icon],[icon],[🖼],[30]] [function[kind.cascade-field-cardinality-drill-row],<kind-tid>,<field-idx>] [function[kind.cascade-field-constraints-drill-row],<kind-tid>,<field-idx>] [function[kind.cascade-field-options-row],<kind-tid>,<field-idx>] [function[kind.cascade-field-reftypes-drill-row],<kind-tid>,<field-idx>] [function[kind.cascade-field-delete-row],<kind-tid>,<field-idx>]
+\function kind.cascade-field-edit-items(kind-tid, field-idx) [function[kind.cascade-field-key-row],<kind-tid>,<field-idx>] [function[kind.cascade-field-drill-row],<kind-tid>,<field-idx>,[typed],[typed],[🔤],[10],[kind.cascade-field-typed-picker-items]] [function[kind.cascade-field-prop-row],<kind-tid>,<field-idx>,[caption],[caption],[🏷],[20]] [function[kind.cascade-field-prop-row],<kind-tid>,<field-idx>,[icon],[icon],[🖼],[30]] [function[kind.cascade-field-cardinality-drill-row],<kind-tid>,<field-idx>] [function[kind.cascade-field-constraints-drill-row],<kind-tid>,<field-idx>] [function[kind.cascade-field-options-row],<kind-tid>,<field-idx>] [function[kind.cascade-field-reftypes-drill-row],<kind-tid>,<field-idx>] [function[kind.cascade-field-delete-row],<kind-tid>,<field-idx>]
+
+\function kind.cascade-field-key-row(kind-tid, field-idx) [<kind-tid>get[kind.fields]jsonget<field-idx>,[key]] ~[[]] :map[function[kind.cascade-field-key-row-build],<kind-tid>,<field-idx>,<currentTiddler>]
+\function kind.cascade-field-key-row-build(kind-tid, field-idx, field-key) [<kind-tid>] +[addprefix[{"ca-name":"key","ca-icon":"🔑","ca-order":"5","ca-kind":"text","ca-bind-tiddler":"]] +[addsuffix[","ca-bind-field":"kind.fields","ca-bind-path":"]] +[addsuffix<field-idx>] +[addsuffix[,key","ca-bind-type":"text/plain","ca-hint":"Rename this field — kind.stream-fields auto-syncs (the old key is replaced with the new one IF it was listed). Existing instance tiddlers keep their values under the OLD key (orphaned). References to the old key in kind.title-formula / filters / wikitext break — search and update manually.","ca-on-commit":"<$transclude $variable=\"kind.cascade-rename-field-key\" target-tid=\"]] +[addsuffix<kind-tid>] +[addsuffix[\" idx=\"]] +[addsuffix<field-idx>] +[addsuffix[\" old-key=\"]] +[addsuffix<field-key>] +[addsuffix[\"/>"}]]
 
 \function kind.cascade-field-prop-row(kind-tid, field-idx, prop, caption, icon, order) [<caption>] +[addprefix[{"ca-name":"]] +[addsuffix[","ca-icon":"]] +[addsuffix<icon>] +[addsuffix[","ca-order":"]] +[addsuffix<order>] +[addsuffix[","ca-kind":"text","ca-bind-tiddler":"]] +[addsuffix<kind-tid>] +[addsuffix[","ca-bind-field":"kind.fields","ca-bind-path":"]] +[addsuffix<field-idx>] +[addsuffix[,]] +[addsuffix<prop>] +[addsuffix[","ca-bind-type":"text/plain"}]]
 
@@ -163,6 +166,18 @@ type: text/vnd.tiddlywiki
 >
 <$action-setfield $tiddler=<<target-tid>> kind.fields={{{ [<target-tid>get[kind.fields]jsonset:json<idx>,<field-b>jsonset:json<other-idx>,<field-a>] }}}/>
 </$let>
+</$list>
+</$let>
+\end
+
+\procedure kind.cascade-rename-field-key(target-tid, idx, old-key)
+<$let new-key={{{ [<target-tid>get[kind.fields]jsonget<idx>,[key]] }}}>
+<$list filter="[<new-key>!is[blank]] :filter[<new-key>!match<old-key>] +[first[]]">
+<!-- Only swap in kind.stream-fields if old-key was actually listed there.
+     Renames must not silently add an unrelated field to the inline bar. -->
+<$list filter="[<target-tid>get[kind.stream-fields]enlist-input[]match<old-key>] +[first[]]">
+<$action-listops $tiddler=<<target-tid>> $field="kind.stream-fields" $subfilter="+[remove<old-key>] +[remove<new-key>] +[append<new-key>]"/>
+</$list>
 </$list>
 </$let>
 \end
