@@ -32,15 +32,28 @@ type: text/vnd.tiddlywiki
 
 \function kind.cascade-field-prop-row(kind-tid, field-idx, prop, caption, icon, order) [<caption>] +[addprefix[{"ca-name":"]] +[addsuffix[","ca-icon":"]] +[addsuffix<icon>] +[addsuffix[","ca-order":"]] +[addsuffix<order>] +[addsuffix[","ca-kind":"text","ca-bind-tiddler":"]] +[addsuffix<kind-tid>] +[addsuffix[","ca-bind-field":"kind.fields","ca-bind-path":"]] +[addsuffix<field-idx>] +[addsuffix[,]] +[addsuffix<prop>] +[addsuffix[","ca-bind-type":"text/plain"}]]
 
-\function kind.cascade-field-array-prop-row(kind-tid, field-idx, prop, caption, icon, order) [<caption>] +[addprefix[{"ca-name":"]] +[addsuffix[","ca-icon":"]] +[addsuffix<icon>] +[addsuffix[","ca-order":"]] +[addsuffix<order>] +[addsuffix[","ca-kind":"text","ca-bind-tiddler":"]] +[addsuffix<kind-tid>] +[addsuffix[","ca-bind-field":"kind.fields","ca-bind-path":"]] +[addsuffix<field-idx>] +[addsuffix[,]] +[addsuffix<prop>] +[addsuffix[","ca-bind-type":"application/x-string-array"}]]
-
 \function kind.cascade-field-drill-row(kind-tid, field-idx, prop, caption, icon, order, picker-fn) [<caption>] +[addprefix[{"ca-name":"]] +[addsuffix[","ca-icon":"]] +[addsuffix<icon>] +[addsuffix[","ca-order":"]] +[addsuffix<order>] +[addsuffix[","ca-kind":"drill","ca-next-title":"]] +[addsuffix<caption>] +[addsuffix[","ca-bind-tiddler":"]] +[addsuffix<kind-tid>] +[addsuffix[","ca-bind-field":"kind.fields","ca-bind-path":"]] +[addsuffix<field-idx>] +[addsuffix[,]] +[addsuffix<prop>] +[addsuffix[","ca-items-from":"]] +[addsuffix{$:/plugins/rimir/kind/_brackets!!lb}] +[addsuffix[function]] +[addsuffix{$:/plugins/rimir/kind/_brackets!!lb}] +[addsuffix<picker-fn>] +[addsuffix{$:/plugins/rimir/kind/_brackets!!rb}] +[addsuffix[,]] +[addsuffix{$:/plugins/rimir/kind/_brackets!!lb}] +[addsuffix<kind-tid>] +[addsuffix{$:/plugins/rimir/kind/_brackets!!rb}] +[addsuffix[,]] +[addsuffix{$:/plugins/rimir/kind/_brackets!!lb}] +[addsuffix<field-idx>] +[addsuffix{$:/plugins/rimir/kind/_brackets!!rb}] +[addsuffix{$:/plugins/rimir/kind/_brackets!!rb}] +[addsuffix["}]]
 
 \function kind.cascade-field-cardinality-drill-row(kind-tid, field-idx) [<kind-tid>get[kind.fields]jsonget<field-idx>,[typed]] :filter[function[kind.cardinality-applicable],<currentTiddler>] :map[function[kind.cascade-field-drill-row],<kind-tid>,<field-idx>,[cardinality],[cardinality],[⤬],[40],[kind.cascade-field-cardinality-picker-items]]
 
 \function kind.cascade-field-constraints-drill-row(kind-tid, field-idx) [<kind-tid>get[kind.fields]jsonget<field-idx>,[typed]] :filter[function[kind.required-applicable],<currentTiddler>] :map[function[kind.cascade-field-drill-row],<kind-tid>,<field-idx>,[constraints],[constraints],[✓],[50],[kind.cascade-field-constraints-picker-items]]
 
-\function kind.cascade-field-options-row(kind-tid, field-idx) [<kind-tid>get[kind.fields]jsonget<field-idx>,[typed]] :filter[match[enum]] :map[function[kind.cascade-field-array-prop-row],<kind-tid>,<field-idx>,[options],[options],[≡],[60]]
+\function kind.cascade-field-options-row(kind-tid, field-idx) [<kind-tid>get[kind.fields]jsonget<field-idx>,[typed]] :filter[match[enum]] :map[function[kind.cascade-field-drill-row],<kind-tid>,<field-idx>,[options],[options],[≡],[60],[kind.cascade-field-options-picker-items]]
+
+\function kind.cascade-field-options-picker-items(kind-tid, field-idx) [<kind-tid>get[kind.fields]jsonget<field-idx>,[key]] ~[[]] :map:flat[function[kind.cascade-options-picker-with-key],<kind-tid>,<field-idx>,<currentTiddler>]
+\function kind.cascade-options-picker-with-key(kind-tid, field-idx, field-key) [function[kind.options-pool],<field-key>] :map[function[kind.cascade-array-toggle-build],<kind-tid>,<field-idx>,[options],<currentTiddler>] [function[kind.cascade-field-add-option-row],<kind-tid>,<field-idx>]
+
+\function kind.options-pool(field-key) [function[kind.options-from-all-kinds],<field-key>] [function[kind.options-from-common-fields],<field-key>] +[!is[blank]unique[]sort[]]
+\function kind.options-from-all-kinds(field-key) [function[kind.types-all]] :map:flat[function[kind.options-from-kind],<currentTiddler>,<field-key>]
+\function kind.options-from-kind(kind-tid, field-key) [<kind-tid>get[kind.fields]jsonindexes[]] :filter[function[kind.field-matches-enum-key],<kind-tid>,<currentTiddler>,<field-key>] :map:flat[function[kind.options-at-idx],<kind-tid>,<currentTiddler>]
+\function kind.field-matches-enum-key(kind-tid, idx, key) [<kind-tid>get[kind.fields]jsonget<idx>,[key]match<key>] :filter[<kind-tid>get[kind.fields]jsonget<idx>,[typed]match[enum]]
+\function kind.options-at-idx(kind-tid, idx) [<kind-tid>get[kind.fields]jsonindexes<idx>,[options]] :map[<kind-tid>get[kind.fields]jsonget<idx>,[options],<currentTiddler>]
+
+\function kind.options-from-common-fields(field-key) [function[kind.common-fields-all]] :filter[function[kind.cf-matches-enum-key],<currentTiddler>,<field-key>] :map:flat[function[kind.cf-options-at-cf-tid],<currentTiddler>]
+\function kind.cf-matches-enum-key(cf-tid, field-key) [<cf-tid>get[def]jsonget[key]match<field-key>] :filter[<cf-tid>get[def]jsonget[typed]match[enum]]
+\function kind.cf-options-at-cf-tid(cf-tid) [<cf-tid>get[def]jsonindexes[options]] :map[<cf-tid>get[def]jsonget[options],<currentTiddler>]
+
+\function kind.cascade-field-add-option-row(kind-tid, field-idx) [<kind-tid>] +[addprefix[{"ca-name":"+ Add new option…","ca-icon":"✚","ca-order":"1000","ca-group":"option-add","ca-kind":"text","ca-hint":"Type an enum option label and ↵ to add — duplicates ignored","ca-on-commit":"<$transclude $variable=\"kind.cascade-append-array-value\" target-tid=\"]] +[addsuffix[\" idx=\"]] +[addsuffix<field-idx>] +[addsuffix[\" prop=\"options\" value=<<picked>>/>"}]]
 
 \function kind.cascade-field-reftypes-drill-row(kind-tid, field-idx) [<kind-tid>get[kind.fields]jsonget<field-idx>,[typed]] :filter[match[ref]] :map[function[kind.cascade-field-drill-row],<kind-tid>,<field-idx>,[ref-types],[ref-types],[🔗],[70],[kind.cascade-field-reftypes-picker-items]]
 
@@ -59,7 +72,7 @@ type: text/vnd.tiddlywiki
 \function kind.cascade-constraint-num-row-build(kind-tid, field-idx, prefix, label, icon, order, current-value) [<label>] +[addprefix[{"ca-name":"]] +[addsuffix[: ]] +[addsuffix<current-value>] +[addsuffix[","ca-icon":"]] +[addsuffix<icon>] +[addsuffix[","ca-order":"]] +[addsuffix<order>] +[addsuffix[","ca-group":"constraint-num","ca-kind":"text","ca-hint":"Type a non-negative integer to set ]] +[addsuffix<label>] +[addsuffix[, blank to clear, non-digits ignored","ca-on-commit":"<$transclude $variable=\"kind.cascade-set-constraint-num\" target-tid=\"]] +[addsuffix<kind-tid>] +[addsuffix[\" idx=\"]] +[addsuffix<field-idx>] +[addsuffix[\" prefix=\"]] +[addsuffix<prefix>] +[addsuffix[\" value=<<picked>>/>"}]]
 
 \function kind.cascade-field-custom-constraint-row(kind-tid, field-idx) [<kind-tid>get[kind.fields]jsonget<field-idx>,[typed]] :filter[function[kind.required-applicable],<currentTiddler>] :map[function[kind.cascade-custom-constraint-row-build],<kind-tid>,<field-idx>]
-\function kind.cascade-custom-constraint-row-build(kind-tid, field-idx) [<kind-tid>] +[addprefix[{"ca-name":"+ Add custom constraint…","ca-icon":"✚","ca-order":"200","ca-group":"constraint-num","ca-kind":"text","ca-hint":"Type a constraint expression (e.g. min:5, max:100, regex:[a-z]+) and ↵ — appended to constraints array","ca-on-commit":"<$transclude $variable=\"kind.cascade-append-constraint\" target-tid=\"]] +[addsuffix[\" idx=\"]] +[addsuffix<field-idx>] +[addsuffix[\" value=<<picked>>/>"}]]
+\function kind.cascade-custom-constraint-row-build(kind-tid, field-idx) [<kind-tid>] +[addprefix[{"ca-name":"+ Add custom constraint…","ca-icon":"✚","ca-order":"200","ca-group":"constraint-num","ca-kind":"text","ca-hint":"Type a constraint expression (e.g. min:5, max:100, regex:[a-z]+) and ↵ — appended to constraints array","ca-on-commit":"<$transclude $variable=\"kind.cascade-append-array-value\" target-tid=\"]] +[addsuffix[\" idx=\"]] +[addsuffix<field-idx>] +[addsuffix[\" prop=\"constraints\" value=<<picked>>/>"}]]
 
 \function kind.computed-constraints-with-valid-picked(target-tid, idx, prefix, valid-picked) [<target-tid>get[kind.fields]jsonindexes<idx>,[constraints]] :map[<target-tid>get[kind.fields]jsonget<idx>,[constraints],<currentTiddler>] :filter[<currentTiddler>!prefix<prefix>] [<valid-picked>!is[blank]addprefix<prefix>] :map[function[kind.quote-string],<currentTiddler>] +[join[,]] :map[function[kind.wrap-array],<currentTiddler>] ~[function[kind.empty-array]]
 
@@ -128,10 +141,10 @@ type: text/vnd.tiddlywiki
 </$list>
 \end
 
-\procedure kind.cascade-append-constraint(target-tid, idx, value)
+\procedure kind.cascade-append-array-value(target-tid, idx, prop, value)
 <$list filter="[<value>!is[blank]]">
-<$let new-constraints={{{ [<target-tid>get[kind.fields]jsonindexes<idx>,[constraints]] :map[<target-tid>get[kind.fields]jsonget<idx>,[constraints],<currentTiddler>] [<value>] +[unique[]] :map[function[kind.quote-string],<currentTiddler>] +[join[,]] :map[function[kind.wrap-array],<currentTiddler>] ~[function[kind.empty-array]] }}}>
-<$action-setfield $tiddler=<<target-tid>> kind.fields={{{ [<target-tid>get[kind.fields]jsonset:json<idx>,[constraints],<new-constraints>] }}}/>
+<$let new-array={{{ [<target-tid>get[kind.fields]jsonindexes<idx>,<prop>] :map[<target-tid>get[kind.fields]jsonget<idx>,<prop>,<currentTiddler>] [<value>] +[unique[]] :map[function[kind.quote-string],<currentTiddler>] +[join[,]] :map[function[kind.wrap-array],<currentTiddler>] ~[function[kind.empty-array]] }}}>
+<$action-setfield $tiddler=<<target-tid>> kind.fields={{{ [<target-tid>get[kind.fields]jsonset:json<idx>,<prop>,<new-array>] }}}/>
 </$let>
 </$list>
 \end
