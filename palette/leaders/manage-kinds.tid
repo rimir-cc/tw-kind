@@ -1,0 +1,8 @@
+title: $:/plugins/rimir/kind/palette/leaders/manage-kinds
+tags: $:/tags/rimir/cascade-palette/leader
+ca-leader-key: k
+ca-leader-name: Manage kinds
+ca-leader-hint: Drill straight into the type-def editor
+ca-leader-help: Opens the Manage-kinds drill in one step — skips having to find the entry at the root. Works from any cp state; the palette resets to root then drills.
+ca-leader-actions: <$action-sendmessage $message="rimir-cascade-palette-open-entry" entry="$:/plugins/rimir/kind/palette/entries/manage-kinds"/>
+ca-order: 200
