@@ -38,6 +38,7 @@ type: text/vnd.tiddlywiki
 |`ref-types` |Required for `ref` |Array of `kind.type` values whose instances may be referenced. |`ref` |
 |`cardinality` |No (default `single`) |Either `single` or `multi`. Multi values are space-separated lists. |`enum`, `ref` |
 |`formula` |Required for `$calculated` |Filter expression evaluated with `<target-tid>` as source. |`$calculated` |
+|`clone` |No |Set to `skip` to exclude this field from the ''+ Clone fields from existing'' copy in the cascade-palette creator (e.g. blank-out a journal `text` field on clone). Default = copy. Computed fields (`$title` / `$calculated`) are always excluded regardless. |all (most relevant on body / unique / computed-ish fields) |
 
 !! `typed` values
 
@@ -83,6 +84,8 @@ All constraints are blocking — they show up in red in the validator and disabl
 |`$:/state/rimir/kind/type-builder/preview-draft` |Live editor preview's target |
 |`$:/state/rimir/kind/cascade-draft/<type-key>` |Manage-kinds ''+ Create new instance'' draft (per type) |
 |`$:/state/rimir/kind/cascade-preview-draft/<type-key>` |Manage-kinds side-preview form draft (per type — survives drill-in/out) |
+|`$:/state/rimir/kind/cascade-spawn-draft/<parent-tid>/<parent-field>/<ref-type-key>` |Draft for a nested ''+ Create new <X>'' spawn from a ref-field picker (per spawn point — survives drill-in/out and supports arbitrary nesting depth) |
+|`$:/state/rimir/kind/__spawn-result` |Transient capture of the just-spawned tiddler title (used by `kind.cascade-spawn-save` to wire into the parent's ref field) |
 
 !! Engine functions (engine.tid)
 
