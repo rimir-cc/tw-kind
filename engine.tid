@@ -18,6 +18,8 @@ type: text/vnd.tiddlywiki
 \function kind.field-icon(type-tid, field-key) [function[kind.field-prop],<type-tid>,<field-key>,[icon]]
 \function kind.field-cardinality(type-tid, field-key) [function[kind.field-prop],<type-tid>,<field-key>,[cardinality]] ~[[single]]
 \function kind.field-formula(type-tid, field-key) [function[kind.field-prop],<type-tid>,<field-key>,[formula]]
+\function kind.field-default(type-tid, field-key) [function[kind.field-prop],<type-tid>,<field-key>,[default]]
+\function kind.default-applicable(typed) [<typed>match[text]] [<typed>match[longtext]] [<typed>match[number]] [<typed>match[date]] [<typed>match[datetime]] [<typed>match[url]] [<typed>match[email]] [<typed>match[phone]] [<typed>match[enum]]
 
 \function kind.field-array-flat(type-tid, idx, prop) [function[kind.json],<type-tid>jsonindexes<idx>,<prop>] :map[function[kind.json],<type-tid>jsonget<idx>,<prop>,<currentTiddler>]
 \function kind.constraints(type-tid, field-key) [function[kind.field-idx],<type-tid>,<field-key>] :map:flat[function[kind.field-array-flat],<type-tid>,<currentTiddler>,[constraints]]
@@ -34,7 +36,7 @@ type: text/vnd.tiddlywiki
 \function kind.is-computed-typed(type-tid, field-key) [function[kind.field-typed],<type-tid>,<field-key>match[$title]] [function[kind.field-typed],<type-tid>,<field-key>match[$calculated]]
 
 \function kind.fields-valid(type-tid) [<type-tid>get[kind.fields]!is[blank]prefix[[]]
-\function kind.cardinality-applicable(typed) [<typed>match[enum]] [<typed>match[ref]]
+\function kind.cardinality-applicable(typed) [<typed>match[enum]] [<typed>match[ref]] [<typed>match[text]]
 \function kind.is-options-applicable(prop, typed) [<prop>match[options]] :filter[<typed>match[enum]]
 \function kind.is-reftypes-applicable(prop, typed) [<prop>match[ref-types]] :filter[<typed>match[ref]]
 \function kind.array-applicable(prop, typed) [<prop>match[constraints]] [function[kind.is-options-applicable],<prop>,<typed>] [function[kind.is-reftypes-applicable],<prop>,<typed>]
@@ -80,9 +82,17 @@ type: text/vnd.tiddlywiki
 \function kind.stream-fields(type-tid) [<type-tid>get[kind.stream-fields]enlist-input[]]
 
 \function kind.value-of(tid, field-key) [<tid>get<field-key>]
-\function kind.same-value-of(other-tid, target-tid, field-key) [function[kind.value-of],<target-tid>,<field-key>!is[blank]] :filter[function[kind.value-of],<other-tid>,<field-key>match<currentTiddler>]
-\function kind.dups-in-type(target-tid, type-key, field-key) [function[kind.instances-of],<type-key>] -[<target-tid>] :filter[function[kind.same-value-of],<currentTiddler>,<target-tid>,<field-key>] +[first[]]
-\function kind.dups-wiki(target-tid, field-key) [all[shadows+tiddlers]] -[<target-tid>] :filter[function[kind.same-value-of],<currentTiddler>,<target-tid>,<field-key>] +[first[]]
+\function kind.same-value-of(other-tid, target-tid, field-key, type-tid) [function[kind.is-multi-counted],<type-tid>,<field-key>!is[blank]] :map:flat[function[kind.multi-result-with-sentinel],<target-tid>,<other-tid>,<field-key>] ~[function[kind.same-whole-value],<target-tid>,<other-tid>,<field-key>] -[[__kind-no-share__]] +[first[]]
+\function kind.multi-result-with-sentinel(target-tid, other-tid, field-key) [function[kind.shared-entries],<target-tid>,<other-tid>,<field-key>] ~[[__kind-no-share__]]
+\function kind.same-whole-value(target-tid, other-tid, field-key) [function[kind.value-of],<target-tid>,<field-key>!is[blank]] :filter[function[kind.value-of],<other-tid>,<field-key>match<currentTiddler>]
+\function kind.shares-entry-with(target-tid, other-tid, field-key) [function[kind.shared-entries],<target-tid>,<other-tid>,<field-key>] +[first[]]
+\function kind.shared-entries(target-tid, other-tid, field-key) [<target-tid>get<field-key>enlist-input[]] :filter[<other-tid>get<field-key>enlist-input[]match<currentTiddler>]
+\function kind.dups-in-type(target-tid, type-key, field-key, type-tid) [function[kind.instances-of],<type-key>] -[<target-tid>] :filter[function[kind.same-value-of],<currentTiddler>,<target-tid>,<field-key>,<type-tid>] +[first[]]
+\function kind.dups-wiki(target-tid, field-key, type-tid) [all[shadows+tiddlers]] -[<target-tid>] :filter[function[kind.same-value-of],<currentTiddler>,<target-tid>,<field-key>,<type-tid>] +[first[]]
+\function kind.has-constraint-any-unique(type-tid, field-key) [function[kind.has-constraint],<type-tid>,<field-key>,[unique]] [function[kind.has-constraint],<type-tid>,<field-key>,[unique:wiki]]
+\function kind.list-len-raw(target-tid, field-key) [function[kind.value-of],<target-tid>,<field-key>] :map[enlist:raw<currentTiddler>count[]] ~[[0]]
+\function kind.list-len-dedupe(target-tid, field-key) [function[kind.value-of],<target-tid>,<field-key>] :map[enlist<currentTiddler>count[]] ~[[0]]
+\function kind.has-self-dup(target-tid, field-key) [function[kind.list-len-raw],<target-tid>,<field-key>] :filter[function[kind.list-len-dedupe],<target-tid>,<field-key>!match<currentTiddler>] +[first[]]
 
 \function kind.is-multi-counted(type-tid, field-key) [function[kind.field-cardinality],<type-tid>,<field-key>match[multi]]
 \function kind.field-size(type-tid, field-key, target-tid) [function[kind.is-multi-counted],<type-tid>,<field-key>!is[blank]] :map[function[kind.field-value-count],<target-tid>,<field-key>] ~[function[kind.field-value-length],<target-tid>,<field-key>]
@@ -90,13 +100,32 @@ type: text/vnd.tiddlywiki
 \function kind.viol-required(type-tid, field-key, target-tid) [function[kind.has-constraint],<type-tid>,<field-key>,[required]!is[blank]] :filter[<target-tid>get<field-key>is[blank]]
 \function kind.viol-min(type-tid, field-key, target-tid) [function[kind.constraint-num],<type-tid>,<field-key>,[min:]!is[blank]] :filter[function[kind.field-size],<type-tid>,<field-key>,<target-tid>compare:integer:lt<currentTiddler>]
 \function kind.viol-max(type-tid, field-key, target-tid) [function[kind.constraint-num],<type-tid>,<field-key>,[max:]!is[blank]] :filter[function[kind.field-size],<type-tid>,<field-key>,<target-tid>compare:integer:gt<currentTiddler>]
-\function kind.viol-unique(type-tid, type-key, field-key, target-tid) [function[kind.has-constraint],<type-tid>,<field-key>,[unique]!is[blank]] :filter[function[kind.dups-in-type],<target-tid>,<type-key>,<field-key>!is[blank]]
-\function kind.viol-unique-wiki(type-tid, field-key, target-tid) [function[kind.has-constraint],<type-tid>,<field-key>,[unique:wiki]!is[blank]] :filter[function[kind.dups-wiki],<target-tid>,<field-key>!is[blank]]
+\function kind.viol-unique(type-tid, type-key, field-key, target-tid) [function[kind.has-constraint],<type-tid>,<field-key>,[unique]!is[blank]] :filter[function[kind.dups-in-type],<target-tid>,<type-key>,<field-key>,<type-tid>!is[blank]]
+\function kind.viol-unique-wiki(type-tid, field-key, target-tid) [function[kind.has-constraint],<type-tid>,<field-key>,[unique:wiki]!is[blank]] :filter[function[kind.dups-wiki],<target-tid>,<field-key>,<type-tid>!is[blank]]
+\function kind.viol-self-dup(type-tid, field-key, target-tid) [function[kind.is-multi-counted],<type-tid>,<field-key>!is[blank]] :filter[function[kind.has-constraint-any-unique],<type-tid>,<field-key>!is[blank]] :filter[function[kind.has-self-dup],<target-tid>,<field-key>!is[blank]]
 \function kind.viol-title(type-tid, target-tid) [function[kind.eval-title],<type-tid>,<target-tid>!match<target-tid>]
 
 \function kind.viol-format-url(type-tid, field-key, target-tid) [function[kind.field-typed],<type-tid>,<field-key>match[url]] :filter[<target-tid>get<field-key>!is[blank]] :filter[<target-tid>get<field-key>!prefix[http://]!prefix[https://]]
 \function kind.viol-format-email(type-tid, field-key, target-tid) [function[kind.field-typed],<type-tid>,<field-key>match[email]] :filter[<target-tid>get<field-key>!is[blank]] :filter[<target-tid>get<field-key>!regexp{$:/plugins/rimir/kind/_patterns!!email}]
 \function kind.viol-format-phone(type-tid, field-key, target-tid) [function[kind.field-typed],<type-tid>,<field-key>match[phone]] :filter[<target-tid>get<field-key>!is[blank]] :filter[<target-tid>get<field-key>!regexp{$:/plugins/rimir/kind/_patterns!!phone-de}]
 
-\function kind.viol-any(type-tid, type-key, field-key, target-tid) [function[kind.viol-required],<type-tid>,<field-key>,<target-tid>] [function[kind.viol-min],<type-tid>,<field-key>,<target-tid>] [function[kind.viol-max],<type-tid>,<field-key>,<target-tid>] [function[kind.viol-unique],<type-tid>,<type-key>,<field-key>,<target-tid>] [function[kind.viol-unique-wiki],<type-tid>,<field-key>,<target-tid>] [function[kind.viol-format-url],<type-tid>,<field-key>,<target-tid>] [function[kind.viol-format-email],<type-tid>,<field-key>,<target-tid>] [function[kind.viol-format-phone],<type-tid>,<field-key>,<target-tid>]
+\function kind.viol-any(type-tid, type-key, field-key, target-tid) [function[kind.viol-required],<type-tid>,<field-key>,<target-tid>] [function[kind.viol-min],<type-tid>,<field-key>,<target-tid>] [function[kind.viol-max],<type-tid>,<field-key>,<target-tid>] [function[kind.viol-unique],<type-tid>,<type-key>,<field-key>,<target-tid>] [function[kind.viol-unique-wiki],<type-tid>,<field-key>,<target-tid>] [function[kind.viol-self-dup],<type-tid>,<field-key>,<target-tid>] [function[kind.viol-format-url],<type-tid>,<field-key>,<target-tid>] [function[kind.viol-format-email],<type-tid>,<field-key>,<target-tid>] [function[kind.viol-format-phone],<type-tid>,<field-key>,<target-tid>]
 \function kind.any-invalid(type-tid, type-key, target-tid) [function[kind.field-keys],<type-tid>] :filter[function[kind.viol-any],<type-tid>,<type-key>,<currentTiddler>,<target-tid>] +[first[]]
+
+\procedure kind.apply-defaults-to(type-tid, target-tid)
+<!-- Walks the type's fields and writes each field's `default` (with %TODAY% / %NOW%
+     token expansion) onto the target tiddler — only for fields that are currently
+     blank. Idempotent: existing non-blank field values are preserved.
+     Tokens expand to TW canonical 17-char date format so date/datetime fields
+     stay readable by $edit-date and format:date[] (display formatting is done
+     by the view layer — kind uses DD.MM.YYYY / DD.MM.YYYY HH:mm). -->
+<$let _today=<<now "YYYY0MM0DD000000000">> _nowts=<<now "YYYY0MM0DD0hh0mm0ss0XXX">>>
+<$list filter="[function[kind.field-keys],<type-tid>]" variable="field-key">
+<$let raw-default={{{ [function[kind.field-default],<type-tid>,<field-key>] }}}>
+<$list filter="[<raw-default>!is[blank]] :filter[<target-tid>!has<field-key>] +[first[]]" variable="_">
+<$action-setfield $tiddler=<<target-tid>> $field=<<field-key>> $value={{{ [<raw-default>search-replace[%TODAY%],<_today>search-replace[%NOW%],<_nowts>] }}}/>
+</$list>
+</$let>
+</$list>
+</$let>
+\end

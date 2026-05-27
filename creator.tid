@@ -18,15 +18,16 @@ type: text/vnd.tiddlywiki
 
 <div class="kind-ns-row">
 <strong>Type:</strong>
-<$select tiddler=<<state-type>>>
-<option value="">— choose —</option>
+<span class="kind-pill-row">
 <$list filter="[function[kind.types-all]] :filter[function[kind.belongs-to-ns],<active-ns>] +[sort[kind.type]]" variable="t">
-<option value=<<t>>>
+<$button class={{{ [<state-type>get[text]match<t>then[kind-pill kind-pill-on]] ~[[kind-pill]] }}}>
+<$action-setfield $tiddler=<<state-type>> text=<<t>>/>
+<$transclude $variable="kind.apply-defaults-to" type-tid=<<t>> target-tid={{{ [<t>get[kind.type]addprefix[$:/state/rimir/kind/draft/]] }}}/>
 <$text text={{{ [<t>get[kind.icon]] }}}/>
  <$text text={{{ [<t>get[kind.caption]!is[blank]] ~[<t>get[kind.type]] }}}/>
-</option>
+</$button>
 </$list>
-</$select>
+</span>
 </div>
 
 <$let type-tid={{{ [<state-type>get[text]] }}}>
@@ -45,8 +46,9 @@ type: text/vnd.tiddlywiki
 Create
 </$button>
 &nbsp;
-<$button>
+<$button tooltip="Discard the draft, then re-seed it with field defaults so a fresh entry starts pre-filled.">
 <$action-deletetiddler $tiddler=<<target-tid>>/>
+<$transclude $variable="kind.apply-defaults-to" type-tid=<<type-tid>> target-tid=<<target-tid>>/>
 Clear draft
 </$button>
 &nbsp;

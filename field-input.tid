@@ -32,7 +32,7 @@ type: text/vnd.tiddlywiki
 <$edit-date tiddler=<<target-tid>> field=<<field-key>>/>
 
 <%elseif [<field-typed>match[datetime]] %>
-<$edit-date tiddler=<<target-tid>> field=<<field-key>> format="YYYY-MM-DD HH:mm" showTime="yes" use24hour="yes"/>
+<$edit-date tiddler=<<target-tid>> field=<<field-key>> showTime="yes" use24hour="yes"/>
 
 <%elseif [<field-typed>match[url]] %>
 <$edit-text tiddler=<<target-tid>> field=<<field-key>> type="url" tag="input" class="kind-input" placeholder="https://…"/>
@@ -119,8 +119,38 @@ type: text/vnd.tiddlywiki
 <%endif%>
 </$let>
 
+<%elseif [<field-typed>match[text]] %>
+<%if [<field-card>match[multi]] %>
+<!-- text + cardinality=multi: pill row over enlist-input[] with ×-remove,
+     plus an add-input that appends via $action-listops on Enter.
+     Storage is TW list-format ([[Echo Fox]] Foo) — listops auto-quotes
+     space-containing entries; enlist-input[] unwraps on read. -->
+<$let add-state={{{ [[$:/state/rimir/kind/tm/]addsuffix<target-tid>addsuffix[/]addsuffix<field-key>] }}}>
+<div class="kind-pill-row">
+<$list filter="[<target-tid>get<field-key>enlist-input[]]" variable="item">
+<span class="kind-pill kind-pill-on">
+<<item>>
+<$button class="kind-pill-x" tooltip="remove">
+<$action-listops $tiddler=<<target-tid>> $field=<<field-key>> $subfilter="-[<item>]"/>
+×
+</$button>
+</span>
+</$list>
+</div>
+<$keyboard key="Enter" tag="div" class="kind-tm-add">
+<$edit-text tiddler=<<add-state>> field="text" tag="input" placeholder="add value…" class="kind-input"/>
+<$list filter="[<add-state>get[text]trim[]!is[blank]]" variable="newVal">
+<$action-listops $tiddler=<<target-tid>> $field=<<field-key>> $subfilter="[<newVal>]"/>
+<$action-deletetiddler $tiddler=<<add-state>>/>
+</$list>
+</$keyboard>
+</$let>
 <%else%>
-<!-- default: single-line text -->
+<$edit-text tiddler=<<target-tid>> field=<<field-key>> tag="input" class="kind-input"/>
+<%endif%>
+
+<%else%>
+<!-- default: single-line text (fallback for unknown typed values) -->
 <$edit-text tiddler=<<target-tid>> field=<<field-key>> tag="input" class="kind-input"/>
 <%endif%>
 
@@ -131,6 +161,7 @@ type: text/vnd.tiddlywiki
 <%if [function[kind.viol-max],<type-tid>,<field-key>,<target-tid>] %><div class="kind-err">⛔ max <$text text={{{ [function[kind.constraint-num],<type-tid>,<field-key>,[max:]] }}}/></div><%endif%>
 <%if [function[kind.viol-unique],<type-tid>,<type-key>,<field-key>,<target-tid>] %><div class="kind-err">⛔ value already used in this type</div><%endif%>
 <%if [function[kind.viol-unique-wiki],<type-tid>,<field-key>,<target-tid>] %><div class="kind-err">⛔ value already used in this wiki</div><%endif%>
+<%if [function[kind.viol-self-dup],<type-tid>,<field-key>,<target-tid>] %><div class="kind-err">⛔ duplicate value within list</div><%endif%>
 <%if [function[kind.viol-format-url],<type-tid>,<field-key>,<target-tid>] %><div class="kind-err">⛔ must start with http:// or https://</div><%endif%>
 <%if [function[kind.viol-format-email],<type-tid>,<field-key>,<target-tid>] %><div class="kind-err">⛔ not a valid email address</div><%endif%>
 <%if [function[kind.viol-format-phone],<type-tid>,<field-key>,<target-tid>] %><div class="kind-err">⛔ not a valid German phone number (start with +49 or 0)</div><%endif%>
