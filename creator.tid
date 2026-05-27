@@ -40,7 +40,7 @@ type: text/vnd.tiddlywiki
 <$transclude $tiddler="$:/plugins/rimir/kind/editor"/>
 
 <p>
-<$button disabled={{{ [function[kind.any-invalid],<type-tid>,<type-key>,<target-tid>!is[blank]] }}}>
+<$button disabled={{{ [function[kind.any-invalid],<type-tid>,<type-key>,<target-tid>!is[blank]then[yes]] }}}>
 <$action-createtiddler $basetitle={{{ [function[kind.eval-title],<type-tid>,<target-tid>] }}} $template=<<target-tid>> kind.type=<<type-key>>/>
 <$action-deletetiddler $tiddler=<<target-tid>>/>
 Create

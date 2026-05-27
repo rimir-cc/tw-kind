@@ -54,6 +54,8 @@ Extension point: `field-input.tid` is one `<%if [<typed>match[X]]%>` cascade. Ad
 
 The validator reports any violation as a row in its bulk report. The editor shows live error messages below each input.
 
+Save gating: the in-tiddler creator's Create button is disabled when `kind.any-invalid` returns non-empty (the disabled expression appends `then[yes]` because TW's `$button` widget only treats the literal string `"yes"` as truthy). The cascade-palette flows (`+ New <kind>` and spawn `+ Create new <ref-kind>`) emit a Warning row in place of the Save leaf when `any-invalid` fires — same dispatch pattern as the title-empty Warning row. Warning rows carry `"ca-after-fire":"keep"` so Enter is a no-op (the palette stays open and the user can keep editing).
+
 !! Title generation
 
 When `kind.title-formula` is set, the creator computes a new instance's title by evaluating the formula against the draft state tiddler:

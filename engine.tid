@@ -97,7 +97,7 @@ type: text/vnd.tiddlywiki
 \function kind.is-multi-counted(type-tid, field-key) [function[kind.field-cardinality],<type-tid>,<field-key>match[multi]]
 \function kind.field-size(type-tid, field-key, target-tid) [function[kind.is-multi-counted],<type-tid>,<field-key>!is[blank]] :map[function[kind.field-value-count],<target-tid>,<field-key>] ~[function[kind.field-value-length],<target-tid>,<field-key>]
 
-\function kind.viol-required(type-tid, field-key, target-tid) [function[kind.has-constraint],<type-tid>,<field-key>,[required]!is[blank]] :filter[<target-tid>get<field-key>is[blank]]
+\function kind.viol-required(type-tid, field-key, target-tid) [function[kind.has-constraint],<type-tid>,<field-key>,[required]!is[blank]] :filter[<target-tid>!has<field-key>]
 \function kind.viol-min(type-tid, field-key, target-tid) [function[kind.constraint-num],<type-tid>,<field-key>,[min:]!is[blank]] :filter[function[kind.field-size],<type-tid>,<field-key>,<target-tid>compare:integer:lt<currentTiddler>]
 \function kind.viol-max(type-tid, field-key, target-tid) [function[kind.constraint-num],<type-tid>,<field-key>,[max:]!is[blank]] :filter[function[kind.field-size],<type-tid>,<field-key>,<target-tid>compare:integer:gt<currentTiddler>]
 \function kind.viol-unique(type-tid, type-key, field-key, target-tid) [function[kind.has-constraint],<type-tid>,<field-key>,[unique]!is[blank]] :filter[function[kind.dups-in-type],<target-tid>,<type-key>,<field-key>,<type-tid>!is[blank]]
