@@ -4,9 +4,15 @@ type: text/vnd.tiddlywiki
 \whitespace trim
 \import $:/plugins/rimir/kind/engine
 
-<!-- Read-only single-instance view.
+<!-- Read-only single-instance view (card layout).
      Required vars in scope:
        target-tid — instance tiddler to view
+     Renders:
+       1. Header band: type chip (icon + caption) on the left,
+          tiddler title on the right.
+       2. Field grid: one row per field with value present, label
+          (icon + caption) on the left, value (formatted by typed)
+          on the right. Computed and blank-valued fields are skipped.
 -->
 
 <$let type-key={{{ [<target-tid>get[kind.type]] }}}>
@@ -14,37 +20,73 @@ type: text/vnd.tiddlywiki
 <$let type-tid={{{ [function[kind.locate-type],<type-key>] }}}>
 <%if [<type-tid>!is[blank]] %>
 
-<table class="kind-view">
-<$list filter="[function[kind.field-keys],<type-tid>]" variable="field-key">
+<$let
+  type-caption={{{ [<type-tid>get[kind.caption]!is[blank]] ~[<type-key>] }}}
+  type-icon={{{ [<type-tid>get[kind.icon]] }}}
+>
+
+<div class="kind-view-card">
+
+<div class="kind-view-header">
+<span class="kind-view-type-chip" title=<<type-key>>>
+<%if [<type-icon>!is[blank]] %><span class="kind-view-type-icon"><<type-icon>></span> <%endif%><<type-caption>>
+</span>
+<div class="kind-view-title"><$link to=<<target-tid>>><$text text=<<target-tid>>/></$link></div>
+</div>
+
+<%if [function[kind.field-keys],<type-tid>] :filter[function[kind.view-field-visible],<type-tid>,<target-tid>,<currentTiddler>] +[count[]!match[0]] %>
+<dl class="kind-view-fields">
+<$list filter="[function[kind.field-keys],<type-tid>] :filter[function[kind.view-field-visible],<type-tid>,<target-tid>,<currentTiddler>]" variable="field-key">
 <$let
   field-typed={{{ [function[kind.field-typed],<type-tid>,<field-key>] }}}
+  field-icon={{{ [function[kind.field-icon],<type-tid>,<field-key>] }}}
+  field-cap={{{ [function[kind.field-caption],<type-tid>,<field-key>] ~[<field-key>] }}}
   raw={{{ [<target-tid>get<field-key>] }}}
 >
-<%if [<raw>is[blank]] [<field-typed>match[$title]] [<field-typed>match[$calculated]] +[first[]] %>
-<!-- skip blank values and computed fields -->
-<%else%>
-<tr>
-<td class="kind-view-label">
-<$text text={{{ [function[kind.field-icon],<type-tid>,<field-key>] }}}/>
- <$text text={{{ [function[kind.field-caption],<type-tid>,<field-key>] }}}/>
-</td>
-<td class="kind-view-value">
+<div class="kind-view-row">
+<dt class="kind-view-label">
+<%if [<field-icon>!is[blank]] %><span class="kind-view-field-icon"><<field-icon>></span> <%endif%><<field-cap>>
+</dt>
+<dd class="kind-view-value">
 <%if [<field-typed>match[date]] %>
 <$text text={{{ [<raw>format:date[DDth MMM YYYY]] }}}/>
 <%elseif [<field-typed>match[datetime]] %>
-<$text text={{{ [<raw>format:date[DDth MMM YYYY 0hh:0mm]] }}}/>
+<$text text={{{ [<raw>format:date[DDth MMM YYYY, 0hh:0mm]] }}}/>
 <%elseif [<field-typed>match[ref]] %>
-<$list filter="[<raw>enlist-input[]]" variable="r" counter="cnt"><%if [<cnt-first>match[no]] %>, <%endif%><$link to=<<r>>><$text text={{{ [function[kind.resolve-ref],<r>] }}}/></$link></$list>
+<span class="kind-view-pills">
+<$list filter="[<raw>enlist-input[]]" variable="r">
+<$link to=<<r>> class="kind-view-pill"><$text text={{{ [function[kind.resolve-ref],<r>] }}}/></$link>
+</$list>
+</span>
+<%elseif [<field-typed>match[enum]] %>
+<span class="kind-view-pills">
+<$list filter="[<raw>enlist-input[]]" variable="v">
+<span class="kind-view-pill kind-view-pill-enum"><$text text=<<v>>/></span>
+</$list>
+</span>
+<%elseif [<field-typed>match[url]] %>
+<a href=<<raw>> target="_blank" rel="noopener" class="kind-view-link"><$text text=<<raw>>/></a>
+<%elseif [<field-typed>match[email]] %>
+<a href={{{ [<raw>addprefix[mailto:]] }}} class="kind-view-link"><$text text=<<raw>>/></a>
+<%elseif [<field-typed>match[phone]] %>
+<a href={{{ [<raw>addprefix[tel:]] }}} class="kind-view-link"><$text text=<<raw>>/></a>
+<%elseif [<field-typed>match[longtext]] %>
+<div class="kind-view-longtext"><$text text=<<raw>>/></div>
 <%else%>
 <$text text=<<raw>>/>
 <%endif%>
-</td>
-</tr>
-<%endif%>
+</dd>
+</div>
 </$let>
 </$list>
-</table>
+</dl>
+<%else%>
+<div class="kind-view-empty">No values yet — fill fields on the left.</div>
+<%endif%>
 
+</div>
+
+</$let>
 <%endif%>
 </$let>
 <%endif%>

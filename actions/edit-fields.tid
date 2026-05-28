@@ -8,3 +8,5 @@ ca-kind: drill
 ca-order: 50
 ca-next-title: Edit fields
 ca-items-from: [function[kind.cascade-fields-for-edit],<parent-picked>]
+ca-preview-context: [<parent-picked>]
+

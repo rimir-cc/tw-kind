@@ -34,6 +34,7 @@ type: text/vnd.tiddlywiki
 \function kind.is-ref-typed(type-tid, field-key) [function[kind.field-typed],<type-tid>,<field-key>match[ref]]
 \function kind.is-enum-typed(type-tid, field-key) [function[kind.field-typed],<type-tid>,<field-key>match[enum]]
 \function kind.is-computed-typed(type-tid, field-key) [function[kind.field-typed],<type-tid>,<field-key>match[$title]] [function[kind.field-typed],<type-tid>,<field-key>match[$calculated]]
+\function kind.view-field-visible(type-tid, target-tid, field-key) [<field-key>] :filter[function[kind.is-computed-typed],<type-tid>,<field-key>count[]match[0]] :filter[<target-tid>get<field-key>!is[blank]]
 
 \function kind.fields-valid(type-tid) [<type-tid>get[kind.fields]!is[blank]prefix[[]]
 \function kind.cardinality-applicable(typed) [<typed>match[enum]] [<typed>match[ref]] [<typed>match[text]]
@@ -116,9 +117,14 @@ type: text/vnd.tiddlywiki
 <!-- Walks the type's fields and writes each field's `default` (with %TODAY% / %NOW%
      token expansion) onto the target tiddler — only for fields that are currently
      blank. Idempotent: existing non-blank field values are preserved.
+     Also stamps `kind.type` on the target so the draft is a recognisable kind-
+     instance for downstream consumers (e.g. the side-preview's instance-view
+     template, which gates on `kind.type !is[blank]`). The downstream save path
+     overwrites `kind.type` explicitly with the same value, so this is harmless.
      Tokens expand to TW canonical 17-char date format so date/datetime fields
      stay readable by $edit-date and format:date[] (display formatting is done
      by the view layer — kind uses DD.MM.YYYY / DD.MM.YYYY HH:mm). -->
+<$action-setfield $tiddler=<<target-tid>> kind.type={{{ [<type-tid>get[kind.type]] }}}/>
 <$let _today=<<now "YYYY0MM0DD000000000">> _nowts=<<now "YYYY0MM0DD0hh0mm0ss0XXX">>>
 <$list filter="[function[kind.field-keys],<type-tid>]" variable="field-key">
 <$let raw-default={{{ [function[kind.field-default],<type-tid>,<field-key>] }}}>
@@ -138,7 +144,10 @@ type: text/vnd.tiddlywiki
      the same action chain as this transclude). The `:filter[!has<field>]` gate
      used in apply-defaults-to evaluates AT RENDER TIME against the pre-delete
      state, which made reset toggle between "all defaults" and "empty" on repeat
-     clicks. Dropping the gate makes the action idempotent across clicks. -->
+     clicks. Dropping the gate makes the action idempotent across clicks.
+     Also stamps `kind.type` so the freshly-deleted draft is recognised as a
+     kind-instance by the side-preview after Reset. -->
+<$action-setfield $tiddler=<<target-tid>> kind.type={{{ [<type-tid>get[kind.type]] }}}/>
 <$let _today=<<now "YYYY0MM0DD000000000">> _nowts=<<now "YYYY0MM0DD0hh0mm0ss0XXX">>>
 <$list filter="[function[kind.field-keys],<type-tid>]" variable="field-key">
 <$let raw-default={{{ [function[kind.field-default],<type-tid>,<field-key>] }}}>

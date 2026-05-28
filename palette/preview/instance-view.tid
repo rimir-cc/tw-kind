@@ -1,0 +1,28 @@
+title: $:/plugins/rimir/kind/palette/preview/instance-view
+tags: $:/tags/rimir/cascade-palette/side-preview
+type: text/vnd.tiddlywiki
+ca-preview-applies: [<currentTiddler>has[kind.type]]
+ca-preview-name: Instance
+ca-preview-title: Instance
+ca-preview-order: 50
+
+\whitespace trim
+\import $:/plugins/rimir/kind/engine
+
+<!-- Side-preview template for kind-instance contexts. Auto-attaches via
+     the side-preview tag whenever the active context row has `kind.type`.
+     <<currentTiddler>> is the entity tiddler — either a saved instance
+     the user is browsing, a draft being created (during "+ New <kind>"),
+     or an entity being modified ("Edit fields" action). Delegates to the
+     shared read-only view, which renders the type chip, entity title,
+     and field grid. The wiki change hook on the entity tiddler
+     invalidates cp's side-preview cache → live updates as the user
+     fills fields on the left column. -->
+
+<$let target-tid=<<currentTiddler>>>
+<%if [<target-tid>get[kind.type]!is[blank]] %>
+<$transclude $tiddler="$:/plugins/rimir/kind/view"/>
+<%else%>
+<div class="kind-view-empty">Not a kind-instance — no <code>kind.type</code> on <code><$text text=<<target-tid>>/></code>.</div>
+<%endif%>
+</$let>

@@ -9,3 +9,4 @@ ca-group: Kind Actions
 ca-next-title: All entities
 ca-next-entity-type: kind-entity
 ca-next-scope: [all[shadows+tiddlers]has[kind.type]!has[kind.fields]] :filter[search:caption,title<query>] +[sort[caption]limit[60]]
+ca-preview-per-row: yes
