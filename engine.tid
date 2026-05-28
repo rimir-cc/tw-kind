@@ -129,3 +129,23 @@ type: text/vnd.tiddlywiki
 </$list>
 </$let>
 \end
+
+\procedure kind.force-apply-defaults(type-tid, target-tid)
+<!-- Like kind.apply-defaults-to but unconditional: writes every default-bearing
+     field onto target-tid regardless of current state. Used by the Reset row
+     where the caller has just deleted target-tid (so "preserve existing values"
+     would be incorrect — we WANT to overwrite, and the deletetiddler runs in
+     the same action chain as this transclude). The `:filter[!has<field>]` gate
+     used in apply-defaults-to evaluates AT RENDER TIME against the pre-delete
+     state, which made reset toggle between "all defaults" and "empty" on repeat
+     clicks. Dropping the gate makes the action idempotent across clicks. -->
+<$let _today=<<now "YYYY0MM0DD000000000">> _nowts=<<now "YYYY0MM0DD0hh0mm0ss0XXX">>>
+<$list filter="[function[kind.field-keys],<type-tid>]" variable="field-key">
+<$let raw-default={{{ [function[kind.field-default],<type-tid>,<field-key>] }}}>
+<$list filter="[<raw-default>!is[blank]]" variable="_">
+<$action-setfield $tiddler=<<target-tid>> $field=<<field-key>> $value={{{ [<raw-default>search-replace[%TODAY%],<_today>search-replace[%NOW%],<_nowts>] }}}/>
+</$list>
+</$let>
+</$list>
+</$let>
+\end

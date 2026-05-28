@@ -46,10 +46,10 @@ type: text/vnd.tiddlywiki
 Create
 </$button>
 &nbsp;
-<$button tooltip="Discard the draft, then re-seed it with field defaults so a fresh entry starts pre-filled.">
+<$button tooltip="Discard the draft and re-seed it with the kind's field defaults — fresh entry starts pre-filled.">
 <$action-deletetiddler $tiddler=<<target-tid>>/>
-<$transclude $variable="kind.apply-defaults-to" type-tid=<<type-tid>> target-tid=<<target-tid>>/>
-Clear draft
+<$transclude $variable="kind.force-apply-defaults" type-tid=<<type-tid>> target-tid=<<target-tid>>/>
+♻ Reset to defaults
 </$button>
 &nbsp;
 <span style="opacity:0.6;font-size:0.85em;">computed title: <code><$text text={{{ [function[kind.eval-title],<type-tid>,<target-tid>] }}}/></code></span>
