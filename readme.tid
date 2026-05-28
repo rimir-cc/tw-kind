@@ -14,6 +14,7 @@ Lightweight schema engine for TiddlyWiki. Define each type's fields, constraints
 * ''Typeahead refs'' — filterable text input + dropdown + selected pills with × remove; scales to large option sets
 * ''Configurable stream-river view'' — each type chooses which fields appear in its in-river field bar; empty = bar hidden
 * ''Hand-rolled UI'' — zero dependency on other rimir plugins (theme/components/typed)
+* ''Cascade-palette integration'' — when `rimir/cascade-palette` ≥ 0.0.79 is installed, kind ships a bridge config (`kind.type` as the entity-type field) so any action declaring `ca-entity-type: <X>` automatically surfaces on Space against any tiddler with `kind.type: <X>` in any view. The four bundled instance-actions (Open, Edit fields, Edit kind schema, Delete) also carry `ca-applies: [<currentTiddler>has[kind.type]]`, so they show up on any kind-instance row regardless of its specific type
 
 !! Prerequisites
 
