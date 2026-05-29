@@ -24,7 +24,7 @@ type: text/vnd.tiddlywiki
 \function kind.field-array-flat(type-tid, idx, prop) [function[kind.json],<type-tid>jsonindexes<idx>,<prop>] :map[function[kind.json],<type-tid>jsonget<idx>,<prop>,<currentTiddler>]
 \function kind.constraints(type-tid, field-key) [function[kind.field-idx],<type-tid>,<field-key>] :map:flat[function[kind.field-array-flat],<type-tid>,<currentTiddler>,[constraints]]
 \function kind.options(type-tid, field-key) [function[kind.field-idx],<type-tid>,<field-key>] :map:flat[function[kind.field-array-flat],<type-tid>,<currentTiddler>,[options]]
-\function kind.ref-types(type-tid, field-key) [function[kind.field-idx],<type-tid>,<field-key>] :map:flat[function[kind.field-array-flat],<type-tid>,<currentTiddler>,[ref-types]]
+\function kind.ref-types(type-tid, field-key) [function[kind.field-idx],<type-tid>,<field-key>] :map:flat[function[kind.field-array-flat],<type-tid>,<currentTiddler>,[ref-types]] +[!is[blank]]
 \function kind.has-constraint(type-tid, field-key, name) [function[kind.constraints],<type-tid>,<field-key>match<name>]
 \function kind.constraint-num(type-tid, field-key, prefix) [function[kind.constraints],<type-tid>,<field-key>] :filter[<currentTiddler>prefix<prefix>] :map[<currentTiddler>removeprefix<prefix>] +[first[]]
 
@@ -46,7 +46,9 @@ type: text/vnd.tiddlywiki
 \function kind.unique-applicable(typed) [<typed>!match[$title]!match[$calculated]!is[blank]]
 \function kind.minmax-applicable(typed, cardinality) [<typed>match[text]] [<typed>match[longtext]] [<typed>match[number]] [<typed>match[date]] [<typed>match[datetime]] [<typed>match[url]] [<typed>match[email]] [<typed>match[phone]] [<cardinality>match[multi]]
 
-\function kind.ref-candidates(type-tid, field-key) [function[kind.ref-types],<type-tid>,<field-key>] :map:flat[all[shadows+tiddlers]kind.type<currentTiddler>!has[kind.fields]] +[unique[]]
+\function kind.ref-candidates-typed(type-tid, field-key) [function[kind.ref-types],<type-tid>,<field-key>] :map:flat[all[shadows+tiddlers]kind.type<currentTiddler>!has[kind.fields]]
+\function kind.ref-candidates-any(type-tid, field-key) [function[kind.ref-types],<type-tid>,<field-key>count[]match[0]] :map:flat[all[shadows+tiddlers]has[kind.type]!has[kind.fields]]
+\function kind.ref-candidates(type-tid, field-key) [function[kind.ref-candidates-typed],<type-tid>,<field-key>] [function[kind.ref-candidates-any],<type-tid>,<field-key>] +[unique[]]
 
 \function kind.instances-of(type-key) [all[shadows+tiddlers]kind.type<type-key>!has[kind.fields]]
 

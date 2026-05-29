@@ -3,7 +3,7 @@
     "description": "Lightweight schema engine for TiddlyWiki — one tiddler per type, namespaced, hand-rolled UI",
     "name": "kind",
     "author": "rimir",
-    "version": "0.1.50",
+    "version": "0.1.51",
     "core-version": ">=5.4.0",
     "source": "https://github.com/rimir-cc/tw-kind",
     "plugin-type": "plugin",
