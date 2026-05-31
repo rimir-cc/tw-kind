@@ -25,7 +25,7 @@ type: text/vnd.tiddlywiki
 \function kind.cascade-manage-kind-with-icon(kind-tid, caption, icon) [function[kind.kind-delete-consequence],<kind-tid>] :map[function[kind.cascade-manage-kind-build],<kind-tid>,<caption>,<icon>,<currentTiddler>]
 \function kind.cascade-manage-kind-build(kind-tid, caption, icon, consequence) [<kind-tid>] +[addprefix[{"title":"]] +[addsuffix[","ca-name":"]] +[addsuffix<caption>] +[addsuffix[","ca-icon":"]] +[addsuffix<icon>] +[addsuffix[","ca-kind":"drill","ca-next-title":"]] +[addsuffix<caption>] +[addsuffix[","ca-preview-template":"$:/plugins/rimir/kind/palette/preview/kind-form","ca-preview-title":"Create form preview","ca-on-delete":"<$action-deletetiddler $tiddler=\"]] +[addsuffix<kind-tid>] +[addsuffix[\"/><$action-sendmessage $message=\"rimir-cascade-palette-open-entry\" entry=\"$:/plugins/rimir/kind/palette/entries/manage-kinds\"/>","ca-on-delete-consequence":"]] +[addsuffix<consequence>] +[addsuffix[","ca-items-from":"]] +[addsuffix{$:/plugins/rimir/kind/_brackets!!lb}] +[addsuffix[function]] +[addsuffix{$:/plugins/rimir/kind/_brackets!!lb}] +[addsuffix[kind.cascade-kind-edit-items]] +[addsuffix{$:/plugins/rimir/kind/_brackets!!rb}] +[addsuffix[,]] +[addsuffix{$:/plugins/rimir/kind/_brackets!!lb}] +[addsuffix<kind-tid>] +[addsuffix{$:/plugins/rimir/kind/_brackets!!rb}] +[addsuffix{$:/plugins/rimir/kind/_brackets!!rb}] +[addsuffix["}]]
 
-\function kind.cascade-kind-edit-items(kind-tid) [function[kind.cascade-kind-field-rows],<kind-tid>] [function[kind.cascade-add-from-library-row],<kind-tid>] [function[kind.cascade-add-new-field-row],<kind-tid>] [function[kind.cascade-child-kind-rows],<kind-tid>] [function[kind.cascade-meta-row],<kind-tid>,[kind.caption],[caption],[🏷],[500]] [function[kind.cascade-meta-row],<kind-tid>,[kind.icon],[icon],[🖼],[510]] [function[kind.cascade-meta-row],<kind-tid>,[kind.namespaces],[namespaces],[🗂],[520]] [function[kind.cascade-parent-kinds-drill-row],<kind-tid>] [function[kind.cascade-meta-row],<kind-tid>,[kind.title-formula],[title-formula],[⚙],[530]] [function[kind.cascade-meta-row],<kind-tid>,[kind.stream-fields],[stream-fields],[≣],[540]] [function[kind.cascade-meta-row],<kind-tid>,[kind.auto-children],[auto-children],[🐣],[545]] [function[kind.cascade-delete-kind-row],<kind-tid>]
+\function kind.cascade-kind-edit-items(kind-tid) [function[kind.cascade-kind-field-rows],<kind-tid>] [function[kind.cascade-add-from-library-row],<kind-tid>] [function[kind.cascade-add-new-field-row],<kind-tid>] [function[kind.cascade-child-kind-rows],<kind-tid>] [function[kind.cascade-meta-row],<kind-tid>,[kind.caption],[caption],[🏷],[500]] [function[kind.cascade-meta-row],<kind-tid>,[kind.icon],[icon],[🖼],[510]] [function[kind.cascade-meta-row],<kind-tid>,[kind.namespaces],[namespaces],[🗂],[520]] [function[kind.cascade-parent-kinds-drill-row],<kind-tid>] [function[kind.cascade-meta-row],<kind-tid>,[kind.title-formula],[title-formula],[⚙],[530]] [function[kind.cascade-meta-row],<kind-tid>,[kind.stream-fields],[stream-fields],[≣],[540]] [function[kind.cascade-auto-children-drill-row],<kind-tid>] [function[kind.cascade-delete-kind-row],<kind-tid>]
 
 \function kind.cascade-meta-row(target-tid, field, caption, icon, order) [<caption>] +[addprefix[{"ca-name":"]] +[addsuffix[","ca-icon":"]] +[addsuffix<icon>] +[addsuffix[","ca-order":"]] +[addsuffix<order>] +[addsuffix[","ca-group":"metadata","ca-kind":"text","ca-bind-tiddler":"]] +[addsuffix<target-tid>] +[addsuffix[","ca-bind-field":"]] +[addsuffix<field>] +[addsuffix[","ca-bind-type":"text/plain"}]]
 
@@ -220,4 +220,77 @@ type: text/vnd.tiddlywiki
 </$list>
 </$list>
 </$let>
+\end
+
+\function kind.cascade-auto-children-drill-row(kind-tid) [<kind-tid>get[kind.auto-children]jsonindexes[]count[]] :map[function[kind.cascade-auto-children-drill-row-build],<kind-tid>,<currentTiddler>]
+\function kind.cascade-auto-children-drill-row-build(kind-tid, count) [<count>] +[addprefix[{"ca-name":"auto-children (]] +[addsuffix[)","ca-icon":"🐣","ca-order":"545","ca-group":"metadata","ca-hint":"Drill in to add / remove auto-child entries and edit per-entry field overrides — no JSON typing required. Each entry materialises a child instance when an instance of this kind is saved.","ca-kind":"drill","ca-next-title":"Auto-children","ca-items-from":"]] +[addsuffix{$:/plugins/rimir/kind/_brackets!!lb}] +[addsuffix[function]] +[addsuffix{$:/plugins/rimir/kind/_brackets!!lb}] +[addsuffix[kind.cascade-auto-children-items]] +[addsuffix{$:/plugins/rimir/kind/_brackets!!rb}] +[addsuffix[,]] +[addsuffix{$:/plugins/rimir/kind/_brackets!!lb}] +[addsuffix<kind-tid>] +[addsuffix{$:/plugins/rimir/kind/_brackets!!rb}] +[addsuffix{$:/plugins/rimir/kind/_brackets!!rb}] +[addsuffix["}]]
+
+\function kind.cascade-auto-children-items(kind-tid) [function[kind.auto-children-indexes],<kind-tid>] :map[function[kind.cascade-auto-child-entry-row],<kind-tid>,<currentTiddler>] [function[kind.cascade-auto-children-add-row],<kind-tid>]
+
+\function kind.cascade-auto-child-entry-row(kind-tid, ac-idx) [function[kind.auto-child-kind-at],<kind-tid>,<ac-idx>] :map[function[kind.cascade-auto-child-entry-row-2],<kind-tid>,<ac-idx>,<currentTiddler>]
+\function kind.cascade-auto-child-entry-row-2(kind-tid, ac-idx, child-key) [function[kind.locate-type],<child-key>] :map[function[kind.cascade-auto-child-entry-row-3],<kind-tid>,<ac-idx>,<child-key>,<currentTiddler>] ~[function[kind.cascade-auto-child-entry-row-orphan],<kind-tid>,<ac-idx>,<child-key>]
+\function kind.cascade-auto-child-entry-row-3(kind-tid, ac-idx, child-key, child-tid) [<child-tid>get[kind.caption]] +[!is[blank]] ~[<child-key>] :map[function[kind.cascade-auto-child-entry-row-4],<kind-tid>,<ac-idx>,<child-key>,<child-tid>,<currentTiddler>]
+\function kind.cascade-auto-child-entry-row-4(kind-tid, ac-idx, child-key, child-tid, caption) [<child-tid>get[kind.icon]] +[!is[blank]] ~[[🐣]] :map[function[kind.cascade-auto-child-entry-row-5],<kind-tid>,<ac-idx>,<child-key>,<child-tid>,<caption>,<currentTiddler>]
+\function kind.cascade-auto-child-entry-row-5(kind-tid, ac-idx, child-key, child-tid, caption, icon) [function[kind.cascade-auto-child-fields-summary],<kind-tid>,<ac-idx>] +[!is[blank]] ~[[(no field overrides)]] :map[function[kind.cascade-auto-child-entry-row-build],<kind-tid>,<ac-idx>,<child-key>,<caption>,<icon>,<currentTiddler>]
+\function kind.cascade-auto-child-entry-row-build(kind-tid, ac-idx, child-key, caption, icon, summary) [<caption>] +[addprefix[{"ca-name":"]] +[addsuffix[ — ]] +[addsuffix<summary>] +[addsuffix[","ca-icon":"]] +[addsuffix<icon>] +[addsuffix[","ca-order":"]] +[addsuffix<ac-idx>] +[addsuffix[","ca-group":"entries","ca-kind":"drill","ca-next-title":"]] +[addsuffix<caption>] +[addsuffix[","ca-hint":"Edit field overrides for this auto-child entry, or remove it with DEL. Child kind: ]] +[addsuffix<child-key>] +[addsuffix[","ca-items-from":"]] +[addsuffix{$:/plugins/rimir/kind/_brackets!!lb}] +[addsuffix[function]] +[addsuffix{$:/plugins/rimir/kind/_brackets!!lb}] +[addsuffix[kind.cascade-auto-child-entry-items]] +[addsuffix{$:/plugins/rimir/kind/_brackets!!rb}] +[addsuffix[,]] +[addsuffix{$:/plugins/rimir/kind/_brackets!!lb}] +[addsuffix<kind-tid>] +[addsuffix{$:/plugins/rimir/kind/_brackets!!rb}] +[addsuffix[,]] +[addsuffix{$:/plugins/rimir/kind/_brackets!!lb}] +[addsuffix<ac-idx>] +[addsuffix{$:/plugins/rimir/kind/_brackets!!rb}] +[addsuffix{$:/plugins/rimir/kind/_brackets!!rb}] +[addsuffix[","ca-on-delete":"<$transclude $variable=\"kind.cascade-delete-auto-child\" target-tid=\"]] +[addsuffix<kind-tid>] +[addsuffix[\" ac-idx=\"]] +[addsuffix<ac-idx>] +[addsuffix[\"/>","ca-on-delete-consequence":"Remove this auto-child entry (kind: ]] +[addsuffix<child-key>] +[addsuffix[). Instances of this kind created in the future will not auto-spawn this child."}]]
+
+\function kind.cascade-auto-child-fields-summary(kind-tid, ac-idx) [function[kind.auto-child-fields-at],<kind-tid>,<ac-idx>] :map[function[kind.cascade-auto-child-field-summary-pair],<kind-tid>,<ac-idx>,<currentTiddler>] +[join[, ]]
+\function kind.cascade-auto-child-field-summary-pair(kind-tid, ac-idx, field-key) [function[kind.auto-child-field-value-at],<kind-tid>,<ac-idx>,<field-key>] +[!is[blank]] ~[[(empty)]] :map[<currentTiddler>addprefix[: ]addprefix<field-key>]
+
+\function kind.cascade-auto-child-entry-row-orphan(kind-tid, ac-idx, child-key) [<child-key>] +[addprefix[{"ca-name":"⚠ ]] +[addsuffix[ (kind not found)","ca-icon":"⚠","ca-order":"]] +[addsuffix<ac-idx>] +[addsuffix[","ca-group":"entries","ca-kind":"leaf","ca-hint":"This auto-child entry references kind type-key `]] +[addsuffix<child-key>] +[addsuffix[` which no longer exists in the wiki. DEL to remove the orphan entry.","ca-on-delete":"<$transclude $variable=\"kind.cascade-delete-auto-child\" target-tid=\"]] +[addsuffix<kind-tid>] +[addsuffix[\" ac-idx=\"]] +[addsuffix<ac-idx>] +[addsuffix[\"/>","ca-on-delete-consequence":"Remove this orphan auto-child entry."}]]
+
+\function kind.cascade-auto-child-entry-items(kind-tid, ac-idx) [function[kind.cascade-auto-child-field-rows],<kind-tid>,<ac-idx>] [function[kind.cascade-auto-child-add-field-row],<kind-tid>,<ac-idx>]
+\function kind.cascade-auto-child-field-rows(kind-tid, ac-idx) [function[kind.auto-child-fields-at],<kind-tid>,<ac-idx>] :map[function[kind.cascade-auto-child-field-row-build],<kind-tid>,<ac-idx>,<currentTiddler>]
+\function kind.cascade-auto-child-field-row-build(kind-tid, ac-idx, field-key) [<field-key>] +[addprefix[{"ca-name":"]] +[addsuffix[","ca-icon":"·","ca-group":"fields","ca-kind":"text","ca-bind-tiddler":"]] +[addsuffix<kind-tid>] +[addsuffix[","ca-bind-field":"kind.auto-children","ca-bind-path":"]] +[addsuffix<ac-idx>] +[addsuffix[,fields,]] +[addsuffix<field-key>] +[addsuffix[","ca-bind-type":"text/plain","ca-hint":"Override the child kind's default for this field. The auto-child instance will be created with this value. DEL removes the override (the child's normal default applies instead).","ca-on-delete":"<$transclude $variable=\"kind.cascade-remove-auto-child-field\" target-tid=\"]] +[addsuffix<kind-tid>] +[addsuffix[\" ac-idx=\"]] +[addsuffix<ac-idx>] +[addsuffix[\" field-key=\"]] +[addsuffix<field-key>] +[addsuffix[\"/>","ca-on-delete-consequence":"Remove this field override."}]]
+
+\function kind.cascade-auto-child-add-field-row(kind-tid, ac-idx) [function[kind.auto-child-kind-at],<kind-tid>,<ac-idx>] :map[function[kind.cascade-auto-child-add-field-row-2],<kind-tid>,<ac-idx>,<currentTiddler>]
+\function kind.cascade-auto-child-add-field-row-2(kind-tid, ac-idx, child-key) [function[kind.locate-type],<child-key>] :map[function[kind.cascade-auto-child-add-field-row-build],<kind-tid>,<ac-idx>,<child-key>,<currentTiddler>]
+\function kind.cascade-auto-child-add-field-row-build(kind-tid, ac-idx, child-key, child-tid) [<kind-tid>] +[addprefix[{"ca-name":"+ Add field override…","ca-icon":"✚","ca-order":"1000","ca-group":"add","ca-kind":"drill","ca-next-title":"Pick a field to override","ca-hint":"Pick a field from the child kind's schema. Only fields not yet overridden are shown.","ca-items-from":"]] +[addsuffix{$:/plugins/rimir/kind/_brackets!!lb}] +[addsuffix[function]] +[addsuffix{$:/plugins/rimir/kind/_brackets!!lb}] +[addsuffix[kind.cascade-auto-child-add-field-items]] +[addsuffix{$:/plugins/rimir/kind/_brackets!!rb}] +[addsuffix[,]] +[addsuffix{$:/plugins/rimir/kind/_brackets!!lb}] +[addsuffix<kind-tid>] +[addsuffix{$:/plugins/rimir/kind/_brackets!!rb}] +[addsuffix[,]] +[addsuffix{$:/plugins/rimir/kind/_brackets!!lb}] +[addsuffix<ac-idx>] +[addsuffix{$:/plugins/rimir/kind/_brackets!!rb}] +[addsuffix[,]] +[addsuffix{$:/plugins/rimir/kind/_brackets!!lb}] +[addsuffix<child-tid>] +[addsuffix{$:/plugins/rimir/kind/_brackets!!rb}] +[addsuffix{$:/plugins/rimir/kind/_brackets!!rb}] +[addsuffix["}]]
+
+\function kind.cascade-auto-child-add-field-items(kind-tid, ac-idx, child-tid) [function[kind.field-keys],<child-tid>] -[function[kind.auto-child-fields-at],<kind-tid>,<ac-idx>] :map[function[kind.cascade-auto-child-add-field-leaf-build],<kind-tid>,<ac-idx>,<currentTiddler>]
+\function kind.cascade-auto-child-add-field-leaf-build(kind-tid, ac-idx, field-key) [<field-key>] +[addprefix[{"ca-name":"]] +[addsuffix[","ca-icon":"·","ca-kind":"leaf","ca-after-fire":"pop","ca-hint":"Adds this field override with an empty value — drill back into the entry to type the value.","ca-actions":"<$transclude $variable=\"kind.cascade-set-auto-child-field\" target-tid=\"]] +[addsuffix<kind-tid>] +[addsuffix[\" ac-idx=\"]] +[addsuffix<ac-idx>] +[addsuffix[\" field-key=\"]] +[addsuffix<field-key>] +[addsuffix[\" value=\"\"/>"}]]
+
+\function kind.cascade-auto-children-add-row(kind-tid) [<kind-tid>] +[addprefix[{"ca-name":"+ Add auto-child entry…","ca-icon":"✚","ca-order":"1000","ca-group":"add","ca-kind":"drill","ca-next-title":"Pick a child kind","ca-hint":"Pick any kind — when an instance of this kind is saved, an instance of the picked kind will be auto-created with `parent` pre-set. Kinds that declare this type in their `kind.parent-kinds` are the most natural choice but any kind is allowed.","ca-items-from":"]] +[addsuffix{$:/plugins/rimir/kind/_brackets!!lb}] +[addsuffix[function]] +[addsuffix{$:/plugins/rimir/kind/_brackets!!lb}] +[addsuffix[kind.cascade-auto-children-add-items]] +[addsuffix{$:/plugins/rimir/kind/_brackets!!rb}] +[addsuffix[,]] +[addsuffix{$:/plugins/rimir/kind/_brackets!!lb}] +[addsuffix<kind-tid>] +[addsuffix{$:/plugins/rimir/kind/_brackets!!rb}] +[addsuffix{$:/plugins/rimir/kind/_brackets!!rb}] +[addsuffix["}]]
+
+\function kind.cascade-auto-children-add-items(kind-tid) [function[kind.types-all]] -[<kind-tid>] :map[function[kind.cascade-auto-children-add-leaf],<kind-tid>,<currentTiddler>]
+\function kind.cascade-auto-children-add-leaf(kind-tid, candidate-tid) [<candidate-tid>get[kind.caption]] +[!is[blank]] ~[<candidate-tid>get[kind.type]] :map[function[kind.cascade-auto-children-add-leaf-2],<kind-tid>,<candidate-tid>,<currentTiddler>]
+\function kind.cascade-auto-children-add-leaf-2(kind-tid, candidate-tid, caption) [<candidate-tid>get[kind.type]] :map[function[kind.cascade-auto-children-add-leaf-3],<kind-tid>,<candidate-tid>,<caption>,<currentTiddler>]
+\function kind.cascade-auto-children-add-leaf-3(kind-tid, candidate-tid, caption, candidate-key) [<candidate-tid>get[kind.icon]] +[!is[blank]] ~[[🐣]] :map[function[kind.cascade-auto-children-add-leaf-build],<kind-tid>,<candidate-key>,<caption>,<currentTiddler>]
+\function kind.cascade-auto-children-add-leaf-build(kind-tid, candidate-key, caption, icon) [<caption>] +[addprefix[{"ca-name":"]] +[addsuffix[","ca-icon":"]] +[addsuffix<icon>] +[addsuffix[","ca-kind":"leaf","ca-after-fire":"pop","ca-hint":"Add this kind as a new auto-child entry. Then drill into the entry to set field overrides.","ca-actions":"<$transclude $variable=\"kind.cascade-add-auto-child\" target-tid=\"]] +[addsuffix<kind-tid>] +[addsuffix[\" kind-key=\"]] +[addsuffix<candidate-key>] +[addsuffix[\"/>"}]]
+
+\procedure kind.cascade-add-auto-child(target-tid, kind-key)
+<!-- Appends {"kind":"<kind-key>","fields":{}} to target's kind.auto-children
+     JSON array. Initialises the field to "[]" if currently unset/blank. -->
+<$let
+  current={{{ [<target-tid>get[kind.auto-children]] +[!is[blank]] ~[function[kind.empty-array]] }}}
+  next-idx={{{ [<current>jsonindexes[]count[]] }}}
+  new-entry={{{ [<kind-key>addprefix[{"kind":"]addsuffix[","fields":{}}]] }}}
+>
+<$action-setfield $tiddler=<<target-tid>> kind.auto-children={{{ [<current>jsonset:json<next-idx>,<new-entry>] }}}/>
+</$let>
+\end
+
+\procedure kind.cascade-delete-auto-child(target-tid, ac-idx)
+<!-- Rebuilds the auto-children array without entry at ac-idx (jsonset[]-deletion
+     converts arrays to objects with sparse keys — must rebuild via filter,
+     same pattern as kind.rebuilt-fields-without). -->
+<$let current={{{ [<target-tid>get[kind.auto-children]] }}}>
+<$let rebuilt={{{ [<current>jsonindexes[]] -[<ac-idx>] :map[<current>jsonextract<currentTiddler>] +[join[,]] :map[function[kind.wrap-array],<currentTiddler>] ~[function[kind.empty-array]] }}}>
+<$action-setfield $tiddler=<<target-tid>> kind.auto-children=<<rebuilt>>/>
+</$let>
+</$let>
+\end
+
+\procedure kind.cascade-set-auto-child-field(target-tid, ac-idx, field-key, value)
+<!-- Sets target's kind.auto-children[ac-idx].fields[field-key] = value. Used
+     by both the +Add-field-override flow (with empty value) and any subsequent
+     text-edit on the field-row (which binds via ca-bind-tiddler/path/field
+     and dispatches its own jsonset). -->
+<$action-setfield $tiddler=<<target-tid>> kind.auto-children={{{ [<target-tid>get[kind.auto-children]jsonset<ac-idx>,[fields],<field-key>,<value>] }}}/>
+\end
+
+\procedure kind.cascade-remove-auto-child-field(target-tid, ac-idx, field-key)
+<!-- Removes target's kind.auto-children[ac-idx].fields[field-key]. Used by
+     DEL on a field-override row. -->
+<$action-setfield $tiddler=<<target-tid>> kind.auto-children={{{ [<target-tid>get[kind.auto-children]jsondelete<ac-idx>,[fields],<field-key>] }}}/>
 \end
