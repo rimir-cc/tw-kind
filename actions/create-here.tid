@@ -1,0 +1,11 @@
+title: $:/plugins/rimir/kind/actions/create-here
+tags: $:/tags/rimir/cascade-palette/action
+ca-entity-type: kind-entity
+ca-applies: [<currentTiddler>has[kind.type]] :filter[function[kind.has-create-here-options],<currentTiddler>]
+ca-name: Create here…
+ca-hint: Create a new child-kind instance with `parent` pre-set, or a kind that ref-points to this entity with its back-ref pre-set.
+ca-icon: ➕
+ca-kind: drill
+ca-order: 25
+ca-next-title: Create here
+ca-items-from: [function[kind.create-here-items],<parent-picked>]

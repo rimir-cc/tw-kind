@@ -351,6 +351,7 @@ Cancel
 <tr><th class="kind-editor-label">caption</th><td><$edit-text tiddler=<<type-tid>> field="kind.caption" tag="input" class="kind-input"/></td></tr>
 <tr><th class="kind-editor-label">icon (emoji/SVG ref)</th><td><$edit-text tiddler=<<type-tid>> field="kind.icon" tag="input" class="kind-input"/></td></tr>
 <tr><th class="kind-editor-label">namespaces (space-sep; empty = visible in every namespace)</th><td><$edit-text tiddler=<<type-tid>> field="kind.namespaces" tag="input" class="kind-input"/></td></tr>
+<tr><th class="kind-editor-label">parent kinds (space-sep kind.type keys; non-empty&nbsp;= ''child kind'', only creatable from within a parent instance via the cascade-palette "Create here…" action)</th><td><$edit-text tiddler=<<type-tid>> field="kind.parent-kinds" tag="input" class="kind-input"/></td></tr>
 <tr><th class="kind-editor-label">title-formula (filter, see&nbsp;<$link to="$:/plugins/rimir/kind/doc/examples">examples</$link>)</th><td><$edit-text tiddler=<<type-tid>> field="kind.title-formula" tag="input" class="kind-input"/></td></tr>
 <tr><th class="kind-editor-label">stream-fields (space-sep field keys; empty = hide bar)</th><td><$edit-text tiddler=<<type-tid>> field="kind.stream-fields" tag="input" class="kind-input"/></td></tr>
 </table>

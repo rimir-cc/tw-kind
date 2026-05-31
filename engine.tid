@@ -52,6 +52,18 @@ type: text/vnd.tiddlywiki
 
 \function kind.instances-of(type-key) [all[shadows+tiddlers]kind.type<type-key>!has[kind.fields]]
 
+\function kind.is-child-kind(type-tid) [<type-tid>get[kind.parent-kinds]!is[blank]]
+\function kind.parent-kinds-of(type-tid) [<type-tid>get[kind.parent-kinds]enlist-input[]]
+\function kind.parent-kinds-include(type-tid, candidate) [function[kind.parent-kinds-of],<type-tid>match<candidate>]
+\function kind.top-level-types() [function[kind.types-all]] :filter[<currentTiddler>!has[kind.parent-kinds]]
+\function kind.child-kinds-of(parent-key) [function[kind.types-all]] :filter[function[kind.parent-kinds-include],<currentTiddler>,<parent-key>!is[blank]]
+
+\function kind.has-ref-field-to(type-tid, target-key) [<type-tid>get[kind.fields]jsonindexes[]] :filter[<type-tid>get[kind.fields]jsonget<currentTiddler>,[typed]match[ref]] :filter[function[kind.field-array-flat],<type-tid>,<currentTiddler>,[ref-types]match<target-key>] +[first[]]
+\function kind.ref-back-fields-of(type-tid, target-key) [<type-tid>get[kind.fields]jsonindexes[]] :filter[<type-tid>get[kind.fields]jsonget<currentTiddler>,[typed]match[ref]] :filter[function[kind.field-array-flat],<type-tid>,<currentTiddler>,[ref-types]match<target-key>] :map[<type-tid>get[kind.fields]jsonget<currentTiddler>,[key]]
+\function kind.kinds-with-back-ref-to(target-key) [function[kind.types-all]] :filter[function[kind.has-ref-field-to],<currentTiddler>,<target-key>!is[blank]]
+\function kind.create-here-target-kinds(host-key) [function[kind.child-kinds-of],<host-key>] [function[kind.kinds-with-back-ref-to],<host-key>]
+\function kind.has-create-here-options(host-tid) [<host-tid>get[kind.type]] :map:flat[function[kind.create-here-target-kinds],<currentTiddler>] +[first[]]
+
 \function kind.new-field-json(key) [<key>] :map[<currentTiddler>addprefix[{"key":"]addsuffix[","typed":"text"}]]
 \function kind.next-field-index(type-tid) [<type-tid>get[kind.fields]jsonindexes[]count[]]
 
@@ -111,6 +123,9 @@ type: text/vnd.tiddlywiki
 \function kind.viol-format-url(type-tid, field-key, target-tid) [function[kind.field-typed],<type-tid>,<field-key>match[url]] :filter[<target-tid>get<field-key>!is[blank]] :filter[<target-tid>get<field-key>!prefix[http://]!prefix[https://]]
 \function kind.viol-format-email(type-tid, field-key, target-tid) [function[kind.field-typed],<type-tid>,<field-key>match[email]] :filter[<target-tid>get<field-key>!is[blank]] :filter[<target-tid>get<field-key>!regexp{$:/plugins/rimir/kind/_patterns!!email}]
 \function kind.viol-format-phone(type-tid, field-key, target-tid) [function[kind.field-typed],<type-tid>,<field-key>match[phone]] :filter[<target-tid>get<field-key>!is[blank]] :filter[<target-tid>get<field-key>!regexp{$:/plugins/rimir/kind/_patterns!!phone-de}]
+
+\function kind.parent-rel-valid(type-tid, target-tid) [<target-tid>get[parent]get[kind.type]] :filter[function[kind.parent-kinds-include],<type-tid>,<currentTiddler>!is[blank]]
+\function kind.viol-parent-kind(type-tid, target-tid) [function[kind.is-child-kind],<type-tid>!is[blank]] :filter[function[kind.parent-rel-valid],<type-tid>,<target-tid>count[]match[0]] :map[[parent]] +[first[]]
 
 \function kind.viol-any(type-tid, type-key, field-key, target-tid) [function[kind.viol-required],<type-tid>,<field-key>,<target-tid>] [function[kind.viol-min],<type-tid>,<field-key>,<target-tid>] [function[kind.viol-max],<type-tid>,<field-key>,<target-tid>] [function[kind.viol-unique],<type-tid>,<type-key>,<field-key>,<target-tid>] [function[kind.viol-unique-wiki],<type-tid>,<field-key>,<target-tid>] [function[kind.viol-self-dup],<type-tid>,<field-key>,<target-tid>] [function[kind.viol-format-url],<type-tid>,<field-key>,<target-tid>] [function[kind.viol-format-email],<type-tid>,<field-key>,<target-tid>] [function[kind.viol-format-phone],<type-tid>,<field-key>,<target-tid>]
 \function kind.any-invalid(type-tid, type-key, target-tid) [function[kind.field-keys],<type-tid>] :filter[function[kind.viol-any],<type-tid>,<type-key>,<currentTiddler>,<target-tid>] +[first[]]

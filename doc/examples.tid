@@ -95,5 +95,39 @@ Once a type's `kind.stream-fields` is set (e.g. `status assignee due-date`), eve
 
 Clicking a cell pops up the field's editor. Clicking the ✎ toggle switches to inline-edit mode (the editor replaces the cell directly).
 
+!! A child kind: jogging-round inside journal
+
+Set `kind.parent-kinds: journal` on a kind to mark it as a ''child kind'' — only creatable from inside an existing instance of one of the listed parent kinds.
+
+```
+title: $:/private/types/journal
+kind.type: journal
+kind.namespaces: private
+kind.caption: Journal
+kind.icon: 📓
+kind.title-formula: [<currentTiddler>get[date]]
+kind.fields: [{"key":"date","caption":"Date","typed":"date","constraints":["required","unique"]}]
+```
+
+```
+title: $:/private/types/jogging-round
+kind.type: jogging-round
+kind.parent-kinds: journal
+kind.namespaces: private
+kind.caption: Jogging round
+kind.icon: 🏃
+kind.title-formula: [<currentTiddler>get[parent]] [[/jog/]] [<currentTiddler>get[distance]] +[join[]]
+kind.fields: [{"key":"distance","caption":"Distance (km)","typed":"number","constraints":["required"]},{"key":"buddies","caption":"Buddies","typed":"ref","ref-types":["person"],"cardinality":"multi"}]
+```
+
+In the cascade-palette //Create entity// drill, ''jogging-round'' is hidden — only ''journal'' is offered. To create a jogging-round, open an existing journal instance (e.g. via //Find entity// or //By parent//), press Space to open its action menu, and pick ''Create here…''. The drill emits one row per matching kind, grouped by attachment direction:
+
+* ''Create child'' cluster — one row per kind whose `kind.parent-kinds` includes this instance's `kind.type`. Backref field is the standard `parent`. Here: ''+ Jogging round''.
+* ''Create reference'' cluster — one row per (kind, field) pair where the kind has a ref-typed field whose `ref-types` includes this instance's `kind.type`. Disambiguation: the field's caption is appended in parens, so a `Task` with both `assignee` and `requester` ref'ing `person` shows as ''+ Task (as assignee)'' and ''+ Task (as requester)''.
+
+Selecting a row opens the standard spawn-create form (Save row + Clone-from-existing + per-field edit rows). The back-reference field is pre-set on the draft BEFORE the title formula evaluates, so a formula like `[<currentTiddler>get[parent]] [[/jog/]] [<currentTiddler>get[distance]]` shows the host's title in the Save row preview as the user fills the other fields. Saving creates the new instance with the back-ref already wired — the validator's child-kind check (//parent's `kind.type` must be in this kind's `kind.parent-kinds`//) is satisfied by construction.
+
+Validator behaviour for hand-edited or migrated data: any `jogging-round` instance without a `parent`, or whose `parent` doesn't have `kind.type: journal`, surfaces in the //Validator// tab as a ''parent-kinds mismatch'' row.
+
 </$fill>
 </$transclude>

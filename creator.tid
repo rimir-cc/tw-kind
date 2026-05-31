@@ -19,7 +19,7 @@ type: text/vnd.tiddlywiki
 <div class="kind-ns-row">
 <strong>Type:</strong>
 <span class="kind-pill-row">
-<$list filter="[function[kind.types-all]] :filter[function[kind.belongs-to-ns],<active-ns>] +[sort[kind.type]]" variable="t">
+<$list filter="[function[kind.top-level-types]] :filter[function[kind.belongs-to-ns],<active-ns>] +[sort[kind.type]]" variable="t">
 <$button class={{{ [<state-type>get[text]match<t>then[kind-pill kind-pill-on]] ~[[kind-pill]] }}}>
 <$action-setfield $tiddler=<<state-type>> text=<<t>>/>
 <$transclude $variable="kind.apply-defaults-to" type-tid=<<t>> target-tid={{{ [<t>get[kind.type]addprefix[$:/state/rimir/kind/draft/]] }}}/>
@@ -29,6 +29,21 @@ type: text/vnd.tiddlywiki
 </$list>
 </span>
 </div>
+
+<$list filter="[function[kind.types-all]] :filter[function[kind.belongs-to-ns],<active-ns>] :filter[function[kind.is-child-kind],<currentTiddler>!is[blank]] +[first[]]" variable="_">
+<div class="kind-ns-row" style="opacity:0.55;">
+<strong>Child kinds:</strong>
+<span class="kind-pill-row">
+<$list filter="[function[kind.types-all]] :filter[function[kind.belongs-to-ns],<active-ns>] :filter[function[kind.is-child-kind],<currentTiddler>!is[blank]] +[sort[kind.type]]" variable="t">
+<span class="kind-pill" style="cursor:not-allowed;" title={{{ [<t>get[kind.parent-kinds]addprefix[Create from within a parent of type: ]addsuffix[. Open a parent instance and use cascade-palette → Create here….]] }}}>
+<$text text={{{ [<t>get[kind.icon]] }}}/>
+ <$text text={{{ [<t>get[kind.caption]!is[blank]] ~[<t>get[kind.type]] }}}/>
+</span>
+</$list>
+</span>
+<span style="font-size:0.85em;">— only creatable from within a parent instance via the cascade-palette "Create here…" action.</span>
+</div>
+</$list>
 
 <$let type-tid={{{ [<state-type>get[text]] }}}>
 <%if [<type-tid>!is[blank]] %>

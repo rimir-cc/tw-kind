@@ -39,6 +39,15 @@ type: text/vnd.tiddlywiki
 </tr>
 <%endif%>
 
+<%if [function[kind.viol-parent-kind],<type-tid>,<target-tid>] %>
+<tr class="kind-validator-row-error">
+<td><$link to=<<target-tid>>><$view tiddler=<<target-tid>> field="title"/></$link></td>
+<td>parent</td>
+<td>parent-kinds mismatch</td>
+<td>child kind expects parent of type <code><$text text={{{ [function[kind.parent-kinds-of],<type-tid>+[join[ or ]]] }}}/></code> — current parent's kind.type: <code><$text text={{{ [<target-tid>get[parent]get[kind.type]] ~[[(none)]] }}}/></code></td>
+</tr>
+<%endif%>
+
 <$list filter="[function[kind.field-keys],<type-tid>]" variable="field-key">
 
 <%if [function[kind.viol-required],<type-tid>,<field-key>,<target-tid>] %>
