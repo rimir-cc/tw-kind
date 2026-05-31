@@ -64,6 +64,13 @@ type: text/vnd.tiddlywiki
 \function kind.create-here-target-kinds(host-key) [function[kind.child-kinds-of],<host-key>] [function[kind.kinds-with-back-ref-to],<host-key>]
 \function kind.has-create-here-options(host-tid) [<host-tid>get[kind.type]] :map:flat[function[kind.create-here-target-kinds],<currentTiddler>] +[first[]]
 
+\function kind.auto-children-array(type-tid) [<type-tid>get[kind.auto-children]]
+\function kind.auto-children-indexes(type-tid) [<type-tid>get[kind.auto-children]jsonindexes[]]
+\function kind.auto-child-kind-at(type-tid, idx) [<type-tid>get[kind.auto-children]jsonget<idx>,[kind]]
+\function kind.auto-child-fields-at(type-tid, idx) [<type-tid>get[kind.auto-children]jsonindexes<idx>,[fields]]
+\function kind.auto-child-field-value-at(type-tid, idx, field-key) [<type-tid>get[kind.auto-children]jsonget<idx>,[fields],<field-key>]
+\function kind.has-auto-children(type-tid) [<type-tid>get[kind.auto-children]jsonindexes[]] +[first[]]
+
 \function kind.new-field-json(key) [<key>] :map[<currentTiddler>addprefix[{"key":"]addsuffix[","typed":"text"}]]
 \function kind.next-field-index(type-tid) [<type-tid>get[kind.fields]jsonindexes[]count[]]
 
@@ -151,6 +158,36 @@ type: text/vnd.tiddlywiki
 </$let>
 </$list>
 </$let>
+\end
+
+\procedure kind.apply-auto-children(parent-tid, type-tid)
+<!-- Walks the parent type's `kind.auto-children` JSON array and creates each
+     listed child instance with `parent: <<parent-tid>>` + per-entry field
+     overrides + the child kind's own field defaults applied. The child's
+     `kind.title-formula` evaluates against the draft (so it sees the pre-set
+     parent + overrides). Called by every "save parent instance" path after
+     the parent tiddler exists. Entries pointing at non-existent kinds are
+     skipped silently. NOT recursive — auto-children of auto-children don't
+     fire (the child create here uses $action-createtiddler directly, not a
+     save-path that calls this procedure). Keeps shared state simple. -->
+<$list filter="[function[kind.auto-children-indexes],<type-tid>]" variable="ac-idx">
+<$let child-kind-key={{{ [function[kind.auto-child-kind-at],<type-tid>,<ac-idx>] }}}>
+<$let
+  child-type-tid={{{ [function[kind.locate-type],<child-kind-key>] }}}
+  child-draft={{{ [[$:/state/rimir/kind/__auto-child-draft/]] +[addsuffix<parent-tid>] +[addsuffix[/]] +[addsuffix<ac-idx>] }}}
+>
+<$list filter="[<child-type-tid>!is[blank]]">
+<$transclude $variable="kind.apply-defaults-to" type-tid=<<child-type-tid>> target-tid=<<child-draft>>/>
+<$action-setfield $tiddler=<<child-draft>> parent=<<parent-tid>>/>
+<$list filter="[function[kind.auto-child-fields-at],<type-tid>,<ac-idx>]" variable="fk">
+<$action-setfield $tiddler=<<child-draft>> $field=<<fk>> $value={{{ [function[kind.auto-child-field-value-at],<type-tid>,<ac-idx>,<fk>] }}}/>
+</$list>
+<$action-createtiddler $basetitle={{{ [function[kind.eval-title],<child-type-tid>,<child-draft>] }}} $template=<<child-draft>> kind.type=<<child-kind-key>>/>
+<$action-deletetiddler $tiddler=<<child-draft>>/>
+</$list>
+</$let>
+</$let>
+</$list>
 \end
 
 \procedure kind.force-apply-defaults(type-tid, target-tid)

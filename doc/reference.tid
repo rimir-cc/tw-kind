@@ -17,8 +17,9 @@ type: text/vnd.tiddlywiki
 |`kind.caption` |No |Display name shown in dropdowns, validator headings, etc. |
 |`kind.icon` |No |Emoji or short text shown alongside the caption |
 |`kind.namespaces` |No |Space-separated namespace memberships. Empty = visible only when active namespace is //(all)//. |
-|`kind.parent-kinds` |No |Space-separated list of parent type-keys. Non-empty → ''child kind'' — hidden from global creation surfaces (in-tiddler creator's primary pill row, cascade-palette //Create entity// drill). Only creatable via the per-instance cascade-palette ''Create here…'' action on an existing instance of a kind in this list. Instance back-reference uses the standard `parent` field. Multi-valued for shared children (e.g. `journal training-log`). Validator flags instances whose `parent` is missing OR whose parent's `kind.type` isn't in this list. |
+|`kind.parent-kinds` |No |Space-separated list of parent type-keys. Non-empty → ''child kind'' — hidden from global creation surfaces (in-tiddler creator's primary pill row, cascade-palette //Create entity// drill). Only creatable via the per-instance cascade-palette ''Create here…'' action on an existing instance of a kind in this list. Instance back-reference uses the standard `parent` field. Multi-valued for shared children (e.g. `journal training-log`). Validator flags instances whose `parent` is missing OR whose parent's `kind.type` isn't in this list. Editable as a free-text field in Type-builder, OR via a type-safe toggle picker in the cascade-palette //Manage kinds// drill (lists every kind except self, toggling commits to this field). |
 |`kind.title-formula` |No |TW filter expression evaluated with `<target-tid>` as the source. Result becomes the new instance's title. Omit for manually-titled types. |
+|`kind.auto-children` |No |JSON array. Each entry is `{"kind":"<child-type-key>","fields":{"<field>":"<value>",...}}`. When an instance of this type is saved (via any create path — in-tiddler //Creator// button, cascade-palette //+ New X//, ref-spawn from a `+ Create new …` row, or //Create here…//), each listed child instance is materialised with `parent` pre-set to the new parent's title + per-entry `fields` overrides + the child kind's normal field defaults applied. The child's `kind.title-formula` evaluates against the draft so it sees the back-ref. Entries referencing kinds that don't exist are skipped silently. NOT recursive — auto-children of auto-children don't fire automatically. |
 |`kind.stream-fields` |No |Space-separated field keys shown in the stream-river field bar. Empty / missing = bar is invisible for instances of this type. |
 
 !! Instance tiddler fields
@@ -111,9 +112,18 @@ All constraints are blocking — they show up in red in the validator and disabl
 |`kind.top-level-types()` `kind.child-kinds-of(parent-key)` |Filtered views of `kind.types-all()` — top-level (no parent-kinds) vs children of a given parent type-key. |
 |`kind.has-ref-field-to(type-tid, target-key)` `kind.ref-back-fields-of(type-tid, target-key)` `kind.kinds-with-back-ref-to(target-key)` |"Create here…" discovery — find kinds whose ref-typed fields list the target as a valid `ref-types` member, and the field-keys on those kinds. |
 |`kind.create-here-target-kinds(host-key)` `kind.has-create-here-options(host-tid)` |Union of child kinds + ref-back kinds; the cascade-palette ''Create here…'' action's `ca-applies` gates on this. |
+|`kind.auto-children-array(type-tid)` `kind.auto-children-indexes(type-tid)` `kind.has-auto-children(type-tid)` |Raw access to the parent kind's `kind.auto-children` JSON array. |
+|`kind.auto-child-kind-at(type-tid, idx)` `kind.auto-child-fields-at(type-tid, idx)` `kind.auto-child-field-value-at(type-tid, idx, field-key)` |Walk one entry — get the child kind's type-key, the field-key list, and individual field values that should override the child kind's defaults. |
 |`kind.viol-required(...)` `kind.viol-min(...)` `kind.viol-max(...)` `kind.viol-unique(...)` `kind.viol-unique-wiki(...)` `kind.viol-title(...)` `kind.viol-format-url(...)` `kind.viol-format-email(...)` `kind.viol-format-phone(...)` `kind.viol-parent-kind(...)` |Validation predicates (non-empty = violation). `kind.viol-parent-kind` checks that a child kind's instance has a `parent` whose `kind.type` is in the kind's `parent-kinds` list. |
 |`kind.any-invalid(type-tid, type-key, target-tid)` |Non-empty if any constraint is violated on any field |
 |`kind.shorten`, `kind.display`, `kind.resolve-ref` |Display helpers |
+
+!! Engine procedures (engine.tid)
+
+|!Procedure |!Effect |
+|`kind.apply-defaults-to(type-tid, target-tid)` |Stamps `kind.type` + writes each defaultable field's `default` value onto `target-tid` (idempotent — leaves non-blank fields alone). Used by every create path before save. |
+|`kind.force-apply-defaults(type-tid, target-tid)` |Like `apply-defaults-to` but unconditional. Used by the //Reset to defaults// flow. |
+|`kind.apply-auto-children(parent-tid, type-tid)` |Walks `type-tid.kind.auto-children` and materialises each entry as a new tiddler with `parent: <<parent-tid>>` + per-entry `fields` overrides + the child kind's own field defaults. Called by every create path after `$action-createtiddler` (parent tiddler title captured via `$savetitle`). Entries pointing at non-existent kinds are skipped silently. Not recursive. |
 
 </$fill>
 </$transclude>

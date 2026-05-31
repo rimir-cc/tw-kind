@@ -129,5 +129,35 @@ Selecting a row opens the standard spawn-create form (Save row + Clone-from-exis
 
 Validator behaviour for hand-edited or migrated data: any `jogging-round` instance without a `parent`, or whose `parent` doesn't have `kind.type: journal`, surfaces in the //Validator// tab as a ''parent-kinds mismatch'' row.
 
+!! Auto-children: every conversation gets a streams-note
+
+Set `kind.auto-children` on the parent kind to spawn child instances every time a parent instance is saved.
+
+```
+title: $:/private/types/conversation
+kind.type: conversation
+kind.caption: Conversation
+kind.icon: 💬
+kind.fields: [{"key":"date","typed":"date"},{"key":"topic","typed":"text","constraints":["required"]}]
+kind.title-formula: [<currentTiddler>get[topic]]
+kind.auto-children: [{"kind":"streams-note","fields":{"caption":"Conversation Minutes"}}]
+```
+
+```
+title: $:/private/types/streams-note
+kind.type: streams-note
+kind.parent-kinds: conversation
+kind.caption: Streams note
+kind.icon: 📝
+kind.fields: [{"key":"caption","typed":"text","constraints":["required"]}]
+kind.title-formula: [<currentTiddler>get[parent]] [[/]] [<currentTiddler>get[caption]] +[join[]]
+```
+
+Saving a new `conversation` titled "Project kickoff" automatically materialises `Project kickoff/Conversation Minutes` as a `streams-note` instance with `parent: "Project kickoff"` and `caption: "Conversation Minutes"`. The streams-note's `kind.title-formula` evaluates against the seeded draft so it sees the back-ref. This works from every create path — in-tiddler //Creator// button, cascade-palette //+ New Conversation//, //+ Create new conversation// from a ref-field picker, and //Create here…// on any host that lists `conversation` as a child-kind or has a ref-back to it.
+
+The same kind's `kind.parent-kinds: conversation` makes `streams-note` discoverable as a child kind (visible in the conversation's Type-builder and CP //Manage kinds// drill) AND offers a //+ Streams note// row in the conversation instance's //Create here…// action for additional notes beyond the auto-created one. Auto-created notes coexist with manually-added ones — both have the same `parent` field.
+
+Multiple auto-children entries are supported — list as many as needed. To skip auto-creation, omit `kind.auto-children` or set to `[]`. Entries pointing at non-existent kinds are silently skipped.
+
 </$fill>
 </$transclude>

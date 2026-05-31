@@ -110,6 +110,7 @@ type: text/vnd.tiddlywiki
 <$let draft-tid={{{ [function[kind.cascade-spawn-draft-tid],<parent-tid>,<parent-field>,<kind-type-key>] }}}>
 <$transclude $variable="kind.apply-defaults-to" type-tid=<<kind-tid>> target-tid=<<draft-tid>>/>
 <$action-createtiddler $basetitle={{{ [function[kind.eval-title],<kind-tid>,<draft-tid>] }}} $template=<<draft-tid>> $savetitle="$:/state/rimir/kind/__spawn-result" kind.type=<<kind-type-key>>/>
+<$transclude $variable="kind.apply-auto-children" parent-tid={{$:/state/rimir/kind/__spawn-result}} type-tid=<<kind-tid>>/>
 <%if [<parent-card>match[multi]] %>
 <$action-listops $tiddler=<<parent-tid>> $field=<<parent-field>> $subfilter="+[append{$:/state/rimir/kind/__spawn-result}]"/>
 <%else%>
@@ -163,15 +164,17 @@ type: text/vnd.tiddlywiki
      focus the rendered tiddler frame, so the palette input keeps focus
      and the user can immediately Ctrl-Enter again for the next instance. -->
 <$action-createtiddler $basetitle=<<computed>> $template=<<draft-tid>> kind.type=<<type-key>> $savetitle="$:/state/rimir/kind/__last-mass-create"/>
+<$transclude $variable="kind.apply-auto-children" parent-tid={{$:/state/rimir/kind/__last-mass-create}} type-tid=<<kind-tid>>/>
 <$action-navigate $to={{$:/state/rimir/kind/__last-mass-create}}/>
 <%else%>
 <!-- Enter (single create): defensive apply-defaults (idempotent — fills
      only blank fields), create, clear the draft, navigate. Re-drilling
      "+ New <kind>" later re-seeds defaults via the drill's ca-actions. -->
 <$transclude $variable="kind.apply-defaults-to" type-tid=<<kind-tid>> target-tid=<<draft-tid>>/>
-<$action-createtiddler $basetitle=<<computed>> $template=<<draft-tid>> kind.type=<<type-key>>/>
+<$action-createtiddler $basetitle=<<computed>> $template=<<draft-tid>> $savetitle="$:/state/rimir/kind/__last-saved-instance" kind.type=<<type-key>>/>
+<$transclude $variable="kind.apply-auto-children" parent-tid={{$:/state/rimir/kind/__last-saved-instance}} type-tid=<<kind-tid>>/>
 <$action-deletetiddler $tiddler=<<draft-tid>>/>
-<$action-navigate $to=<<computed>>/>
+<$action-navigate $to={{$:/state/rimir/kind/__last-saved-instance}}/>
 <%endif%>
 </$let>
 \end
@@ -237,7 +240,8 @@ type: text/vnd.tiddlywiki
 <%else%>
 <$action-setfield $tiddler=<<draft-tid>> $field=<<target-field>> $value=<<host-tid>>/>
 <%endif%>
-<$action-createtiddler $basetitle={{{ [function[kind.eval-title],<kind-tid>,<draft-tid>] }}} $template=<<draft-tid>> kind.type=<<kind-type-key>>/>
+<$action-createtiddler $basetitle={{{ [function[kind.eval-title],<kind-tid>,<draft-tid>] }}} $template=<<draft-tid>> $savetitle="$:/state/rimir/kind/__create-here-result" kind.type=<<kind-type-key>>/>
+<$transclude $variable="kind.apply-auto-children" parent-tid={{$:/state/rimir/kind/__create-here-result}} type-tid=<<kind-tid>>/>
 <$action-deletetiddler $tiddler=<<draft-tid>>/>
 </$let>
 </$let>
