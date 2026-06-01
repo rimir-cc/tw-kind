@@ -19,6 +19,7 @@ type: text/vnd.tiddlywiki
 \function kind.field-cardinality(type-tid, field-key) [function[kind.field-prop],<type-tid>,<field-key>,[cardinality]] ~[[single]]
 \function kind.field-formula(type-tid, field-key) [function[kind.field-prop],<type-tid>,<field-key>,[formula]]
 \function kind.field-default(type-tid, field-key) [function[kind.field-prop],<type-tid>,<field-key>,[default]]
+\function kind.compute-default(type-tid, field-key, target-tid) [function[kind.field-default],<type-tid>,<field-key>] :map[<target-tid>subfilter<currentTiddler>] +[first[]]
 \function kind.default-applicable(typed) [<typed>match[text]] [<typed>match[longtext]] [<typed>match[number]] [<typed>match[date]] [<typed>match[datetime]] [<typed>match[url]] [<typed>match[email]] [<typed>match[phone]] [<typed>match[enum]]
 
 \function kind.field-array-flat(type-tid, idx, prop) [function[kind.json],<type-tid>jsonindexes<idx>,<prop>] :map[function[kind.json],<type-tid>jsonget<idx>,<prop>,<currentTiddler>]
@@ -138,26 +139,23 @@ type: text/vnd.tiddlywiki
 \function kind.any-invalid(type-tid, type-key, target-tid) [function[kind.field-keys],<type-tid>] :filter[function[kind.viol-any],<type-tid>,<type-key>,<currentTiddler>,<target-tid>] +[first[]]
 
 \procedure kind.apply-defaults-to(type-tid, target-tid)
-<!-- Walks the type's fields and writes each field's `default` (with %TODAY% / %NOW%
-     token expansion) onto the target tiddler — only for fields that are currently
-     blank. Idempotent: existing non-blank field values are preserved.
-     Also stamps `kind.type` on the target so the draft is a recognisable kind-
-     instance for downstream consumers (e.g. the side-preview's instance-view
-     template, which gates on `kind.type !is[blank]`). The downstream save path
-     overwrites `kind.type` explicitly with the same value, so this is harmless.
-     Tokens expand to TW canonical 17-char date format so date/datetime fields
-     stay readable by $edit-date and format:date[] (display formatting is done
-     by the view layer — kind uses DD.MM.YYYY / DD.MM.YYYY HH:mm). -->
+<!-- Walks the type's fields and writes each field's `default` onto the target —
+     only for fields currently blank. Idempotent: existing non-blank values are
+     preserved. `default` is always a subfilter evaluated against the draft
+     (`kind.compute-default`), so `[[planned]]` writes the literal "planned",
+     `[<now "YYYY0MM0DD0hh0mm0ss0XXX">]` writes the current timestamp, and
+     `[get[parent]get[caption]]` reads from the draft's parent. Re-fire from
+     field-input action chains after a ref/enum change to populate dependent
+     defaults that were blank when the field was first selected — the blank-
+     gate prevents overwriting any value the user has already typed.
+     Also stamps `kind.type` so the draft is recognised by downstream
+     consumers (e.g. the side-preview's instance-view template). -->
 <$action-setfield $tiddler=<<target-tid>> kind.type={{{ [<type-tid>get[kind.type]] }}}/>
-<$let _today=<<now "YYYY0MM0DD000000000">> _nowts=<<now "YYYY0MM0DD0hh0mm0ss0XXX">>>
 <$list filter="[function[kind.field-keys],<type-tid>]" variable="field-key">
-<$let raw-default={{{ [function[kind.field-default],<type-tid>,<field-key>] }}}>
-<$list filter="[<raw-default>!is[blank]] :filter[<target-tid>!has<field-key>] +[first[]]" variable="_">
-<$action-setfield $tiddler=<<target-tid>> $field=<<field-key>> $value={{{ [<raw-default>search-replace[%TODAY%],<_today>search-replace[%NOW%],<_nowts>] }}}/>
+<$list filter="[function[kind.compute-default],<type-tid>,<field-key>,<target-tid>!is[blank]] :filter[<target-tid>!has<field-key>] +[first[]]" variable="computed-val">
+<$action-setfield $tiddler=<<target-tid>> $field=<<field-key>> $value=<<computed-val>>/>
 </$list>
-</$let>
 </$list>
-</$let>
 \end
 
 \procedure kind.apply-auto-children(parent-tid, type-tid)
@@ -192,23 +190,16 @@ type: text/vnd.tiddlywiki
 
 \procedure kind.force-apply-defaults(type-tid, target-tid)
 <!-- Like kind.apply-defaults-to but unconditional: writes every default-bearing
-     field onto target-tid regardless of current state. Used by the Reset row
-     where the caller has just deleted target-tid (so "preserve existing values"
-     would be incorrect — we WANT to overwrite, and the deletetiddler runs in
-     the same action chain as this transclude). The `:filter[!has<field>]` gate
-     used in apply-defaults-to evaluates AT RENDER TIME against the pre-delete
-     state, which made reset toggle between "all defaults" and "empty" on repeat
-     clicks. Dropping the gate makes the action idempotent across clicks.
-     Also stamps `kind.type` so the freshly-deleted draft is recognised as a
-     kind-instance by the side-preview after Reset. -->
+     field regardless of current state. Used by the Reset row where the caller
+     has just deleted target-tid (so "preserve existing values" would be
+     incorrect — we WANT to overwrite, and the deletetiddler runs in the same
+     action chain as this transclude). Dropping the blank gate makes Reset
+     idempotent across repeat clicks. Stamps `kind.type` so the freshly-
+     reset draft is recognised by the side-preview. -->
 <$action-setfield $tiddler=<<target-tid>> kind.type={{{ [<type-tid>get[kind.type]] }}}/>
-<$let _today=<<now "YYYY0MM0DD000000000">> _nowts=<<now "YYYY0MM0DD0hh0mm0ss0XXX">>>
 <$list filter="[function[kind.field-keys],<type-tid>]" variable="field-key">
-<$let raw-default={{{ [function[kind.field-default],<type-tid>,<field-key>] }}}>
-<$list filter="[<raw-default>!is[blank]]" variable="_">
-<$action-setfield $tiddler=<<target-tid>> $field=<<field-key>> $value={{{ [<raw-default>search-replace[%TODAY%],<_today>search-replace[%NOW%],<_nowts>] }}}/>
+<$list filter="[function[kind.compute-default],<type-tid>,<field-key>,<target-tid>!is[blank]] +[first[]]" variable="computed-val">
+<$action-setfield $tiddler=<<target-tid>> $field=<<field-key>> $value=<<computed-val>>/>
 </$list>
-</$let>
 </$list>
-</$let>
 \end

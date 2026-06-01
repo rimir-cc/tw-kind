@@ -40,6 +40,7 @@ type: text/vnd.tiddlywiki
 |`ref-types` |Optional for `ref` |Array of `kind.type` values whose instances may be referenced. When empty or absent, all kind-instances in the wiki are selectable (the type-builder displays //(any kind)//). |`ref` |
 |`cardinality` |No (default `single`) |Either `single` or `multi`. Multi values are space-separated lists. |`enum`, `ref` |
 |`formula` |Required for `$calculated` |Filter expression evaluated with `<target-tid>` as source. |`$calculated` |
+|`default` |No |Filter expression evaluated against the draft (`<target-tid>`-as-source subfilter). Materialised onto each fresh instance for fields that would otherwise be blank, re-fired on ref/enum changes so dependent defaults populate after their dependencies are set. Examples: `[[planned]]` (static literal); `[<now "YYYY0MM0DD0hh0mm0ss0XXX">]` (current timestamp in TW canonical form — note single angle brackets in filter context, NOT `<<now …>>` which is wikitext-only); `[get[parent]get[caption]]` (reads parent's caption from the draft); `[get[parent]get[caption]] [[at]] [get[planned-at]format:date[DD.MM.YYYY HH:mm]] +[join[ ]]` (composite — chain `+[join[X]]` for multi-item filters; otherwise only the first item is taken). User-typed values always win (the gate is `!has[<field>]`, not equality with the computed default). |text, longtext, number, date, datetime, url, email, phone, enum |
 |`clone` |No |Set to `skip` to exclude this field from the ''+ Clone fields from existing'' copy in the cascade-palette creator (e.g. blank-out a journal `text` field on clone). Default = copy. Computed fields (`$title` / `$calculated`) are always excluded regardless. |all (most relevant on body / unique / computed-ish fields) |
 
 !! `typed` values
@@ -121,7 +122,8 @@ All constraints are blocking — they show up in red in the validator and disabl
 !! Engine procedures (engine.tid)
 
 |!Procedure |!Effect |
-|`kind.apply-defaults-to(type-tid, target-tid)` |Stamps `kind.type` + writes each defaultable field's `default` value onto `target-tid` (idempotent — leaves non-blank fields alone). Used by every create path before save. |
+|`kind.compute-default(type-tid, field-key, target-tid)` |Evaluates the field's `default` filter against `<target-tid>`-as-source via `subfilter`. Returns the first result (or empty). Used by `apply-defaults-to` / `force-apply-defaults` and available to any other code that wants to preview the computed default. |
+|`kind.apply-defaults-to(type-tid, target-tid)` |Stamps `kind.type` + walks all defaultable fields and writes `compute-default` onto `target-tid` for fields currently blank (idempotent — leaves user-set fields alone). Used by every create path before save, AND re-fired from field-input action chains after each ref/enum change so dependent defaults populate. |
 |`kind.force-apply-defaults(type-tid, target-tid)` |Like `apply-defaults-to` but unconditional. Used by the //Reset to defaults// flow. |
 |`kind.apply-auto-children(parent-tid, type-tid)` |Walks `type-tid.kind.auto-children` and materialises each entry as a new tiddler with `parent: <<parent-tid>>` + per-entry `fields` overrides + the child kind's own field defaults. Called by every create path after `$action-createtiddler` (parent tiddler title captured via `$savetitle`). Entries pointing at non-existent kinds are skipped silently. Not recursive. |
 

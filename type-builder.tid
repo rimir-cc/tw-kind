@@ -223,32 +223,20 @@ add
 <$let
   flag={{{ [<row-state-prefix>addsuffix[/editing/default]] }}}
   current-typed={{{ [function[kind.field-typed],<type-tid>,<field-key>] }}}
-  current-card={{{ [function[kind.field-cardinality],<type-tid>,<field-key>] }}}
   applicable={{{ [function[kind.default-applicable],<current-typed>] }}}
 >
 <%if [<applicable>is[blank]] %>
 <span class="kind-cell-na">—</span>
 <%elseif [<flag>get[text]match[yes]] %>
 <$scribe tiddler=<<type-tid>> field="kind.fields" path=`$(f-idx)$,default`>
-<%if [<current-typed>match[enum]] :filter[<current-card>!match[multi]] %>
-<$select tiddler=<<state>> field="text" class="kind-input kind-cell-input">
-<option value="">(none)</option>
-<$list filter="[function[kind.options],<type-tid>,<field-key>]" variable="opt">
-<option value=<<opt>>><<opt>></option>
-</$list>
-</$select>
-<%elseif [<current-typed>match[number]] :filter[<current-card>!match[multi]] %>
-<$edit-text tiddler=<<state>> field="text" type="number" tag="input" class="kind-input kind-cell-input"/>
-<%else%>
-<$edit-text tiddler=<<state>> field="text" tag="input" class="kind-input kind-cell-input" placeholder="literal · %TODAY% · %NOW% (canonical 17-char)"/>
-<%endif%>
+<$edit-text tiddler=<<state>> field="text" tag="textarea" class="kind-input kind-cell-input kind-default-textarea" placeholder="filter — e.g. [[planned]] · [<now &quot;YYYY0MM0DD0hh0mm0ss0XXX&quot;>] · [get[parent]get[caption]]"/>
 <$button class="kind-cell-x" tooltip="done"><$action-setfield $tiddler=<<flag>> text=""/>×</$button>
 </$scribe>
 <%else%>
 <$let cur={{{ [function[kind.field-default],<type-tid>,<field-key>] }}}>
 <%if [<cur>!is[blank]] %><code><$text text=<<cur>>/></code><%else%><span class="kind-cell-na">—</span><%endif%>
 </$let>
-<$button class="kind-cell-pen" tooltip="edit default — tokens %TODAY% (today at midnight, TW canonical 17-char) and %NOW% (current moment, TW canonical 17-char) are expanded on instance creation. View layer (e.g. kind's DD.MM.YYYY) formats for display."><$action-setfield $tiddler=<<flag>> text="yes"/>✎</$button>
+<$button class="kind-cell-pen" tooltip="edit default — filter expression evaluated against the draft on creation. Static literals: [[planned]]. Current time: [<now &quot;YYYY0MM0DD0hh0mm0ss0XXX&quot;>]. Computed: [get[parent]get[caption]] — reads parent's caption from the draft. Multi-part: chain runs with +[join[ ]] at the end (otherwise only the first item is taken)."><$action-setfield $tiddler=<<flag>> text="yes"/>✎</$button>
 <%endif%>
 </$let>
 \end
@@ -446,7 +434,7 @@ Cancel
 <th title="cardinality — for enum, ref, and text. single = one value, multi = list of values (space-separated; multi-word entries auto-quoted with [[...]]). (default) means single">cardinality</th>
 <th title="display label shown next to the field in editor / view / stream-view">caption</th>
 <th title="emoji or short text shown alongside the caption">icon</th>
-<th title="default value applied when creating a new instance — only fills the field if it would otherwise be blank. Tokens: %TODAY% → today (TW-canonical 17-char date at midnight), %NOW% → current datetime (TW-canonical 17-char). Display (e.g. DD.MM.YYYY) is handled by the view layer. For multi-cardinality fields use TW list format: [[Echo Fox]] Single">default</th>
+<th title="default value applied when creating a new instance — only fills the field if it would otherwise be blank, and re-fires on ref/enum changes (so dependent defaults like 'caption from parent' populate after parent is picked). Always a filter expression evaluated against the draft. Examples: [[planned]] (literal) · [<now &quot;YYYY0MM0DD0hh0mm0ss0XXX&quot;>] (current timestamp) · [get[parent]get[caption]] (read from draft). For multi-item filters chain +[join[ ]] at the end.">default</th>
 <th title="validation rules — click ? for reference">constraints
 <span class="tc-popup-keep">
 <$button popup="$:/state/rimir/kind/help/constraints" class="kind-help-pop tc-popup-keep" tooltip="show constraint reference">?</$button>
@@ -513,7 +501,7 @@ Reset to []
 <%endif%>
 
 <h4 style="margin-top:12px;">Raw JSON (for power-edits)</h4>
-<p style="font-size:0.82em;opacity:0.7;">Edit per-field constraints/options/ref-types/cardinality/icon/caption/default directly here. Schema per entry: <code>{"key":"...","typed":"text|longtext|number|date|datetime|url|email|phone|enum|ref|$title|$calculated","caption":"...","icon":"...","constraints":["required","min:N","max:N","unique","unique:wiki"],"options":["a","b"] (enum),"ref-types":["task","person"] (ref),"cardinality":"single|multi","default":"literal or %TODAY% / %NOW% (multi: TW list format)"}</code></p>
+<p style="font-size:0.82em;opacity:0.7;">Edit per-field constraints/options/ref-types/cardinality/icon/caption/default directly here. Schema per entry: <code>{"key":"...","typed":"text|longtext|number|date|datetime|url|email|phone|enum|ref|$title|$calculated","caption":"...","icon":"...","constraints":["required","min:N","max:N","unique","unique:wiki"],"options":["a","b"] (enum),"ref-types":["task","person"] (ref),"cardinality":"single|multi","default":"filter expression — [[literal]] · [<now \"YYYY0MM0DD0hh0mm0ss0XXX\">] · [get[parent]get[caption]] — evaluated against the draft on creation and re-fired on ref/enum changes"}</code></p>
 <$edit-text tiddler=<<type-tid>> field="kind.fields" tag="textarea" class="kind-input kind-textarea" style="min-height:12em;font-family:monospace;font-size:0.85em;"/>
 </div>
 

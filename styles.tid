@@ -439,7 +439,8 @@ textarea.kind-input,
 .kind-cell-x:hover { opacity: 1; }
 
 input.kind-cell-input,
-select.kind-cell-input {
+select.kind-cell-input,
+textarea.kind-cell-input {
 	display: inline-block;
 	width: 12em;
 	max-width: 100%;
@@ -450,8 +451,15 @@ select.kind-cell-input {
 	background: <<colour background>>;
 	color: <<colour foreground>>;
 }
+textarea.kind-default-textarea {
+	width: 24em;
+	min-height: 3.2em;
+	resize: vertical;
+	font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+}
 input.kind-cell-input:focus,
-select.kind-cell-input:focus { outline: 2px solid <<colour primary>>; outline-offset: -1px; }
+select.kind-cell-input:focus,
+textarea.kind-cell-input:focus { outline: 2px solid <<colour primary>>; outline-offset: -1px; }
 
 .kind-cell-na {
 	opacity: 0.35;
