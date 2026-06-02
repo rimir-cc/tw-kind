@@ -1,0 +1,83 @@
+title: $:/plugins/rimir/kind/palette/preview/context
+tags: $:/tags/rimir/cascade-palette/side-preview
+type: text/vnd.tiddlywiki
+ca-preview-applies: [<currentTiddler>has[kind.type]]
+ca-preview-name: Context
+ca-preview-title: Context
+ca-preview-order: 40
+
+\whitespace trim
+\import $:/plugins/rimir/kind/engine
+\import $:/plugins/rimir/kind/graph
+
+<!-- Side-preview: the local neighbourhood of the active kind-instance,
+     drawn with the SAME node layout / persisted positions as
+     "Kind: Instances Overview" (shared kg-graph + the shared structure
+     data tiddler), but scoped to N levels of the parent-tree around
+     <<currentTiddler>>. Direction & depth are picked with pills:
+       from = ancestors (walk `parent` upward)
+       to   = descendants (children, grandchildren, …)  [default]
+     The kin operator's depth lives in a static suffix, so the filter
+     string is assembled with $(...)$ substitution (kg.ctx-filter) with
+     the concrete direction / depth / base baked in. Requires a graph
+     engine (flibbles/graph + adapter) and the bimlas kin-filter plugin. -->
+
+\define kg.ctx-filter() [kin:parent:$(kgDir)$:$(kgDepth)$[$(kgBase)$]] :filter[is[tiddler]has[kind.type]!has[kind.fields]]
+
+\procedure ctx-dir-pill(value, label)
+<$button class={{{ [<kgDir>match<value>then[kind-pill kind-pill-on]] ~[[kind-pill]] }}}>
+<$action-setfield $tiddler="$:/state/rimir/kind/context/direction" text=<<value>>/>
+<$text text=<<label>>/>
+</$button>
+\end
+
+\procedure ctx-depth-pill(value)
+<$button class={{{ [<kgDepth>match<value>then[kind-pill kind-pill-on]] ~[[kind-pill]] }}}>
+<$action-setfield $tiddler="$:/state/rimir/kind/context/depth" text=<<value>>/>
+<$text text=<<value>>/>
+</$button>
+\end
+
+<$let
+  kgBase=<<currentTiddler>>
+  kgDir={{{ [[$:/state/rimir/kind/context/direction]get[text]] ~[[to]] }}}
+  kgDepth={{{ [[$:/state/rimir/kind/context/depth]get[text]] ~[[2]] }}}
+  selFields={{{ [[$:/config/rimir/kind/instances-overview/edge-fields]get[fields]] ~[[parent]] }}}
+>
+
+<%if [<kgBase>get[kind.type]is[blank]] %>
+<div class="kind-view-empty">Not a kind-instance — no <code>kind.type</code> on <code><$text text=<<kgBase>>/></code>.</div>
+<%else%>
+
+<div class="kind-ctx-controls">
+<span class="kind-ctx-label">Direction:</span>
+<span class="kind-ctx-group kind-pill-row">
+<<ctx-dir-pill to "↓ Descendants">>
+<<ctx-dir-pill from "↑ Ancestors">>
+</span>
+<span class="kind-ctx-label">Levels:</span>
+<span class="kind-ctx-group kind-pill-row">
+<<ctx-depth-pill 1>>
+<<ctx-depth-pill 2>>
+<<ctx-depth-pill 3>>
+<<ctx-depth-pill 4>>
+<<ctx-depth-pill 5>>
+</span>
+</div>
+
+<%if [[$:/plugins/flibbles/graph]is[tiddler]] %>
+<div class="boundingbox" style="height:70vh; min-height:340px;">
+<$transclude $variable="kg-graph"
+  nodeFilter=<<kg.ctx-filter>>
+  selFields=<<selFields>>
+  dataTiddler="$:/config/rimir/kind/instances-overview/structure"
+  physics="no"
+  $mode="block"/>
+</div>
+<%else%>
+<div class="kind-warn">Needs a graph engine — install <code>flibbles/graph</code> plus a render adapter (e.g. <code>flibbles/vis-network</code>) to see the context graph.</div>
+<%endif%>
+
+<%endif%>
+
+</$let>

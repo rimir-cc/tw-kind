@@ -330,6 +330,30 @@ textarea.kind-input,
 	border-bottom: 1px solid <<colour tiddler-border>>;
 }
 
+/* === graph (instances-overview + context preview) === */
+/* flibbles auto-wraps the graph in a <p>; let it pass height through, and
+   make the canvas fill the bounding box so height:Nvh actually applies. */
+.boundingbox > p { display: contents; }
+.boundingbox .graph-canvas { flex: 1 1 auto; height: 0; }
+
+.kind-ctx-controls {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 6px 12px;
+	margin: 2px 0 8px 0;
+	font-size: 0.88em;
+}
+.kind-ctx-controls span.kind-ctx-label {
+	color: <<colour muted-foreground>>;
+	white-space: nowrap;
+}
+.kind-ctx-group {
+	display: inline-flex;
+	align-items: center;
+	gap: 6px;
+}
+
 /* === overview / namespace switcher === */
 .kind-ns-row {
 	display: flex;

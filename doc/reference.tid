@@ -84,6 +84,8 @@ All constraints are blocking — they show up in red in the validator and disabl
 |!Path |!Purpose |
 |`$:/state/rimir/kind/draft/<type-key>` |Creator's draft for in-progress instance |
 |`$:/state/rimir/kind/instances-overview/search` |''Instances Overview'': node search-box text |
+|`$:/state/rimir/kind/context/direction` |''Context'' preview: parent-tree direction — `to` (descendants, default) or `from` (ancestors) |
+|`$:/state/rimir/kind/context/depth` |''Context'' preview: number of `parent`-tree levels to show (1–5, default 2) |
 |`$:/state/rimir/kind/edit-mode/<target-tid>` |Per-instance toggle between popup and inline edit mode in stream-view |
 |`$:/state/rimir/kind/ta/<target-tid>/<field-key>` |Typeahead search-input state for a ref field |
 |`$:/state/rimir/kind/creator/selected-type` |Currently-selected type in the creator |

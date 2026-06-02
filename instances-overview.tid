@@ -1,73 +1,7 @@
 title: Kind: Instances Overview
 type: text/vnd.tiddlywiki
 
-\function kg.ref-fields-of(type-tid) [function[kind.field-keys],<type-tid>] :filter[function[kind.is-ref-typed],<type-tid>,<currentTiddler>]
-\function kg.ref-fields() [function[kind.types-all]] :map:flat[function[kg.ref-fields-of],<currentTiddler>] +[unique[]sort[]]
-\function kg.type-keys() [function[kind.types-all]get[kind.type]] +[unique[]sort[]]
-\function kg.type-idx(type-key) [function[kg.type-keys]] :filter[<currentTiddler>compare:string:lt<type-key>] +[count[]add[1]]
-\function kg.palette() [[#4e79a7]] [[#59a14f]] [[#e15759]] [[#f28e2b]] [[#edc948]] [[#b07aa1]] [[#76b7b2]] [[#ff9da7]] [[#9c755f]] [[#bab0ac]] [[#86bcb6]] [[#d37295]]
-\function kg.palette-nth(n) [function[kg.palette]nth<n>]
-\function kg.palette-for(type-key) [function[kg.type-idx],<type-key>] :map[function[kg.palette-nth],<currentTiddler>]
-\function kg.color-of(type-key) [function[kind.locate-type],<type-key>get[kind.color]] ~[function[kg.palette-for],<type-key>] ~[[#888888]]
-
-\function kg.all-instances() [all[tiddlers]has[kind.type]!has[kind.fields]] +[sort[]]
-\function kg.count() [function[kg.all-instances]count[]]
-\function kg.node-idx(t) [function[kg.all-instances]] :filter[<currentTiddler>compare:string:lt<t>] +[count[]]
-\function kg.type-shown(t, hiddenTypes) [<t>get[kind.type]] :filter[<hiddenTypes>enlist-input[]match<currentTiddler>count[]match[0]]
-
-\procedure kg-open() <$action-navigate $to=<<nodeTiddler>>/>
-
-\procedure kg-body(searchText, selFields, hiddenTypes)
-<$let kgSpacing="180" kgCount={{{ [function[kg.count]] }}}>
-<$let kgCols={{{ [<kgCount>power[0.5]ceil[]max[1]] }}}>
-<$let kgRows={{{ [<kgCount>divide<kgCols>ceil[]max[1]] }}} kgOriginX={{{ [<kgCols>subtract[1]multiply<kgSpacing>divide[2]] }}}>
-<$let kgOriginY={{{ [<kgRows>subtract[1]multiply<kgSpacing>divide[2]] }}}>
-<$graph physics="no">
-<$properties.persistent $dataTiddler="$:/config/rimir/kind/instances-overview/structure">
-<$properties.popup $enabled="yes" $ms="400" $width="260px">
-<$fill $name="tooltip">
-<$let _tk={{{ [<nodeTiddler>get[kind.type]] }}}>
-<div style="margin-bottom:4px;">
-<strong><$text text={{{ [<nodeTiddler>get[caption]] ~[<nodeTiddler>] }}}/></strong>
-<span style="font-size:0.85em;opacity:0.7;"> &mdash; <$text text={{{ [function[kind.locate-type],<_tk>get[kind.icon]] }}}/> <$text text=<<_tk>>/></span>
-</div>
-</$let>
-</$fill>
-<$properties.river>
-<$properties $for="graph" doubleclick=<<kg-open>>>
-<$properties $for="edges" color="#999999">
-<$list filter="[all[tiddlers]has[kind.type]!has[kind.fields]search:caption,title<searchText>] :filter[function[kg.type-shown],<currentTiddler>,<hiddenTypes>]">
-<$let
-  _tk={{{ [<currentTiddler>get[kind.type]] }}}
-  _stored=<<pos>>
-  _nodeT=<<currentTiddler>>
-  _ni={{{ [function[kg.node-idx],<currentTiddler>] }}}
->
-<$let
-  _sx={{{ [<_ni>remainder<kgCols>multiply<kgSpacing>subtract<kgOriginX>] }}}
-  _sy={{{ [<_ni>divide<kgCols>floor[]multiply<kgSpacing>subtract<kgOriginY>] }}}
-  _color={{{ [function[kg.color-of],<_tk>] }}}
->
-<$node label={{{ [<currentTiddler>get[caption]] ~[<currentTiddler>] }}} color=<<_color>> $pos={{{ [<_stored>] ~[<_sx>addsuffix[,]addsuffix<_sy>] }}}/>
-<$list filter="[enlist<selFields>]" variable="_ef">
-<$list filter="[<_nodeT>get<_ef>enlist-input[]]" variable="_tgt">
-<$edge $from=<<_nodeT>> $to=<<_tgt>>/>
-</$list>
-</$list>
-</$let>
-</$let>
-</$list>
-</$properties>
-</$properties>
-</$properties.river>
-</$properties.popup>
-</$properties.persistent>
-</$graph>
-</$let>
-</$let>
-</$let>
-</$let>
-\end
+\import [[$:/plugins/rimir/kind/engine]] [[$:/plugins/rimir/kind/graph]]
 
 ! 🕸️ Kind: Instances Overview
 
@@ -77,8 +11,6 @@ A graph of every [[kind|$:/plugins/rimir/kind]] instance in the wiki. Nodes star
 .kg-controls { display:flex; gap:14px; align-items:center; flex-wrap:wrap; margin-bottom:6px; }
 .kg-controls label { white-space:nowrap; cursor:pointer; }
 .kg-controls .kg-legend { display:inline-flex; align-items:center; gap:5px; font-weight:500; background:none; border:none; padding:0; cursor:pointer; }
-.boundingbox > p { display:contents; }
-.boundingbox .graph-canvas { flex:1 1 auto; height:0; }
 </style>
 
 <$let
@@ -114,7 +46,12 @@ A graph of every [[kind|$:/plugins/rimir/kind]] instance in the wiki. Nodes star
 
 <%if [[$:/plugins/flibbles/graph]is[tiddler]] %>
 <div class="boundingbox" style="height:95vh; min-height:480px;">
-<$transclude $variable="kg-body" searchText=<<searchText>> selFields=<<selFields>> hiddenTypes=<<hiddenTypes>> $mode="block"/>
+<$transclude $variable="kg-graph"
+  nodeFilter="[all[tiddlers]has[kind.type]!has[kind.fields]search:caption,title<searchText>] :filter[function[kg.type-shown],<currentTiddler>,<hiddenTypes>]"
+  selFields=<<selFields>>
+  dataTiddler="$:/config/rimir/kind/instances-overview/structure"
+  physics="no"
+  $mode="block"/>
 </div>
 <%else%>
 <div style="border:1px solid #d9a300; background:rgba(217,163,0,0.08); border-radius:6px; padding:12px 16px;">
