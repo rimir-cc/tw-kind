@@ -56,8 +56,7 @@ type: text/vnd.tiddlywiki
 
 <p>
 <$button disabled={{{ [function[kind.any-invalid],<type-tid>,<type-key>,<target-tid>!is[blank]then[yes]] }}}>
-<$action-createtiddler $basetitle={{{ [function[kind.eval-title],<type-tid>,<target-tid>] }}} $template=<<target-tid>> $savetitle="$:/state/rimir/kind/__last-saved-instance" kind.type=<<type-key>>/>
-<$transclude $variable="kind.apply-auto-children" parent-tid={{$:/state/rimir/kind/__last-saved-instance}} type-tid=<<type-tid>>/>
+<$transclude $variable="kind.finalize-create" kind-tid=<<type-tid>> kind-type-key=<<type-key>> draft-tid=<<target-tid>> savetitle="$:/state/rimir/kind/__last-saved-instance"/>
 <$action-deletetiddler $tiddler=<<target-tid>>/>
 Create
 </$button>

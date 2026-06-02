@@ -24,9 +24,11 @@ type: text/vnd.tiddlywiki
 \function kind.try-shape-enum(type-tid, target-tid, field-key) [function[kind.field-typed],<type-tid>,<field-key>match[enum]] :map[function[kind.shape-collection-with-typed],<type-tid>,<target-tid>,<field-key>,[enum]]
 \function kind.try-shape-ref(type-tid, target-tid, field-key) [function[kind.field-typed],<type-tid>,<field-key>match[ref]] :map[function[kind.shape-collection-with-typed],<type-tid>,<target-tid>,<field-key>,[ref]]
 
+\function kind.kv(key, value) [<value>] ~[[]] +[addprefix[":"]addprefix<key>addprefix["]addsuffix["]]
+
 \function kind.shape-text-with-typed(type-tid, target-tid, field-key) [function[kind.field-caption],<type-tid>,<field-key>] ~[<field-key>] :map[function[kind.shape-text-with-caption],<type-tid>,<target-tid>,<field-key>,<currentTiddler>]
 \function kind.shape-text-with-caption(type-tid, target-tid, field-key, caption) [function[kind.field-icon],<type-tid>,<field-key>] ~[[]] :map[function[kind.text-build],<target-tid>,<field-key>,<caption>,<currentTiddler>]
-\function kind.text-build(target-tid, field-key, caption, icon) [<caption>] +[addprefix[{"ca-name":"]] +[addsuffix[","ca-icon":"]] +[addsuffix<icon>] +[addsuffix[","ca-kind":"text","ca-bind-tiddler":"]] +[addsuffix<target-tid>] +[addsuffix[","ca-bind-field":"]] +[addsuffix<field-key>] +[addsuffix[","ca-bind-type":"text/plain"}]]
+\function kind.text-build(target-tid, field-key, caption, icon) [function[kind.kv],[ca-name],<caption>] [function[kind.kv],[ca-icon],<icon>] [function[kind.kv],[ca-kind],[text]] [function[kind.kv],[ca-bind-tiddler],<target-tid>] [function[kind.kv],[ca-bind-field],<field-key>] [function[kind.kv],[ca-bind-type],[text/plain]] +[join[,]addprefix[{]addsuffix[}]]
 
 \function kind.shape-text-multi-with-typed(type-tid, target-tid, field-key) [function[kind.field-caption],<type-tid>,<field-key>] ~[<field-key>] :map[function[kind.shape-text-multi-with-caption],<type-tid>,<target-tid>,<field-key>,<currentTiddler>]
 \function kind.shape-text-multi-with-caption(type-tid, target-tid, field-key, caption) [function[kind.field-icon],<type-tid>,<field-key>] ~[[]] :map[function[kind.text-multi-drill-build],<target-tid>,<field-key>,<caption>,<currentTiddler>]
@@ -38,16 +40,16 @@ type: text/vnd.tiddlywiki
 
 \function kind.shape-number-with-typed(type-tid, target-tid, field-key) [function[kind.field-caption],<type-tid>,<field-key>] ~[<field-key>] :map[function[kind.shape-number-with-caption],<type-tid>,<target-tid>,<field-key>,<currentTiddler>]
 \function kind.shape-number-with-caption(type-tid, target-tid, field-key, caption) [function[kind.field-icon],<type-tid>,<field-key>] ~[[]] :map[function[kind.number-build],<target-tid>,<field-key>,<caption>,<currentTiddler>]
-\function kind.number-build(target-tid, field-key, caption, icon) [<caption>] +[addprefix[{"ca-name":"]] +[addsuffix[","ca-icon":"]] +[addsuffix<icon>] +[addsuffix[","ca-kind":"number","ca-bind-tiddler":"]] +[addsuffix<target-tid>] +[addsuffix[","ca-bind-field":"]] +[addsuffix<field-key>] +[addsuffix[","ca-bind-type":"text/plain"}]]
+\function kind.number-build(target-tid, field-key, caption, icon) [function[kind.kv],[ca-name],<caption>] [function[kind.kv],[ca-icon],<icon>] [function[kind.kv],[ca-kind],[number]] [function[kind.kv],[ca-bind-tiddler],<target-tid>] [function[kind.kv],[ca-bind-field],<field-key>] [function[kind.kv],[ca-bind-type],[text/plain]] +[join[,]addprefix[{]addsuffix[}]]
 
 \function kind.shape-date-with-typed(type-tid, target-tid, field-key, bind-type) [function[kind.field-caption],<type-tid>,<field-key>] ~[<field-key>] :map[function[kind.shape-date-with-caption],<type-tid>,<target-tid>,<field-key>,<bind-type>,<currentTiddler>]
 \function kind.shape-date-with-caption(type-tid, target-tid, field-key, bind-type, caption) [function[kind.field-icon],<type-tid>,<field-key>] ~[[]] :map[function[kind.date-build],<target-tid>,<field-key>,<bind-type>,<caption>,<currentTiddler>]
-\function kind.date-build(target-tid, field-key, bind-type, caption, icon) [<caption>] +[addprefix[{"ca-name":"]] +[addsuffix[","ca-icon":"]] +[addsuffix<icon>] +[addsuffix[","ca-kind":"date","ca-bind-tiddler":"]] +[addsuffix<target-tid>] +[addsuffix[","ca-bind-field":"]] +[addsuffix<field-key>] +[addsuffix[","ca-bind-type":"]] +[addsuffix<bind-type>] +[addsuffix[","ca-date-format":"DD.MM.YYYY"}]]
+\function kind.date-build(target-tid, field-key, bind-type, caption, icon) [function[kind.kv],[ca-name],<caption>] [function[kind.kv],[ca-icon],<icon>] [function[kind.kv],[ca-kind],[date]] [function[kind.kv],[ca-bind-tiddler],<target-tid>] [function[kind.kv],[ca-bind-field],<field-key>] [function[kind.kv],[ca-bind-type],<bind-type>] [function[kind.kv],[ca-date-format],[DD.MM.YYYY]] +[join[,]addprefix[{]addsuffix[}]]
 
 \function kind.shape-collection-with-typed(type-tid, target-tid, field-key, source-kind) [function[kind.field-caption],<type-tid>,<field-key>] ~[<field-key>] :map[function[kind.shape-collection-with-caption],<type-tid>,<target-tid>,<field-key>,<source-kind>,<currentTiddler>]
 \function kind.shape-collection-with-caption(type-tid, target-tid, field-key, source-kind, caption) [function[kind.field-icon],<type-tid>,<field-key>] ~[[]] :map[function[kind.shape-collection-with-icon],<type-tid>,<target-tid>,<field-key>,<source-kind>,<caption>,<currentTiddler>]
 \function kind.shape-collection-with-icon(type-tid, target-tid, field-key, source-kind, caption, icon) [function[kind.collection-items-from-filter],<type-tid>,<target-tid>,<field-key>,<source-kind>] :map[function[kind.collection-build],<target-tid>,<field-key>,<caption>,<icon>,<currentTiddler>]
-\function kind.collection-build(target-tid, field-key, caption, icon, items-filter) [<caption>] +[addprefix[{"ca-name":"]] +[addsuffix[","ca-icon":"]] +[addsuffix<icon>] +[addsuffix[","ca-kind":"drill","ca-bind-tiddler":"]] +[addsuffix<target-tid>] +[addsuffix[","ca-bind-field":"]] +[addsuffix<field-key>] +[addsuffix[","ca-next-title":"]] +[addsuffix<caption>] +[addsuffix[","ca-items-from":"]] +[addsuffix<items-filter>] +[addsuffix["}]]
+\function kind.collection-build(target-tid, field-key, caption, icon, items-filter) [function[kind.kv],[ca-name],<caption>] [function[kind.kv],[ca-icon],<icon>] [function[kind.kv],[ca-kind],[drill]] [function[kind.kv],[ca-bind-tiddler],<target-tid>] [function[kind.kv],[ca-bind-field],<field-key>] [function[kind.kv],[ca-next-title],<caption>] [function[kind.kv],[ca-items-from],<items-filter>] +[join[,]addprefix[{]addsuffix[}]]
 
 \function kind.collection-items-from-filter(type-tid, target-tid, field-key, source-kind) [function[kind.field-cardinality],<type-tid>,<field-key>] ~[[single]] :map[function[kind.collection-fn-name-by-card],<source-kind>,<currentTiddler>] :map[function[kind.items-from-call-build],<type-tid>,<target-tid>,<field-key>,<currentTiddler>]
 \function kind.collection-fn-name-by-card(source-kind, cardinality) [function[kind.collection-fn-enum-or-ref],<source-kind>,<cardinality>]
@@ -60,14 +62,14 @@ type: text/vnd.tiddlywiki
 \function kind.enum-leaf-items(type-tid, target-tid, field-key) [function[kind.options],<type-tid>,<field-key>] :map[function[kind.enum-leaf-one],<type-tid>,<target-tid>,<field-key>,<currentTiddler>]
 \function kind.enum-leaf-one(type-tid, target-tid, field-key, option) [<option>] +[addprefix[{"ca-name":"]] +[addsuffix[","ca-kind":"leaf","ca-after-fire":"pop","ca-actions":"<$action-setfield $tiddler=\"]] +[addsuffix<target-tid>] +[addsuffix[\" $field=\"]] +[addsuffix<field-key>] +[addsuffix[\" $value=\"]] +[addsuffix<option>] +[addsuffix[\"/><$transclude $variable=\"kind.apply-defaults-to\" type-tid=\"]] +[addsuffix<type-tid>] +[addsuffix[\" target-tid=\"]] +[addsuffix<target-tid>] +[addsuffix[\"/>"}]]
 \function kind.enum-toggle-items(type-tid, target-tid, field-key) [function[kind.options],<type-tid>,<field-key>] :map[function[kind.enum-toggle-one],<target-tid>,<field-key>,<currentTiddler>]
-\function kind.enum-toggle-one(target-tid, field-key, option) [<option>] +[addprefix[{"ca-name":"]] +[addsuffix[","ca-kind":"toggle","ca-bind-tiddler":"]] +[addsuffix<target-tid>] +[addsuffix[","ca-bind-field":"]] +[addsuffix<field-key>] +[addsuffix[","ca-bind-type":"application/x-string-array","ca-true-value":"]] +[addsuffix<option>] +[addsuffix["}]]
+\function kind.enum-toggle-one(target-tid, field-key, option) [function[kind.kv],[ca-name],<option>] [function[kind.kv],[ca-kind],[toggle]] [function[kind.kv],[ca-bind-tiddler],<target-tid>] [function[kind.kv],[ca-bind-field],<field-key>] [function[kind.kv],[ca-bind-type],[application/x-string-array]] [function[kind.kv],[ca-true-value],<option>] +[join[,]addprefix[{]addsuffix[}]]
 
 \function kind.ref-leaf-items(type-tid, target-tid, field-key) [function[kind.ref-candidates],<type-tid>,<field-key>] :map[function[kind.ref-leaf-one],<type-tid>,<target-tid>,<field-key>,<currentTiddler>] [function[kind.ref-create-new-items],<type-tid>,<target-tid>,<field-key>,[single]]
 \function kind.ref-leaf-one(type-tid, target-tid, field-key, candidate) [function[kind.resolve-ref],<candidate>] ~[<candidate>] :map[function[kind.ref-leaf-build],<type-tid>,<target-tid>,<field-key>,<candidate>,<currentTiddler>]
 \function kind.ref-leaf-build(type-tid, target-tid, field-key, candidate, display-name) [<display-name>] +[addprefix[{"ca-name":"]] +[addsuffix[","ca-hint":"]] +[addsuffix<candidate>] +[addsuffix[","ca-kind":"leaf","ca-after-fire":"pop","ca-actions":"<$action-setfield $tiddler=\"]] +[addsuffix<target-tid>] +[addsuffix[\" $field=\"]] +[addsuffix<field-key>] +[addsuffix[\" $value=\"]] +[addsuffix<candidate>] +[addsuffix[\"/><$transclude $variable=\"kind.apply-defaults-to\" type-tid=\"]] +[addsuffix<type-tid>] +[addsuffix[\" target-tid=\"]] +[addsuffix<target-tid>] +[addsuffix[\"/>"}]]
 \function kind.ref-toggle-items(type-tid, target-tid, field-key) [function[kind.ref-candidates],<type-tid>,<field-key>] :map[function[kind.ref-toggle-one],<target-tid>,<field-key>,<currentTiddler>] [function[kind.ref-create-new-items],<type-tid>,<target-tid>,<field-key>,[multi]]
 \function kind.ref-toggle-one(target-tid, field-key, candidate) [function[kind.resolve-ref],<candidate>] ~[<candidate>] :map[function[kind.ref-toggle-build],<target-tid>,<field-key>,<candidate>,<currentTiddler>]
-\function kind.ref-toggle-build(target-tid, field-key, candidate, display-name) [<display-name>] +[addprefix[{"ca-name":"]] +[addsuffix[","ca-hint":"]] +[addsuffix<candidate>] +[addsuffix[","ca-kind":"toggle","ca-bind-tiddler":"]] +[addsuffix<target-tid>] +[addsuffix[","ca-bind-field":"]] +[addsuffix<field-key>] +[addsuffix[","ca-bind-type":"application/x-string-array","ca-true-value":"]] +[addsuffix<candidate>] +[addsuffix["}]]
+\function kind.ref-toggle-build(target-tid, field-key, candidate, display-name) [function[kind.kv],[ca-name],<display-name>] [function[kind.kv],[ca-hint],<candidate>] [function[kind.kv],[ca-kind],[toggle]] [function[kind.kv],[ca-bind-tiddler],<target-tid>] [function[kind.kv],[ca-bind-field],<field-key>] [function[kind.kv],[ca-bind-type],[application/x-string-array]] [function[kind.kv],[ca-true-value],<candidate>] +[join[,]addprefix[{]addsuffix[}]]
 
 \function kind.cascade-spawn-draft-tid(parent-tid, parent-field, ref-type-key) [[$:/state/rimir/kind/cascade-spawn-draft/]addsuffix<parent-tid>addsuffix[/]addsuffix<parent-field>addsuffix[/]addsuffix<ref-type-key>]
 
@@ -109,8 +111,7 @@ type: text/vnd.tiddlywiki
 <$let kind-type-key={{{ [<kind-tid>get[kind.type]] }}}>
 <$let draft-tid={{{ [function[kind.cascade-spawn-draft-tid],<parent-tid>,<parent-field>,<kind-type-key>] }}}>
 <$transclude $variable="kind.apply-defaults-to" type-tid=<<kind-tid>> target-tid=<<draft-tid>>/>
-<$action-createtiddler $basetitle={{{ [function[kind.eval-title],<kind-tid>,<draft-tid>] }}} $template=<<draft-tid>> $savetitle="$:/state/rimir/kind/__spawn-result" kind.type=<<kind-type-key>>/>
-<$transclude $variable="kind.apply-auto-children" parent-tid={{$:/state/rimir/kind/__spawn-result}} type-tid=<<kind-tid>>/>
+<$transclude $variable="kind.finalize-create" kind-tid=<<kind-tid>> kind-type-key=<<kind-type-key>> draft-tid=<<draft-tid>> savetitle="$:/state/rimir/kind/__spawn-result"/>
 <%if [<parent-card>match[multi]] %>
 <$action-listops $tiddler=<<parent-tid>> $field=<<parent-field>> $subfilter="+[append{$:/state/rimir/kind/__spawn-result}]"/>
 <%else%>
@@ -152,7 +153,6 @@ type: text/vnd.tiddlywiki
 \function kind.save-leaf-build(kind-tid, draft-tid, type-key, title) [<title>] +[addprefix[{"ca-name":"Save as \"]] +[addsuffix[\"","ca-icon":"💾","ca-kind":"leaf","ca-order":"1","ca-group":"Save","ca-hint":"Enter creates the instance and opens it. Ctrl-Enter creates without closing or clearing the form — repeat for fast batch entry.","ca-actions":"<$transclude $variable=\"kind.cascade-save-instance\" kind-tid=\"]] +[addsuffix<kind-tid>] +[addsuffix[\" draft-tid=\"]] +[addsuffix<draft-tid>] +[addsuffix[\" type-key=\"]] +[addsuffix<type-key>] +[addsuffix[\" keep-open=<<keep-open>>/>"}]]
 
 \procedure kind.cascade-save-instance(kind-tid, draft-tid, type-key, keep-open)
-<$let computed={{{ [function[kind.eval-title],<kind-tid>,<draft-tid>] }}}>
 <%if [<keep-open>match[yes]] %>
 <!-- Ctrl-Enter (mass-create): create the tiddler but KEEP the draft
      intact so the form stays populated for a quick follow-up entry.
@@ -163,20 +163,17 @@ type: text/vnd.tiddlywiki
      behind the palette as visual confirmation. TW's tm-navigate doesn't
      focus the rendered tiddler frame, so the palette input keeps focus
      and the user can immediately Ctrl-Enter again for the next instance. -->
-<$action-createtiddler $basetitle=<<computed>> $template=<<draft-tid>> kind.type=<<type-key>> $savetitle="$:/state/rimir/kind/__last-mass-create"/>
-<$transclude $variable="kind.apply-auto-children" parent-tid={{$:/state/rimir/kind/__last-mass-create}} type-tid=<<kind-tid>>/>
+<$transclude $variable="kind.finalize-create" kind-tid=<<kind-tid>> kind-type-key=<<type-key>> draft-tid=<<draft-tid>> savetitle="$:/state/rimir/kind/__last-mass-create"/>
 <$action-navigate $to={{$:/state/rimir/kind/__last-mass-create}}/>
 <%else%>
 <!-- Enter (single create): defensive apply-defaults (idempotent — fills
      only blank fields), create, clear the draft, navigate. Re-drilling
      "+ New <kind>" later re-seeds defaults via the drill's ca-actions. -->
 <$transclude $variable="kind.apply-defaults-to" type-tid=<<kind-tid>> target-tid=<<draft-tid>>/>
-<$action-createtiddler $basetitle=<<computed>> $template=<<draft-tid>> $savetitle="$:/state/rimir/kind/__last-saved-instance" kind.type=<<type-key>>/>
-<$transclude $variable="kind.apply-auto-children" parent-tid={{$:/state/rimir/kind/__last-saved-instance}} type-tid=<<kind-tid>>/>
+<$transclude $variable="kind.finalize-create" kind-tid=<<kind-tid>> kind-type-key=<<type-key>> draft-tid=<<draft-tid>> savetitle="$:/state/rimir/kind/__last-saved-instance"/>
 <$action-deletetiddler $tiddler=<<draft-tid>>/>
 <$action-navigate $to={{$:/state/rimir/kind/__last-saved-instance}}/>
 <%endif%>
-</$let>
 \end
 
 \function kind.create-here-draft-tid(host-tid, target-field, ref-type-key) [[$:/state/rimir/kind/create-here-draft/]addsuffix<host-tid>addsuffix[/]addsuffix<target-field>addsuffix[/]addsuffix<ref-type-key>]
@@ -228,20 +225,16 @@ type: text/vnd.tiddlywiki
 \end
 
 \procedure kind.cascade-create-here(host-tid, target-field, target-card, kind-tid)
-<!-- Save action for "Create here" Save row: writes the host's title into the new
-     instance's back-ref field BEFORE $action-createtiddler $template, so the
-     template copy includes the back-ref. kind.eval-title then sees it via the
-     draft, matching the row-name preview that the drill-open init produced. -->
+<!-- Save action for "Create here" Save row: re-runs the drill-open init (seed
+     defaults + pre-set back-ref on draft — idempotent), then materialises the
+     new instance via kind.finalize-create and deletes the draft. The back-ref
+     ends up on the new tiddler because $action-createtiddler copies from the
+     pre-seeded draft template. kind.eval-title sees the back-ref on the draft,
+     matching the row-name preview the init produced. -->
 <$let kind-type-key={{{ [<kind-tid>get[kind.type]] }}}>
 <$let draft-tid={{{ [function[kind.create-here-draft-tid],<host-tid>,<target-field>,<kind-type-key>] }}}>
-<$transclude $variable="kind.apply-defaults-to" type-tid=<<kind-tid>> target-tid=<<draft-tid>>/>
-<%if [<target-card>match[multi]] %>
-<$action-listops $tiddler=<<draft-tid>> $field=<<target-field>> $subfilter="+[append<host-tid>]"/>
-<%else%>
-<$action-setfield $tiddler=<<draft-tid>> $field=<<target-field>> $value=<<host-tid>>/>
-<%endif%>
-<$action-createtiddler $basetitle={{{ [function[kind.eval-title],<kind-tid>,<draft-tid>] }}} $template=<<draft-tid>> $savetitle="$:/state/rimir/kind/__create-here-result" kind.type=<<kind-type-key>>/>
-<$transclude $variable="kind.apply-auto-children" parent-tid={{$:/state/rimir/kind/__create-here-result}} type-tid=<<kind-tid>>/>
+<$transclude $variable="kind.cascade-create-here-init" host-tid=<<host-tid>> target-field=<<target-field>> target-card=<<target-card>> kind-tid=<<kind-tid>>/>
+<$transclude $variable="kind.finalize-create" kind-tid=<<kind-tid>> kind-type-key=<<kind-type-key>> draft-tid=<<draft-tid>> savetitle="$:/state/rimir/kind/__create-here-result"/>
 <$action-deletetiddler $tiddler=<<draft-tid>>/>
 </$let>
 </$let>
