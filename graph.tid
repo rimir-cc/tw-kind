@@ -25,7 +25,10 @@ type: text/vnd.tiddlywiki
 <$let kgSpacing="180" kgCount={{{ [function[kg.count]] }}}>
 <$let kgCols={{{ [<kgCount>power[0.5]ceil[]max[1]] }}}>
 <$let kgRows={{{ [<kgCount>divide<kgCols>ceil[]max[1]] }}} kgOriginX={{{ [<kgCols>subtract[1]multiply<kgSpacing>divide[2]] }}}>
-<$let kgOriginY={{{ [<kgRows>subtract[1]multiply<kgSpacing>divide[2]] }}}>
+<$let kgOriginY={{{ [<kgRows>subtract[1]multiply<kgSpacing>divide[2]] }}}
+  _selColors={{{ [enlist<selFields>] :map[function[kg.edge-color],<currentTiddler>] +[join[ ]] }}}
+  _selStrokes={{{ [enlist<selFields>] :map[function[kg.edge-stroke],<currentTiddler>] +[join[ ]] }}}
+  _multiEdge={{{ [enlist<selFields>count[]compare:integer:gt[1]then[1]] }}}>
 <$graph physics=<<physics>>>
 <$properties.persistent $dataTiddler=<<dataTiddler>>>
 <$properties.popup $enabled="yes" $ms="400" $width="260px">
@@ -53,10 +56,12 @@ type: text/vnd.tiddlywiki
   _color={{{ [function[kg.color-of],<_tk>] }}}
 >
 <$node label={{{ [<currentTiddler>get[caption]] ~[<currentTiddler>] }}} color=<<_color>> $pos={{{ [<_stored>] ~[<_sx>addsuffix[,]addsuffix<_sy>] }}} actions=<<kg-open>>/>
-<$list filter="[enlist<selFields>]" variable="_ef">
+<$list filter="[enlist<selFields>]" variable="_ef" counter="_efi">
+<$let _ec={{{ [enlist<_selColors>nth<_efi>] }}} _es={{{ [enlist<_selStrokes>nth<_efi>] }}} _elabel={{{ [<_multiEdge>match[1]then<_ef>] }}}>
 <$list filter="[<_nodeT>get<_ef>enlist-input[]]" variable="_tgt">
-<$edge $from=<<_nodeT>> $to=<<_tgt>> color={{{ [function[kg.edge-color],<_ef>] }}} stroke={{{ [function[kg.edge-stroke],<_ef>] }}} label={{{ [enlist<selFields>count[]compare:integer:gt[1]then<_ef>] }}}/>
+<$edge $from=<<_nodeT>> $to=<<_tgt>> color=<<_ec>> stroke=<<_es>> label=<<_elabel>>/>
 </$list>
+</$let>
 </$list>
 </$let>
 </$let>
