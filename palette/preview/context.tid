@@ -79,6 +79,8 @@ ca-preview-order: 40
 <div class="kind-view-empty">Not a kind-instance — no <code>kind.type</code> on <code><$text text=<<kgBase>>/></code>.</div>
 <%else%>
 
+<div class="kind-ctx-fill">
+
 <div class="kind-ctx-controls">
 <span class="kind-ctx-label">Direction:</span>
 <span class="kind-ctx-group kind-pill-row">
@@ -111,7 +113,7 @@ ca-preview-order: 40
 </div>
 
 <%if [[$:/plugins/flibbles/graph]is[tiddler]] %>
-<div class="boundingbox" style="height:70vh; min-height:340px;">
+<div class="boundingbox kind-ctx-graph">
 <$transclude $variable="kg-graph"
   nodeFilter=<<kg.ctx-filter>>
   selFields=<<selFields>>
@@ -123,6 +125,7 @@ ca-preview-order: 40
 <div class="kind-warn">Needs a graph engine — install <code>flibbles/graph</code> plus a render adapter (e.g. <code>flibbles/vis-network</code>) to see the context graph.</div>
 <%endif%>
 
+</div>
 <%endif%>
 
 </$let>

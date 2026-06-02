@@ -385,6 +385,36 @@ textarea.kind-input,
 	border: 1px solid var(--kp, <<colour muted-foreground>>);
 }
 
+/* Context side-preview: let the graph fill the cascade-palette pane's visible
+   height (instead of a fixed vh that overflows and forces scrolling). Build a
+   flex column the whole way down — pane body → cp's template wrapper → our fill
+   wrapper → the graph box — so the controls take their natural height and the
+   graph takes the rest. Scoped via :has(.kind-ctx-fill) so OTHER preview
+   templates keep their normal block-flow + scroll behaviour. min-height:0 on
+   the intermediate flex items lets the graph shrink to fit; the graph keeps a
+   sensible floor so a very short popup still shows a usable canvas (and then
+   the pane's own overflow-y:auto scrolls, as a last resort). */
+.rcp-preview-pane-body:has(.kind-ctx-fill) {
+	display: flex;
+	flex-direction: column;
+}
+.rcp-preview-pane-body:has(.kind-ctx-fill) > .rcp-preview-pane-template {
+	flex: 1 1 auto;
+	min-height: 0;
+	display: flex;
+	flex-direction: column;
+}
+.kind-ctx-fill {
+	display: flex;
+	flex-direction: column;
+	flex: 1 1 auto;
+	min-height: 0;
+}
+.kind-ctx-fill > .kind-ctx-graph {
+	flex: 1 1 auto;
+	min-height: 200px;
+}
+
 /* === overview / namespace switcher === */
 .kind-ns-row {
 	display: flex;
