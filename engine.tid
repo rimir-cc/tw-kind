@@ -139,21 +139,27 @@ type: text/vnd.tiddlywiki
 \function kind.any-invalid(type-tid, type-key, target-tid) [function[kind.field-keys],<type-tid>] :filter[function[kind.viol-any],<type-tid>,<type-key>,<currentTiddler>,<target-tid>] +[first[]]
 
 \procedure kind.apply-defaults-to(type-tid, target-tid)
-<!-- Walks the type's fields and writes each field's `default` onto the target —
-     only for fields currently blank. Idempotent: existing non-blank values are
-     preserved. `default` is always a subfilter evaluated against the draft
-     (`kind.compute-default`), so `[[planned]]` writes the literal "planned",
-     `[<now "YYYY0MM0DD0hh0mm0ss0XXX">]` writes the current timestamp, and
-     `[get[parent]get[caption]]` reads from the draft's parent. Re-fire from
-     field-input action chains after a ref/enum change to populate dependent
-     defaults that were blank when the field was first selected — the blank-
-     gate prevents overwriting any value the user has already typed.
-     Also stamps `kind.type` so the draft is recognised by downstream
-     consumers (e.g. the side-preview's instance-view template). -->
+<!-- Walks the type's fields. For each field, fires one $action-setfield whose
+     $value is computed AT FIRE TIME via three-tier filter:
+       1. existing non-blank value → keep (idempotent for user-typed values)
+       2. else `kind.compute-default` (subfilter against draft) if non-blank
+       3. else existing value (typically empty)
+     The gate-inside-$value is critical for re-firing: when called from a
+     ref/enum trailer in the same action chain that just set the dependency,
+     the previous gating shape `<$list filter="…compute-default…!is[blank]">`
+     evaluated at render time (before the dependency was set), so dependent
+     fields' setfields were never rendered into the action tree at all.
+     Putting the gate in `$value={{{…}}}` defers evaluation to fire time so
+     each setfield sees the just-updated dependency state.
+     `default` is always a subfilter evaluated against the draft, so
+     `[[planned]]` writes the literal "planned", `[<now "YYYY0MM0DD0hh0mm0ss0XXX">]`
+     writes the current timestamp, `[get[parent]get[caption]]` reads from the
+     draft's parent. Also stamps `kind.type` so the draft is recognised by
+     downstream consumers (e.g. the side-preview's instance-view template). -->
 <$action-setfield $tiddler=<<target-tid>> kind.type={{{ [<type-tid>get[kind.type]] }}}/>
 <$list filter="[function[kind.field-keys],<type-tid>]" variable="field-key">
-<$list filter="[function[kind.compute-default],<type-tid>,<field-key>,<target-tid>!is[blank]] :filter[<target-tid>!has<field-key>] +[first[]]" variable="computed-val">
-<$action-setfield $tiddler=<<target-tid>> $field=<<field-key>> $value=<<computed-val>>/>
+<$list filter="[function[kind.field-default],<type-tid>,<field-key>!is[blank]] +[first[]]" variable="_">
+<$action-setfield $tiddler=<<target-tid>> $field=<<field-key>> $value={{{ [<target-tid>get<field-key>!is[blank]] ~[function[kind.compute-default],<type-tid>,<field-key>,<target-tid>!is[blank]] ~[<target-tid>get<field-key>] +[first[]] }}}/>
 </$list>
 </$list>
 \end
@@ -189,17 +195,16 @@ type: text/vnd.tiddlywiki
 \end
 
 \procedure kind.force-apply-defaults(type-tid, target-tid)
-<!-- Like kind.apply-defaults-to but unconditional: writes every default-bearing
-     field regardless of current state. Used by the Reset row where the caller
-     has just deleted target-tid (so "preserve existing values" would be
-     incorrect — we WANT to overwrite, and the deletetiddler runs in the same
-     action chain as this transclude). Dropping the blank gate makes Reset
-     idempotent across repeat clicks. Stamps `kind.type` so the freshly-
-     reset draft is recognised by the side-preview. -->
+<!-- Like kind.apply-defaults-to but unconditional: writes every defaulted
+     field regardless of existing state, falling back to existing value if
+     the formula returns blank. Used by the Reset row. Same fire-time
+     evaluation pattern via $value={{{…}}} so a Reset clicked after partial
+     dependency fills resolves the cascade correctly. Stamps `kind.type` so
+     the freshly-reset draft is recognised by the side-preview. -->
 <$action-setfield $tiddler=<<target-tid>> kind.type={{{ [<type-tid>get[kind.type]] }}}/>
 <$list filter="[function[kind.field-keys],<type-tid>]" variable="field-key">
-<$list filter="[function[kind.compute-default],<type-tid>,<field-key>,<target-tid>!is[blank]] +[first[]]" variable="computed-val">
-<$action-setfield $tiddler=<<target-tid>> $field=<<field-key>> $value=<<computed-val>>/>
+<$list filter="[function[kind.field-default],<type-tid>,<field-key>!is[blank]] +[first[]]" variable="_">
+<$action-setfield $tiddler=<<target-tid>> $field=<<field-key>> $value={{{ [function[kind.compute-default],<type-tid>,<field-key>,<target-tid>!is[blank]] ~[<target-tid>get<field-key>] +[first[]] }}}/>
 </$list>
 </$list>
 \end
