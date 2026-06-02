@@ -22,7 +22,7 @@ ca-preview-order: 40
      the concrete direction / depth / base baked in. Requires a graph
      engine (flibbles/graph + adapter) and the bimlas kin-filter plugin. -->
 
-\define kg.ctx-filter() [kin:parent:$(kgDir)$:$(kgDepth)$[$(kgBase)$]] :filter[is[tiddler]has[kind.type]!has[kind.fields]]
+\define kg.ctx-filter() [kin:parent:$(kgDir)$:$(kgDepth)$[$(kgBase)$]] :filter[is[tiddler]has[kind.type]!has[kind.fields]] :filter[function[kg.type-shown],<currentTiddler>,<hiddenTypes>]
 
 \procedure ctx-dir-pill(value, label)
 <$button class={{{ [<kgDir>match<value>then[kind-pill kind-pill-on]] ~[[kind-pill]] }}}>
@@ -38,11 +38,41 @@ ca-preview-order: 40
 </$button>
 \end
 
+\procedure ctx-edge-pill(value)
+<$let
+  _cur={{{ [[$:/state/rimir/kind/context/edge-fields]get[fields]] ~[[parent]] }}}
+  _on={{{ [enlist<_cur>match<value>count[]] }}}
+  _without={{{ [enlist<_cur>] -[<value>] +[join[ ]] }}}
+  _with={{{ [enlist<_cur>] [<value>] +[unique[]join[ ]] }}}
+  _ec={{{ [function[kg.edge-color],<value>] }}}
+>
+<$button class={{{ [<_on>compare:integer:gt[0]then[kind-pill kind-cpill kind-cpill-on]] ~[[kind-pill kind-cpill kind-cpill-off]] }}} style={{{ [<_ec>addprefix[--kp:]] }}}>
+<$action-setfield $tiddler="$:/state/rimir/kind/context/edge-fields" $field="fields" $value={{{ [<_on>compare:integer:gt[0]then<_without>] ~[<_with>] }}}/>
+<span class="kind-pill-dot"></span><$text text=<<value>>/>
+</$button>
+</$let>
+\end
+
+\procedure ctx-type-pill(value)
+<$let
+  _c={{{ [function[kg.color-of],<value>] }}}
+  _hidden={{{ [enlist<hiddenTypes>match<value>count[]] }}}
+  _without={{{ [enlist<hiddenTypes>] -[<value>] +[join[ ]] }}}
+  _with={{{ [enlist<hiddenTypes>] [<value>] +[unique[]join[ ]] }}}
+>
+<$button class={{{ [<_hidden>compare:integer:gt[0]then[kind-pill kind-cpill kind-cpill-off]] ~[[kind-pill kind-cpill kind-cpill-on]] }}} style={{{ [<_c>addprefix[--kp:]] }}}>
+<$action-setfield $tiddler="$:/state/rimir/kind/context/hidden-types" $field="hidden" $value={{{ [<_hidden>compare:integer:gt[0]then<_without>] ~[<_with>] }}}/>
+<span class="kind-pill-dot"></span><$text text=<<value>>/>
+</$button>
+</$let>
+\end
+
 <$let
   kgBase=<<currentTiddler>>
   kgDir={{{ [[$:/state/rimir/kind/context/direction]get[text]] ~[[to]] }}}
   kgDepth={{{ [[$:/state/rimir/kind/context/depth]get[text]] ~[[2]] }}}
-  selFields={{{ [[$:/config/rimir/kind/instances-overview/edge-fields]get[fields]] ~[[parent]] }}}
+  hiddenTypes={{{ [[$:/state/rimir/kind/context/hidden-types]get[hidden]] }}}
+  selFields={{{ [[$:/state/rimir/kind/context/edge-fields]get[fields]] ~[[parent]] }}}
 >
 
 <%if [<kgBase>get[kind.type]is[blank]] %>
@@ -62,6 +92,21 @@ ca-preview-order: 40
 <<ctx-depth-pill 3>>
 <<ctx-depth-pill 4>>
 <<ctx-depth-pill 5>>
+</span>
+<span class="kind-ctx-label">Edges:</span>
+<span class="kind-ctx-group kind-pill-row">
+<$list filter="[function[kg.ref-fields]]" variable="_rf">
+<$transclude $variable="ctx-edge-pill" value=<<_rf>>/>
+</$list>
+</span>
+</div>
+
+<div class="kind-ctx-controls">
+<span class="kind-ctx-label">Types:</span>
+<span class="kind-ctx-group kind-pill-row">
+<$list filter="[function[kg.type-keys]]" variable="_tk">
+<$transclude $variable="ctx-type-pill" value=<<_tk>>/>
+</$list>
 </span>
 </div>
 

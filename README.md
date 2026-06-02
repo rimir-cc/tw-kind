@@ -13,7 +13,7 @@ Define a type's fields, constraints, title formula, and namespace memberships al
 * **Typeahead refs** -- filterable search input + filtered dropdown + selected pills with × remove; scales to large option sets.
 * **Configurable stream-river view** -- each type chooses which fields appear in its in-river field bar; empty = bar hidden.
 * **Instances Overview graph** -- the *Kind: Instances Overview* tiddler renders a whole-wiki graph of every instance, coloured per type, with toggleable per-ref-field edges and per-type show/hide; drag nodes to lay them out and positions persist. Needs a graph engine (see Prerequisites).
-* **Context preview** -- a cascade-palette side-preview (shown for any instance) that draws just the instance's neighbourhood in the `parent` tree, reusing the Instances Overview layout/positions. Pills pick direction (*Descendants* / *Ancestors*) and how many *levels* (1-5) to show. Needs a graph engine plus the bimlas kin-filter plugin (see Prerequisites).
+* **Context preview** -- a cascade-palette side-preview (shown for any instance) that draws just the instance's neighbourhood in the `parent` tree, reusing the Instances Overview layout/positions. Pills pick direction (*Descendants* / *Ancestors*), how many *levels* (1-5) to show, which *edges* to draw (multi-select), and which *types* to show (colour-coded chips -- click to hide); all four persist globally. Edges are colour- and stroke-coded per relationship and labelled when more than one is shown. Needs a graph engine plus the bimlas kin-filter plugin (see Prerequisites).
 * **Hand-rolled UI** -- zero dependency on other rimir plugins (theme/components/typed). Optional soft dependency on doc-template for the branded documentation hub.
 
 ## Prerequisites

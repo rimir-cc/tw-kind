@@ -10,6 +10,10 @@ type: text/vnd.tiddlywiki
 \function kg.palette-for(type-key) [function[kg.type-idx],<type-key>] :map[function[kg.palette-nth],<currentTiddler>]
 \function kg.color-of(type-key) [function[kind.locate-type],<type-key>get[kind.color]] ~[function[kg.palette-for],<type-key>] ~[[#888888]]
 
+\function kg.edge-idx(field) [function[kg.ref-fields]] :filter[<currentTiddler>compare:string:lt<field>] +[count[]add[1]]
+\function kg.edge-color(field) [function[kg.edge-idx],<field>] :map[function[kg.palette-nth],<currentTiddler>] ~[[#999999]]
+\function kg.edge-stroke(field) [function[kg.edge-idx],<field>subtract[1]remainder[3]match[1]then[dashed]] ~[function[kg.edge-idx],<field>subtract[1]remainder[3]match[2]then[dotted]] ~[[solid]]
+
 \function kg.all-instances() [all[tiddlers]has[kind.type]!has[kind.fields]] +[sort[]]
 \function kg.count() [function[kg.all-instances]count[]]
 \function kg.node-idx(t) [function[kg.all-instances]] :filter[<currentTiddler>compare:string:lt<t>] +[count[]]
@@ -51,7 +55,7 @@ type: text/vnd.tiddlywiki
 <$node label={{{ [<currentTiddler>get[caption]] ~[<currentTiddler>] }}} color=<<_color>> $pos={{{ [<_stored>] ~[<_sx>addsuffix[,]addsuffix<_sy>] }}} actions=<<kg-open>>/>
 <$list filter="[enlist<selFields>]" variable="_ef">
 <$list filter="[<_nodeT>get<_ef>enlist-input[]]" variable="_tgt">
-<$edge $from=<<_nodeT>> $to=<<_tgt>>/>
+<$edge $from=<<_nodeT>> $to=<<_tgt>> color={{{ [function[kg.edge-color],<_ef>] }}} stroke={{{ [function[kg.edge-stroke],<_ef>] }}} label={{{ [enlist<selFields>count[]compare:integer:gt[1]then<_ef>] }}}/>
 </$list>
 </$list>
 </$let>

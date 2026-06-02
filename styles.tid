@@ -2,6 +2,8 @@ tags: $:/tags/Stylesheet
 title: $:/plugins/rimir/kind/styles
 type: text/vnd.tiddlywiki
 
+\rules except dash
+
 /* === editor === */
 .kind-editor {
 	border-collapse: collapse;
@@ -352,6 +354,35 @@ textarea.kind-input,
 	display: inline-flex;
 	align-items: center;
 	gap: 6px;
+}
+
+/* Colour-coded chips (edge + type pills): the node / edge colour rides on the
+   inline --kp custom property (set via style="--kp:#rrggbb" on the button).
+   Selected = full colour, solid dot, heavier border. Deselected = faded,
+   hollow dot. Deliberately format-agnostic — no color-mix, so it never
+   silently falls back to the generic blue .kind-pill-on. */
+.kind-pill-dot {
+	display: inline-block;
+	width: 9px;
+	height: 9px;
+	border-radius: 50%;
+	background: var(--kp, <<colour muted-foreground>>);
+	flex-shrink: 0;
+}
+.kind-cpill {
+	border-color: var(--kp, <<colour tiddler-border>>);
+	cursor: pointer;
+}
+.kind-cpill.kind-cpill-on {
+	font-weight: 500;
+	border-width: 2px;
+	padding: 1px 7px;
+}
+.kind-cpill.kind-cpill-on:hover { background: <<colour tiddler-info-background>>; }
+.kind-cpill.kind-cpill-off { opacity: 0.45; }
+.kind-cpill.kind-cpill-off .kind-pill-dot {
+	background: transparent;
+	border: 1px solid var(--kp, <<colour muted-foreground>>);
 }
 
 /* === overview / namespace switcher === */

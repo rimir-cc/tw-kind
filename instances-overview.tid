@@ -14,7 +14,6 @@ A graph of every [[kind|$:/plugins/rimir/kind]] instance in the wiki. Nodes star
 </style>
 
 <$let
-  searchText={{{ [[$:/state/rimir/kind/instances-overview/search]get[text]] }}}
   selFields={{{ [[$:/config/rimir/kind/instances-overview/edge-fields]get[fields]] }}}
   hiddenTypes={{{ [[$:/config/rimir/kind/instances-overview/hidden-types]get[hidden]] }}}
 >
@@ -46,12 +45,14 @@ A graph of every [[kind|$:/plugins/rimir/kind]] instance in the wiki. Nodes star
 
 <%if [[$:/plugins/flibbles/graph]is[tiddler]] %>
 <div class="boundingbox" style="height:95vh; min-height:480px;">
+<$let searchText={{{ [[$:/state/rimir/kind/instances-overview/search]get[text]] }}}>
 <$transclude $variable="kg-graph"
   nodeFilter="[all[tiddlers]has[kind.type]!has[kind.fields]search:caption,title<searchText>] :filter[function[kg.type-shown],<currentTiddler>,<hiddenTypes>]"
   selFields=<<selFields>>
   dataTiddler="$:/config/rimir/kind/instances-overview/structure"
   physics="no"
   $mode="block"/>
+</$let>
 </div>
 <%else%>
 <div style="border:1px solid #d9a300; background:rgba(217,163,0,0.08); border-radius:6px; padding:12px 16px;">

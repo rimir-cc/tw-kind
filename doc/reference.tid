@@ -86,6 +86,8 @@ All constraints are blocking — they show up in red in the validator and disabl
 |`$:/state/rimir/kind/instances-overview/search` |''Instances Overview'': node search-box text |
 |`$:/state/rimir/kind/context/direction` |''Context'' preview: parent-tree direction — `to` (descendants, default) or `from` (ancestors) |
 |`$:/state/rimir/kind/context/depth` |''Context'' preview: number of `parent`-tree levels to show (1–5, default 2) |
+|`$:/state/rimir/kind/context/edge-fields` |''Context'' preview: ref-field keys drawn as edges (titlelist; defaults to `parent`, and floors back to `parent` if every field is deselected) |
+|`$:/state/rimir/kind/context/hidden-types` |''Context'' preview: type keys hidden from the graph (titlelist; empty/absent = all types shown) |
 |`$:/state/rimir/kind/edit-mode/<target-tid>` |Per-instance toggle between popup and inline edit mode in stream-view |
 |`$:/state/rimir/kind/ta/<target-tid>/<field-key>` |Typeahead search-input state for a ref field |
 |`$:/state/rimir/kind/creator/selected-type` |Currently-selected type in the creator |
