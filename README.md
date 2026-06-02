@@ -12,11 +12,12 @@ Define a type's fields, constraints, title formula, and namespace memberships al
 * **Live validation + bulk validator** -- inline errors as you edit; wiki-wide scan report on the validator tab.
 * **Typeahead refs** -- filterable search input + filtered dropdown + selected pills with × remove; scales to large option sets.
 * **Configurable stream-river view** -- each type chooses which fields appear in its in-river field bar; empty = bar hidden.
+* **Instances Overview graph** -- the *Kind: Instances Overview* tiddler renders a whole-wiki graph of every instance, coloured per type, with toggleable per-ref-field edges and per-type show/hide; drag nodes to lay them out and positions persist. Needs a graph engine (see Prerequisites).
 * **Hand-rolled UI** -- zero dependency on other rimir plugins (theme/components/typed). Optional soft dependency on doc-template for the branded documentation hub.
 
 ## Prerequisites
 
-No external prerequisites. Optional: `rimir/doc-template` for the documentation hub.
+No external prerequisites for the core schema/UI. Optional: `rimir/doc-template` for the documentation hub; `flibbles/graph` plus a rendering engine (`flibbles/vis-network` or `rimir/cytoscape-engine`) for the *Instances Overview* graph (it shows an install hint if absent).
 
 ## Quick start
 
