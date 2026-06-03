@@ -4,6 +4,7 @@ type: text/vnd.tiddlywiki
 ! Changelog
 
 |!Version |!Date |!Changes |
+|v0.1.63 |2026-06-03 |Cascade-palette "Kind icons" structure toggle — when on, every menu row backed by a kind instance shows its type's `kind.icon` glyph at the front (all views, persists across reloads). Off by default; appears only while a kind type exists. Needs cascade-palette ≥0.0.109. |
 |v0.1.62 |2026-06-02 |Refactor: `kind.kv` JSON-pair helper + `kind.finalize-create` save-flow consolidation. |
 |v0.1.61 |2026-06-02 |Context preview: graph fills the side-preview pane's visible height (no scrolling). |
 |v0.1.60 |2026-06-02 |Perf: graph edge colour/stroke computed per-field once, not per-edge. |
