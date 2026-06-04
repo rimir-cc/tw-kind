@@ -1,0 +1,9 @@
+title: $:/plugins/rimir/kind/palette/lens/kind
+tags: $:/tags/rimir/cascade-palette/lens
+ca-lens-name: Kind
+ca-lens-chip: 🏷 Kind
+ca-lens-hint: Show each item's kind icon at the front of its row.
+ca-lens-help: Projects the ICON slot — every menu row backed by a kind instance shows its type's `kind.icon` glyph at the front of the row. Off = no leading icon unless the active view supplies one. Applies across all views; the choice persists across reloads. Only appears while at least one kind type is defined.
+ca-lens-when: [all[shadows+tiddlers]has[kind.type]has[kind.fields]]
+ca-lens-icon-filter: [<currentTiddler>get[kind.type]] :map[all[shadows+tiddlers]kind.type<currentTiddler>has[kind.fields]get[kind.icon]]
+ca-order: 50

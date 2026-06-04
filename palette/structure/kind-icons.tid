@@ -1,9 +1,0 @@
-title: $:/plugins/rimir/kind/palette/structure/kind-icons
-tags: $:/tags/rimir/cascade-palette/structure-toggle
-ca-struct-name: Kind icons
-ca-struct-hint: Show each item's kind icon at the front of its row
-ca-struct-help: When on, every menu row backed by a kind instance shows its type's `kind.icon` glyph at the front of the row. Off = no leading icon unless the active view supplies one. Applies across all views; the choice persists across reloads. Only appears while at least one kind type is defined.
-ca-struct-default: no
-ca-struct-when: [all[shadows+tiddlers]has[kind.type]has[kind.fields]]
-ca-struct-row-icon-filter: [<currentTiddler>get[kind.type]] :map[all[shadows+tiddlers]kind.type<currentTiddler>has[kind.fields]get[kind.icon]]
-ca-order: 50
