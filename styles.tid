@@ -676,3 +676,103 @@ input.kind-text-arg {
 	font-size: 0.85em;
 	opacity: 0.7;
 }
+
+/* === graph tooltip: node actions + add-child buttons === */
+.kg-tip-actions {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 4px;
+	margin-top: 4px;
+}
+.kg-tip-create {
+	border-top: 1px solid <<colour tiddler-border>>;
+	margin-top: 6px;
+	padding-top: 6px;
+}
+.kg-tip-create-label,
+.kg-tip-hint {
+	font-size: 0.8em;
+	color: <<colour muted-foreground>>;
+}
+.kg-tip-create-row {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 4px;
+	margin-top: 4px;
+}
+.kg-tip-btn {
+	display: inline-flex;
+	align-items: center;
+	gap: 3px;
+	padding: 2px 8px;
+	border: 1px solid <<colour tiddler-border>>;
+	border-radius: 4px;
+	background: <<colour background>>;
+	font-size: 0.85em;
+	white-space: nowrap;
+	cursor: pointer;
+}
+.kg-tip-btn:hover { background: <<colour tiddler-info-background>>; }
+.kg-tip-btn[disabled] {
+	opacity: 0.45;
+	cursor: not-allowed;
+}
+.kg-tip-btn[disabled]:hover { background: <<colour background>>; }
+.kg-tip-btn-danger { color: #c0392b; }
+.kg-tip-btn-danger:hover {
+	background: rgba(192,57,43,0.08);
+	border-color: #c0392b;
+}
+
+/* === graph modal overlay (create / edit / delete-confirm) === */
+.kind-graph-modal-backdrop {
+	position: fixed;
+	inset: 0;
+	background: rgba(0,0,0,0.35);
+	/* deliberately above cascade-palette's .rcp-backdrop (99999) so
+	   tooltip-triggered modals from the palette's Context side-preview
+	   graph land on top of the palette */
+	z-index: 100000;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+}
+.kind-graph-modal-panel {
+	background: <<colour background>>;
+	border: 1px solid <<colour tiddler-border>>;
+	border-radius: 8px;
+	box-shadow: 0 8px 32px rgba(0,0,0,0.25);
+	padding: 14px 18px;
+	width: min(560px, 92vw);
+	max-height: 86vh;
+	overflow: auto;
+}
+.kind-graph-modal-header {
+	margin-bottom: 8px;
+	padding-bottom: 8px;
+	border-bottom: 1px solid <<colour tiddler-border>>;
+}
+.kind-graph-modal-sub {
+	font-size: 0.85em;
+	opacity: 0.7;
+}
+.kind-graph-modal-footer {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	margin-top: 10px;
+}
+.kind-graph-modal-title,
+.kind-graph-modal-note {
+	font-size: 0.85em;
+	opacity: 0.6;
+	margin-left: auto;
+}
+.kind-graph-modal-warn {
+	color: #c0392b;
+}
+.kind-graph-modal-danger {
+	color: #c0392b;
+	border-color: #c0392b;
+}

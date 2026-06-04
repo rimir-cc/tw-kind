@@ -1,0 +1,118 @@
+title: $:/plugins/rimir/kind/graph-modal
+tags: $:/tags/AboveStory
+type: text/vnd.tiddlywiki
+
+\whitespace trim
+\import $:/plugins/rimir/kind/engine
+
+<!-- Modal overlay for the kind-graph tooltip actions (see
+     $:/plugins/rimir/kind/graph). Three modes, keyed off fields on
+     $:/state/rimir/kind/graph-modal:
+       edit     — live field editor for an existing instance
+       delete   — confirm dialog; re-checks for parent-field children
+       kind-tid (+host) — create a child instance; the tooltip seeds the
+                  draft at $:/state/rimir/kind/graph-modal/draft with
+                  parent pre-set and field defaults applied. Reuses the
+                  standard editor + the shared kind.finalize-create save
+                  tail, so validation/title-formula/auto-children behave
+                  exactly like the Creator. -->
+
+<$let
+  gm-state="$:/state/rimir/kind/graph-modal"
+  edit-tid={{{ [[$:/state/rimir/kind/graph-modal]get[edit]] }}}
+  delete-tid={{{ [[$:/state/rimir/kind/graph-modal]get[delete]] }}}
+  type-tid={{{ [[$:/state/rimir/kind/graph-modal]get[kind-tid]] }}}
+  host-tid={{{ [[$:/state/rimir/kind/graph-modal]get[host]] }}}
+>
+
+<%if [<edit-tid>!is[blank]] %>
+
+<$let edit-type-tid={{{ [<edit-tid>get[kind.type]] :map[function[kind.locate-type],<currentTiddler>] }}}>
+<div class="kind-graph-modal-backdrop">
+<div class="kind-graph-modal-panel">
+<div class="kind-graph-modal-header">
+&#9998; Edit <strong><$text text={{{ [<edit-tid>get[caption]] ~[<edit-tid>] }}}/></strong>
+<span class="kind-graph-modal-sub"> &mdash; <$text text={{{ [<edit-type-tid>get[kind.icon]] }}}/> <$text text={{{ [<edit-tid>get[kind.type]] }}}/> &middot; <code><$text text=<<edit-tid>>/></code></span>
+</div>
+<$let target-tid=<<edit-tid>>>
+<$transclude $tiddler="$:/plugins/rimir/kind/editor"/>
+</$let>
+<div class="kind-graph-modal-footer">
+<$button>
+<$action-deletetiddler $tiddler=<<gm-state>>/>
+Close
+</$button>
+<span class="kind-graph-modal-note">changes apply immediately</span>
+</div>
+</div>
+</div>
+</$let>
+
+<%elseif [<delete-tid>!is[blank]] %>
+
+<$let del-children={{{ [all[tiddlers]has[kind.type]!has[kind.fields]field:parent<delete-tid>count[]] }}}>
+<div class="kind-graph-modal-backdrop">
+<div class="kind-graph-modal-panel">
+<div class="kind-graph-modal-header">
+&#128465; Delete <strong><$text text={{{ [<delete-tid>get[caption]] ~[<delete-tid>] }}}/></strong>?
+</div>
+<%if [<del-children>match[0]] %>
+<p>This permanently deletes <code><$text text=<<delete-tid>>/></code>.</p>
+<%else%>
+<p class="kind-graph-modal-warn">Cannot delete &mdash; this node has <<del-children>> child<%if [<del-children>!match[1]] %>ren<%endif%> (via their <code>parent</code> field). Delete or re-parent them first.</p>
+<%endif%>
+<div class="kind-graph-modal-footer">
+<%if [<del-children>match[0]] %>
+<$button class="kind-graph-modal-danger">
+<$action-deletetiddler $tiddler=<<delete-tid>>/>
+<$action-deletetiddler $tiddler=<<gm-state>>/>
+Delete
+</$button>
+<%endif%>
+<$button>
+<$action-deletetiddler $tiddler=<<gm-state>>/>
+Cancel
+</$button>
+</div>
+</div>
+</div>
+</$let>
+
+<%elseif [<type-tid>!is[blank]] %>
+
+<$let
+  type-key={{{ [<type-tid>get[kind.type]] }}}
+  target-tid="$:/state/rimir/kind/graph-modal/draft"
+>
+<div class="kind-graph-modal-backdrop">
+<div class="kind-graph-modal-panel">
+
+<div class="kind-graph-modal-header">
+<$text text={{{ [<type-tid>get[kind.icon]] }}}/>
+ Create <strong><$text text={{{ [<type-tid>get[kind.caption]!is[blank]] ~[<type-key>] }}}/></strong>
+ under <code><$text text={{{ [<host-tid>get[caption]] ~[<host-tid>] }}}/></code>
+</div>
+
+<$transclude $tiddler="$:/plugins/rimir/kind/editor"/>
+
+<div class="kind-graph-modal-footer">
+<$button disabled={{{ [function[kind.any-invalid],<type-tid>,<type-key>,<target-tid>!is[blank]then[yes]] }}}>
+<$transclude $variable="kind.finalize-create" kind-tid=<<type-tid>> kind-type-key=<<type-key>> draft-tid=<<target-tid>> savetitle="$:/state/rimir/kind/__graph-created"/>
+<$action-deletetiddler $tiddler=<<target-tid>>/>
+<$action-deletetiddler $tiddler=<<gm-state>>/>
+Create
+</$button>
+<$button>
+<$action-deletetiddler $tiddler=<<target-tid>>/>
+<$action-deletetiddler $tiddler=<<gm-state>>/>
+Cancel
+</$button>
+<span class="kind-graph-modal-title">computed title: <code><$text text={{{ [function[kind.eval-title],<type-tid>,<target-tid>] }}}/></code></span>
+</div>
+
+</div>
+</div>
+</$let>
+
+<%endif%>
+</$let>

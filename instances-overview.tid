@@ -5,7 +5,7 @@ type: text/vnd.tiddlywiki
 
 ! 🕸️ Kind: Instances Overview
 
-A graph of every [[kind|$:/plugins/rimir/kind]] instance in the wiki. Nodes start on a stable grid; **drag a node to reposition it — that position is saved** (to `$:/config/rimir/kind/instances-overview/structure`) and restored on reload. Double-click a node to open it, hover for a tooltip. Tick edge fields to draw those relationships; untick a type to hide its instances.
+A graph of every [[kind|$:/plugins/rimir/kind]] instance in the wiki. Nodes start on a stable grid; **drag a node to reposition it — that position is saved** (to `$:/config/rimir/kind/instances-overview/structure`) and restored on reload. Double-click a node to open it, hover for a tooltip — the tooltip offers ''edit'' (live field editor), ''delete'' (with confirmation; disabled while the node still has children) and ''Add child'' buttons for every kind whose `parent` field accepts this node's type, opening a create form with the parent pre-filled. Tick edge fields to draw those relationships; untick a type to hide its instances.
 
 <style>
 .kg-controls { display:flex; gap:14px; align-items:center; flex-wrap:wrap; margin-bottom:6px; }

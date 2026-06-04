@@ -14,6 +14,10 @@ type: text/vnd.tiddlywiki
 \function kg.edge-color(field) [function[kg.edge-idx],<field>] :map[function[kg.palette-nth],<currentTiddler>] ~[[#999999]]
 \function kg.edge-stroke(field) [function[kg.edge-idx],<field>subtract[1]remainder[3]match[1]then[dashed]] ~[function[kg.edge-idx],<field>subtract[1]remainder[3]match[2]then[dotted]] ~[[solid]]
 
+\function kg.parent-allows(type-tid, host-key) [function[kind.ref-types],<type-tid>,[parent]match<host-key>]
+\function kg.parent-ref-kinds(host-key) [function[kind.types-all]] :filter[function[kg.parent-allows],<currentTiddler>,<host-key>!is[blank]]
+\function kg.child-kinds(host-key) [function[kg.parent-ref-kinds],<host-key>] [function[kind.child-kinds-of],<host-key>] +[unique[]sort[kind.type]]
+
 \function kg.all-instances() [all[tiddlers]has[kind.type]!has[kind.fields]] +[sort[]]
 \function kg.count() [function[kg.all-instances]count[]]
 \function kg.node-idx(t) [function[kg.all-instances]] :filter[<currentTiddler>compare:string:lt<t>] +[count[]]
@@ -31,13 +35,55 @@ type: text/vnd.tiddlywiki
   _multiEdge={{{ [enlist<selFields>count[]compare:integer:gt[1]then[1]] }}}>
 <$graph physics=<<physics>>>
 <$properties.persistent $dataTiddler=<<dataTiddler>>>
-<$properties.popup $enabled="yes" $ms="400" $width="260px">
+<$properties.popup $enabled="yes" $ms="400" $width="300px">
 <$fill $name="tooltip">
 <$let _tk={{{ [<nodeTiddler>get[kind.type]] }}}>
 <div style="margin-bottom:4px;">
 <strong><$text text={{{ [<nodeTiddler>get[caption]] ~[<nodeTiddler>] }}}/></strong>
 <span style="font-size:0.85em;opacity:0.7;"> &mdash; <$text text={{{ [function[kind.locate-type],<_tk>get[kind.icon]] }}}/> <$text text=<<_tk>>/></span>
 </div>
+<$let _childCount={{{ [all[tiddlers]has[kind.type]!has[kind.fields]field:parent<nodeTiddler>count[]] }}}>
+<div class="kg-tip-actions">
+<$button class="kg-tip-btn" tooltip="Edit this node's fields">
+<$action-deletetiddler $tiddler="$:/state/rimir/kind/graph-modal"/>
+<$action-setfield $tiddler="$:/state/rimir/kind/graph-modal" edit=<<nodeTiddler>>/>
+<$action-deletetiddler $tiddler=<<delayState>>/>
+<$action-popup $state=<<state>>/>
+&#9998; edit
+</$button>
+<%if [<_childCount>match[0]] %>
+<$button class="kg-tip-btn kg-tip-btn-danger" tooltip="Delete this node (asks for confirmation)">
+<$action-deletetiddler $tiddler="$:/state/rimir/kind/graph-modal"/>
+<$action-setfield $tiddler="$:/state/rimir/kind/graph-modal" delete=<<nodeTiddler>>/>
+<$action-deletetiddler $tiddler=<<delayState>>/>
+<$action-popup $state=<<state>>/>
+&#128465; delete
+</$button>
+<%else%>
+<$button class="kg-tip-btn" disabled="yes">&#128465; delete</$button>
+<span class="kg-tip-hint">has <<_childCount>> child<%if [<_childCount>!match[1]] %>ren<%endif%> &mdash; delete or re-parent them first</span>
+<%endif%>
+</div>
+</$let>
+<$list filter="[function[kg.child-kinds],<_tk>limit[1]]" variable="_">
+<div class="kg-tip-create">
+<span class="kg-tip-create-label">Add child:</span>
+<div class="kg-tip-create-row">
+<$list filter="[function[kg.child-kinds],<_tk>]" variable="_ck">
+<$button class="kg-tip-btn" tooltip={{{ [<_ck>get[kind.type]addprefix[Create a new ]addsuffix[ under this node]] }}}>
+<$action-deletetiddler $tiddler="$:/state/rimir/kind/graph-modal"/>
+<$action-deletetiddler $tiddler="$:/state/rimir/kind/graph-modal/draft"/>
+<$action-setfield $tiddler="$:/state/rimir/kind/graph-modal/draft" parent=<<nodeTiddler>>/>
+<$transclude $variable="kind.apply-defaults-to" type-tid=<<_ck>> target-tid="$:/state/rimir/kind/graph-modal/draft"/>
+<$action-setfield $tiddler="$:/state/rimir/kind/graph-modal" kind-tid=<<_ck>> host=<<nodeTiddler>>/>
+<$action-deletetiddler $tiddler=<<delayState>>/>
+<$action-popup $state=<<state>>/>
+<$text text={{{ [<_ck>get[kind.icon]] }}}/> <$text text={{{ [<_ck>get[kind.caption]!is[blank]] ~[<_ck>get[kind.type]] }}}/>
+</$button>
+</$list>
+</div>
+</div>
+</$list>
 </$let>
 </$fill>
 <$properties.river>
@@ -79,8 +125,15 @@ type: text/vnd.tiddlywiki
 \end
 
 <!-- Shared kind-graph engine: the kg.* functions, the kg-open action and
-     the parameterised kg-graph renderer. Both consumers \import this
-     tiddler explicitly — "Kind: Instances Overview" (whole-wiki view) and
+     the parameterised kg-graph renderer. The hover tooltip offers per-node
+     "edit" (live field editor) and "delete" (confirm dialog; disabled with
+     a hint while the node has parent-field children) plus "Add child"
+     buttons for every kind whose `parent` ref field accepts the node's
+     type (plus explicit kind.parent-kinds children). All three seed
+     $:/state/rimir/kind/graph-modal(/draft) and the modal overlay
+     $:/plugins/rimir/kind/graph-modal (tagged $:/tags/AboveStory) takes
+     over — create mode reuses the standard editor + finalize-create. Both
+     consumers \import this tiddler explicitly — "Kind: Instances Overview" (whole-wiki view) and
      the cascade-palette "Context" side-preview (per-instance subgraph,
      which renders in a standalone widget tree that does NOT inherit global
      macros, hence the explicit import, same as the other kind previews

@@ -84,6 +84,9 @@ All constraints are blocking — they show up in red in the validator and disabl
 |!Path |!Purpose |
 |`$:/state/rimir/kind/draft/<type-key>` |Creator's draft for in-progress instance |
 |`$:/state/rimir/kind/instances-overview/search` |''Instances Overview'': node search-box text |
+|`$:/state/rimir/kind/graph-modal` |Graph tooltip modal mode switch — `edit` field (live editor for that instance), `delete` field (confirm dialog), or `kind-tid` + `host` fields (create-child form). Deleted on Close/Cancel/Create/Delete |
+|`$:/state/rimir/kind/graph-modal/draft` |Draft for the graph tooltip's ''Add child'' create form (parent pre-set, defaults applied; re-seeded on every tooltip button click) |
+|`$:/state/rimir/kind/__graph-created` |Transient capture of the just-created tiddler title from the graph-modal create flow |
 |`$:/state/rimir/kind/context/direction` |''Context'' preview: parent-tree direction — `to` (descendants, default) or `from` (ancestors) |
 |`$:/state/rimir/kind/context/depth` |''Context'' preview: number of `parent`-tree levels to show (1–5, default 2) |
 |`$:/state/rimir/kind/context/edge-fields` |''Context'' preview: ref-field keys drawn as edges (titlelist; defaults to `parent`, and floors back to `parent` if every field is deselected) |
