@@ -1,0 +1,5 @@
+title: $:/plugins/rimir/kind/palette/manage-refs-provider
+tags: $:/tags/rimir/cascade-palette/action-provider
+ca-applies: [<currentTiddler>has[kind.type]!has[kind.fields]]
+ca-provider-items: [function[kind.manage-ref-actions],<currentTiddler>]
+type: text/vnd.tiddlywiki

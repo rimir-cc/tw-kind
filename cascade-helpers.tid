@@ -240,6 +240,54 @@ type: text/vnd.tiddlywiki
 <$transclude $variable="kind.cascade-create-here-init" host-tid=<<host-tid>> target-field=<<target-field>> target-card=<<target-card>> kind-tid=<<kind-tid>>/>
 <$transclude $variable="kind.finalize-create" kind-tid=<<kind-tid>> kind-type-key=<<kind-type-key>> draft-tid=<<draft-tid>> savetitle="$:/state/rimir/kind/__create-here-result"/>
 <$action-deletetiddler $tiddler=<<draft-tid>>/>
+<!-- quick-create sidecar (caption-formula) — no-op for plain create-here, where it never exists -->
+<$action-deletetiddler $tiddler={{{ [function[kind.qc-meta-tid],<draft-tid>] }}}/>
 </$let>
 </$let>
 \end
+
+\function kind.qc-meta-tid(draft-tid) [<draft-tid>addsuffix[/qcmeta]]
+
+\procedure kind.qc-init(host-tid, target-field, target-card, kind-tid, prefill, caption-formula)
+<$let kind-type-key={{{ [<kind-tid>get[kind.type]] }}}>
+<$let draft-tid={{{ [function[kind.create-here-draft-tid],<host-tid>,<target-field>,<kind-type-key>] }}}>
+<$transclude $variable="kind.cascade-create-here-init" host-tid=<<host-tid>> target-field=<<target-field>> target-card=<<target-card>> kind-tid=<<kind-tid>>/>
+<$list filter="[<prefill>jsonindexes[]]" variable="pf-key">
+<$action-setfield $tiddler=<<draft-tid>> $field=<<pf-key>> $value={{{ [<prefill>jsonget<pf-key>] }}}/>
+</$list>
+<$action-setfield $tiddler={{{ [function[kind.qc-meta-tid],<draft-tid>] }}} caption-formula=<<caption-formula>>/>
+<$transclude $variable="kind.qc-refresh-caption" draft-tid=<<draft-tid>>/>
+</$let>
+</$let>
+\end
+
+\procedure kind.qc-refresh-caption(draft-tid)
+<$let cf={{{ [function[kind.qc-meta-tid],<draft-tid>] :map[<currentTiddler>get[caption-formula]] }}}>
+<$action-setfield $tiddler=<<draft-tid>> caption={{{ [function[kind.eval-formula],<cf>,<draft-tid>] }}}/>
+</$let>
+\end
+
+\function kind.qc-fields(target-kind-tid, host-tid, target-field, target-card, visible-fields) [function[kind.create-here-save-or-warn-leaf],<target-kind-tid>,<host-tid>,<target-field>,<target-card>] [function[kind.qc-field-edit-items],<target-kind-tid>,<host-tid>,<target-field>,<visible-fields>]
+\function kind.qc-field-edit-items(target-kind-tid, host-tid, target-field, visible-fields) [<target-kind-tid>get[kind.type]] :map[function[kind.create-here-draft-tid],<host-tid>,<target-field>,<currentTiddler>] :map:flat[function[kind.qc-field-items],<target-kind-tid>,<currentTiddler>,<visible-fields>]
+\function kind.qc-field-items(type-tid, target-tid, visible-fields) [function[kind.qc-visible-keys],<type-tid>,<target-tid>,<visible-fields>] :map[function[kind.qc-field-json],<type-tid>,<target-tid>,<currentTiddler>]
+\function kind.qc-visible-keys(type-tid, target-tid, visible-fields) [function[kind.editable-field-keys],<type-tid>] :filter[function[kind.qc-key-visible],<type-tid>,<target-tid>,<visible-fields>,<currentTiddler>]
+\function kind.qc-key-visible(type-tid, target-tid, visible-fields, field-key) [<visible-fields>enlist-input[]match<field-key>] ~[function[kind.viol-required],<type-tid>,<field-key>,<target-tid>]
+\function kind.qc-field-json(type-tid, target-tid, field-key) [function[kind.field-edit-json],<type-tid>,<target-tid>,<field-key>] :map[function[kind.qc-inject-oncommit],<target-tid>,<currentTiddler>]
+\function kind.qc-inject-oncommit(target-tid, base-json) [<base-json>removesuffix[}]] :map[function[kind.qc-oncommit-append],<target-tid>,<currentTiddler>]
+\function kind.qc-oncommit-append(target-tid, base-open) [<base-open>] +[addsuffix[,"ca-on-commit":"<$transclude $variable=\"kind.qc-refresh-caption\" draft-tid=\"]] +[addsuffix<target-tid>] +[addsuffix[\"/>"}]]
+
+\function kind.qc-range-fields(target-kind-tid, host-tid, target-field, target-card, start-field, end-field, default-start, default-end) [function[kind.qc-range-row-items],<target-kind-tid>,<host-tid>,<target-field>,<start-field>,<end-field>,<default-start>,<default-end>] [function[kind.qc-range-extra-items],<target-kind-tid>,<host-tid>,<target-field>,<start-field>,<end-field>] [function[kind.create-here-save-or-warn-leaf],<target-kind-tid>,<host-tid>,<target-field>,<target-card>] +[!is[blank]]
+\function kind.qc-range-row-items(target-kind-tid, host-tid, target-field, start-field, end-field, default-start, default-end) [<target-kind-tid>get[kind.type]] :map[function[kind.create-here-draft-tid],<host-tid>,<target-field>,<currentTiddler>] :map[function[kind.qc-range-json],<start-field>,<end-field>,<default-start>,<default-end>,<currentTiddler>]
+\function kind.qc-range-json(start-field, end-field, default-start, default-end, draft-tid) [function[kind.daterange-build],<draft-tid>,<start-field>,<end-field>,<default-start>,<default-end>] :map[function[kind.qc-inject-oncommit],<draft-tid>,<currentTiddler>]
+\function kind.daterange-build(target-tid, start-field, end-field, default-start, default-end) [function[kind.kv],[ca-name],[Duration]] [function[kind.kv],[ca-icon],[📅]] [function[kind.kv],[ca-kind],[daterange]] [function[kind.kv],[ca-bind-tiddler],<target-tid>] [function[kind.kv],[ca-bind-field],<start-field>] [function[kind.kv],[ca-bind-field-end],<end-field>] [function[kind.kv],[ca-bind-type],[application/x-tw-date]] [function[kind.kv],[ca-date-format],[0DD.0MM.YYYY]] [function[kind.kv],[ca-default-start],<default-start>] [function[kind.kv],[ca-default-end],<default-end>] +[join[,]addprefix[{]addsuffix[}]]
+\function kind.qc-range-extra-items(target-kind-tid, host-tid, target-field, start-field, end-field) [<target-kind-tid>get[kind.type]] :map[function[kind.create-here-draft-tid],<host-tid>,<target-field>,<currentTiddler>] :map:flat[function[kind.qc-range-extra-for-draft],<target-kind-tid>,<currentTiddler>,<start-field>,<end-field>]
+\function kind.qc-range-extra-for-draft(type-tid, target-tid, start-field, end-field) [function[kind.qc-range-extra-keys],<type-tid>,<target-tid>,<start-field>,<end-field>] :map[function[kind.qc-field-json],<type-tid>,<target-tid>,<currentTiddler>]
+\function kind.qc-range-extra-keys(type-tid, target-tid, start-field, end-field) [function[kind.editable-field-keys],<type-tid>] :filter[function[kind.viol-required],<type-tid>,<currentTiddler>,<target-tid>] -[<start-field>] -[<end-field>]
+
+\function kind.edit-range-items(entity-tid, start-field, end-field) [function[kind.daterange-build],<entity-tid>,<start-field>,<end-field>,[],[]] [[{"ca-name":"Done","ca-icon":"✓","ca-kind":"leaf","ca-after-fire":"close"}]]
+
+\function kind.ref-field-keys(type-tid) [function[kind.editable-field-keys],<type-tid>] :filter[function[kind.field-typed],<type-tid>,<currentTiddler>match[ref]]
+\function kind.manage-ref-actions(entity-tid) [<entity-tid>get[kind.type]] :map[function[kind.locate-type],<currentTiddler>] :map:flat[function[kind.manage-ref-rows],<currentTiddler>,<entity-tid>]
+\function kind.manage-ref-rows(type-tid, entity-tid) [function[kind.ref-field-keys],<type-tid>] :map[function[kind.manage-ref-row],<type-tid>,<entity-tid>,<currentTiddler>]
+\function kind.manage-ref-row(type-tid, entity-tid, field-key) [function[kind.field-caption],<type-tid>,<field-key>] ~[<field-key>] :map[function[kind.manage-ref-row-with-caption],<type-tid>,<entity-tid>,<field-key>,<currentTiddler>]
+\function kind.manage-ref-row-with-caption(type-tid, entity-tid, field-key, field-caption) [<field-caption>addprefix[Manage ]addsuffix[…]] :map[function[kind.shape-collection-with-caption],<type-tid>,<entity-tid>,<field-key>,[ref],<currentTiddler>]
