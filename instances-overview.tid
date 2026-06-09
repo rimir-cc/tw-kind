@@ -14,7 +14,7 @@ A graph of every [[kind|$:/plugins/rimir/kind]] instance in the wiki. Nodes star
 </style>
 
 <$let
-  selFields={{{ [[$:/config/rimir/kind/instances-overview/edge-fields]get[fields]] }}}
+  selFields={{{ [[$:/config/rimir/kind/instances-overview/edge-fields]get[edges]] ~[[parent]] }}}
   hiddenTypes={{{ [[$:/config/rimir/kind/instances-overview/hidden-types]get[hidden]] }}}
 >
 
@@ -22,7 +22,7 @@ A graph of every [[kind|$:/plugins/rimir/kind]] instance in the wiki. Nodes star
 <$edit-text tiddler="$:/state/rimir/kind/instances-overview/search" tag="input" placeholder="Search nodes…" class="tc-edit-texteditor" default="" style="flex:0 0 220px;"/>
 <span style="opacity:0.7;">Edges:</span>
 <$list filter="[function[kg.ref-fields]]" variable="_rf">
-<label><$checkbox tiddler="$:/config/rimir/kind/instances-overview/edge-fields" listField="fields" checked=<<_rf>>/> <$text text=<<_rf>>/></label>
+<label><$checkbox tiddler="$:/config/rimir/kind/instances-overview/edge-fields" listField="edges" checked=<<_rf>>/> <$text text=<<_rf>>/></label>
 </$list>
 </div>
 

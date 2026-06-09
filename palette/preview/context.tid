@@ -40,14 +40,14 @@ ca-preview-order: 40
 
 \procedure ctx-edge-pill(value)
 <$let
-  _cur={{{ [[$:/state/rimir/kind/context/edge-fields]get[fields]] ~[[parent]] }}}
+  _cur={{{ [[$:/state/rimir/kind/context/edge-fields]get[edges]] ~[[parent]] }}}
   _on={{{ [enlist<_cur>match<value>count[]] }}}
   _without={{{ [enlist<_cur>] -[<value>] +[join[ ]] }}}
   _with={{{ [enlist<_cur>] [<value>] +[unique[]join[ ]] }}}
   _ec={{{ [function[kg.edge-color],<value>] }}}
 >
 <$button class={{{ [<_on>compare:integer:gt[0]then[kind-pill kind-cpill kind-cpill-on]] ~[[kind-pill kind-cpill kind-cpill-off]] }}} style={{{ [<_ec>addprefix[--kp:]] }}}>
-<$action-setfield $tiddler="$:/state/rimir/kind/context/edge-fields" $field="fields" $value={{{ [<_on>compare:integer:gt[0]then<_without>] ~[<_with>] }}}/>
+<$action-setfield $tiddler="$:/state/rimir/kind/context/edge-fields" $field="edges" $value={{{ [<_on>compare:integer:gt[0]then<_without>] ~[<_with>] }}}/>
 <span class="kind-pill-dot"></span><$text text=<<value>>/>
 </$button>
 </$let>
@@ -72,7 +72,7 @@ ca-preview-order: 40
   kgDir={{{ [[$:/state/rimir/kind/context/direction]get[text]] ~[[to]] }}}
   kgDepth={{{ [[$:/state/rimir/kind/context/depth]get[text]] ~[[2]] }}}
   hiddenTypes={{{ [[$:/state/rimir/kind/context/hidden-types]get[hidden]] }}}
-  selFields={{{ [[$:/state/rimir/kind/context/edge-fields]get[fields]] ~[[parent]] }}}
+  selFields={{{ [[$:/state/rimir/kind/context/edge-fields]get[edges]] ~[[parent]] }}}
 >
 
 <%if [<kgBase>get[kind.type]is[blank]] %>

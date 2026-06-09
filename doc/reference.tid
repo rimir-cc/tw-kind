@@ -75,7 +75,7 @@ All constraints are blocking — they show up in red in the validator and disabl
 |!Path |!Purpose |
 |`$:/config/rimir/kind/active-namespace` |Active namespace; empty = all |
 |`$:/config/rimir/kind/streambar-max-length` |Truncation threshold for the stream-view field bar (default 20) |
-|`$:/config/rimir/kind/instances-overview/edge-fields` |''Instances Overview'': ref-field keys drawn as edges (titlelist; ships defaulting to `parent`) |
+|`$:/config/rimir/kind/instances-overview/edge-fields` |''Instances Overview'': ref-field keys drawn as edges, stored in the `edges` field (titlelist; ships defaulting to `parent`). The field is named `edges`, NOT `fields`: a custom field literally named `fields` collides with the TiddlyWeb sync wire-format's reserved `fields` container and is silently dropped on every browser→server save |
 |`$:/config/rimir/kind/instances-overview/hidden-types` |''Instances Overview'': type keys hidden from the graph (titlelist; empty/absent = all types shown) |
 |`$:/config/rimir/kind/instances-overview/structure` |''Instances Overview'': persisted node positions — data tiddler whose index keys are instance titles and values are `x,y` |
 
@@ -89,7 +89,7 @@ All constraints are blocking — they show up in red in the validator and disabl
 |`$:/state/rimir/kind/__graph-created` |Transient capture of the just-created tiddler title from the graph-modal create flow |
 |`$:/state/rimir/kind/context/direction` |''Context'' preview: parent-tree direction — `to` (descendants, default) or `from` (ancestors) |
 |`$:/state/rimir/kind/context/depth` |''Context'' preview: number of `parent`-tree levels to show (1–5, default 2) |
-|`$:/state/rimir/kind/context/edge-fields` |''Context'' preview: ref-field keys drawn as edges (titlelist; defaults to `parent`, and floors back to `parent` if every field is deselected) |
+|`$:/state/rimir/kind/context/edge-fields` |''Context'' preview: ref-field keys drawn as edges, stored in the `edges` field (titlelist; defaults to `parent`, and floors back to `parent` if every field is deselected) |
 |`$:/state/rimir/kind/context/hidden-types` |''Context'' preview: type keys hidden from the graph (titlelist; empty/absent = all types shown) |
 |`$:/state/rimir/kind/edit-mode/<target-tid>` |Per-instance toggle between popup and inline edit mode in stream-view |
 |`$:/state/rimir/kind/ta/<target-tid>/<field-key>` |Typeahead search-input state for a ref field |
