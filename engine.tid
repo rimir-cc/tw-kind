@@ -187,9 +187,18 @@ type: text/vnd.tiddlywiki
      runs apply-auto-children against that title. Callers pass their own
      savetitle so the captured title remains visible to flow-specific follow-ups
      (e.g. mass-create's $action-navigate). Idempotent in the sense that the
-     auto-children step is a no-op for kinds without kind.auto-children. -->
-<$action-createtiddler $basetitle={{{ [function[kind.eval-title],<kind-tid>,<draft-tid>] }}} $template=<<draft-tid>> $savetitle=<<savetitle>> kind.type=<<kind-type-key>>/>
-<$transclude $variable="kind.apply-auto-children" parent-tid={{{ [<savetitle>get[text]] }}} type-tid=<<kind-tid>>/>
+     auto-children step is a no-op for kinds without kind.auto-children.
+
+     apply-auto-children MUST be nested INSIDE the createtiddler (not a
+     sibling): $action-createtiddler exposes the real post-uniquification title
+     only to its CHILDREN — via the <<createTiddler-title>> variable + a
+     refreshChildren() call (core action-createtiddler.js) — both fired before
+     the child action chain runs. A sibling read of {{{[<savetitle>get[text]]}}}
+     is evaluated at render time (the change event is async), so it sees a stale
+     or empty savetitle and the auto-child's parent comes out wrong. -->
+<$action-createtiddler $basetitle={{{ [function[kind.eval-title],<kind-tid>,<draft-tid>] }}} $template=<<draft-tid>> $savetitle=<<savetitle>> kind.type=<<kind-type-key>>>
+<$transclude $variable="kind.apply-auto-children" parent-tid=<<createTiddler-title>> type-tid=<<kind-tid>>/>
+</$action-createtiddler>
 \end
 
 \procedure kind.apply-auto-children(parent-tid, type-tid)
