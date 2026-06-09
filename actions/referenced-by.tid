@@ -1,0 +1,12 @@
+title: $:/plugins/rimir/kind/actions/referenced-by
+tags: $:/tags/rimir/cascade-palette/action
+ca-entity-type: kind-entity
+ca-applies: [<currentTiddler>has[kind.type]] :filter[function[kind.qual-source-kinds],<currentTiddler>!is[blank]]
+ca-name: Referenced by…
+ca-hint: Browse the things that reference this entity, grouped and newest-first. One row per incoming ref relation when several exist.
+ca-icon: 🔗
+ca-kind: drill
+ca-order: 30
+ca-next-title: Referenced by
+ca-next-entity-type: kind-entity
+ca-items-from: [function[kind.referenced-by-items],<parent-picked>]

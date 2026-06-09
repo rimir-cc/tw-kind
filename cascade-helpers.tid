@@ -291,3 +291,32 @@ type: text/vnd.tiddlywiki
 \function kind.manage-ref-rows(type-tid, entity-tid) [function[kind.ref-field-keys],<type-tid>] :map[function[kind.manage-ref-row],<type-tid>,<entity-tid>,<currentTiddler>]
 \function kind.manage-ref-row(type-tid, entity-tid, field-key) [function[kind.field-caption],<type-tid>,<field-key>] ~[<field-key>] :map[function[kind.manage-ref-row-with-caption],<type-tid>,<entity-tid>,<field-key>,<currentTiddler>]
 \function kind.manage-ref-row-with-caption(type-tid, entity-tid, field-key, field-caption) [<field-caption>addprefix[Manage ]addsuffix[…]] :map[function[kind.shape-collection-with-caption],<type-tid>,<entity-tid>,<field-key>,[ref],<currentTiddler>]
+
+<!-- Referenced-by drill (reverse-reference navigation). Entry point is the
+     `referenced-by` action; this builds its rows. One relation = one (source
+     kind, ref field) pair that points at the host's kind and is nav-enabled and
+     has ≥1 referencing instance. Exactly one relation → skip straight to the
+     instance list; ≥2 → an entry-level row per relation ("Conversation (as
+     participants)") drilling to its instance list. Instance rows carry the real
+     `title` (so Space surfaces Open/Edit/Delete via the entity bridge) plus
+     `ca-group` (= the source kind's back-group-by value) and are emitted sorted
+     by back-sort-by descending (newest first); cascade clusters them by group. -->
+\function kind.back-rel-label-compose(source-tid, field-key, kind-caption) [function[kind.field-caption],<source-tid>,<field-key>] :map[<kind-caption>addsuffix[ (as ]addsuffix<currentTiddler>addsuffix[)]]
+\function kind.back-rel-label-auto(source-tid, field-key) [<source-tid>get[kind.caption]] ~[<source-tid>get[kind.type]] :map[function[kind.back-rel-label-compose],<source-tid>,<field-key>,<currentTiddler>]
+\function kind.back-rel-label(source-tid, field-key) [function[kind.field-prop],<source-tid>,<field-key>,[back-label]!is[blank]] ~[function[kind.back-rel-label-auto],<source-tid>,<field-key>]
+
+\function kind.referenced-by-items(host-tid) [function[kind.back-rel-count],<host-tid>match[1]] :map:flat[function[kind.back-ref-single-rows],<host-tid>] ~[function[kind.back-ref-relation-rows],<host-tid>]
+\function kind.back-ref-single-rows(host-tid) [function[kind.qual-source-kinds],<host-tid>] +[first[]] :map:flat[function[kind.single-rows-for-kind],<host-tid>,<currentTiddler>]
+\function kind.single-rows-for-kind(host-tid, source-tid) [function[kind.qual-back-fields],<host-tid>,<source-tid>] +[first[]] :map:flat[function[kind.instance-rows-for-pair],<host-tid>,<source-tid>,<currentTiddler>]
+\function kind.back-ref-relation-rows(host-tid) [function[kind.qual-source-kinds],<host-tid>] :map:flat[function[kind.relation-rows-for-kind],<host-tid>,<currentTiddler>]
+\function kind.relation-rows-for-kind(host-tid, source-tid) [function[kind.qual-back-fields],<host-tid>,<source-tid>] :map[function[kind.relation-row-build],<host-tid>,<source-tid>,<currentTiddler>]
+
+\function kind.relation-row-build(host-tid, source-tid, field-key) [function[kind.back-rel-label],<source-tid>,<field-key>] :map[function[kind.relation-row-build-2],<host-tid>,<source-tid>,<field-key>,<currentTiddler>]
+\function kind.relation-row-build-2(host-tid, source-tid, field-key, label) [<source-tid>get[kind.icon]] ~[[🔗]] :map[function[kind.relation-row-build-3],<host-tid>,<source-tid>,<field-key>,<label>,<currentTiddler>]
+\function kind.relation-row-build-3(host-tid, source-tid, field-key, label, icon) [<label>] +[addprefix[{"ca-name":"]] +[addsuffix[","ca-icon":"]] +[addsuffix<icon>] +[addsuffix[","ca-kind":"drill","ca-next-entity-type":"kind-entity","ca-next-title":"]] +[addsuffix<label>] +[addsuffix[","ca-items-from":"]] +[addsuffix{$:/plugins/rimir/kind/_brackets!!lb}] +[addsuffix[function]] +[addsuffix{$:/plugins/rimir/kind/_brackets!!lb}] +[addsuffix[kind.instance-rows-for-pair]] +[addsuffix{$:/plugins/rimir/kind/_brackets!!rb}] +[addsuffix[,]] +[addsuffix{$:/plugins/rimir/kind/_brackets!!lb}] +[addsuffix<host-tid>] +[addsuffix{$:/plugins/rimir/kind/_brackets!!rb}] +[addsuffix[,]] +[addsuffix{$:/plugins/rimir/kind/_brackets!!lb}] +[addsuffix<source-tid>] +[addsuffix{$:/plugins/rimir/kind/_brackets!!rb}] +[addsuffix[,]] +[addsuffix{$:/plugins/rimir/kind/_brackets!!lb}] +[addsuffix<field-key>] +[addsuffix{$:/plugins/rimir/kind/_brackets!!rb}] +[addsuffix{$:/plugins/rimir/kind/_brackets!!rb}] +[addsuffix["}]]
+
+\function kind.instance-rows-for-pair(host-tid, source-tid, field-key) [function[kind.back-sort-field-eff],<source-tid>] :map:flat[function[kind.inst-rows-sf],<host-tid>,<source-tid>,<field-key>,<currentTiddler>]
+\function kind.inst-rows-sf(host-tid, source-tid, field-key, sort-field) [function[kind.referencing-instances],<host-tid>,<source-tid>,<field-key>] +[sort<sort-field>reverse[]] :map[function[kind.instance-row-build],<source-tid>,<currentTiddler>]
+\function kind.instance-row-build(source-tid, inst-tid) [function[kind.inst-group-val],<source-tid>,<inst-tid>] ~[[]] :map[function[kind.instance-row-build-2],<source-tid>,<inst-tid>,<currentTiddler>]
+\function kind.instance-row-build-2(source-tid, inst-tid, group-val) [function[kind.resolve-ref],<inst-tid>] ~[<inst-tid>] :map[function[kind.instance-row-json],<inst-tid>,<group-val>,<currentTiddler>]
+\function kind.instance-row-json(inst-tid, group-val, display) [function[kind.kv],[title],<inst-tid>] [function[kind.kv],[ca-name],<display>] [function[kind.kv],[ca-group],<group-val>] [function[kind.kv],[ca-actions],[<$action-navigate $to=<<picked>>/>]] +[join[,]addprefix[{]addsuffix[}]]

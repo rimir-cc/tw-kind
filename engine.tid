@@ -65,6 +65,21 @@ type: text/vnd.tiddlywiki
 \function kind.create-here-target-kinds(host-key) [function[kind.child-kinds-of],<host-key>] [function[kind.kinds-with-back-ref-to],<host-key>]
 \function kind.has-create-here-options(host-tid) [<host-tid>get[kind.type]] :map:flat[function[kind.create-here-target-kinds],<currentTiddler>] +[first[]]
 
+<!-- Reverse-reference navigation: from a ref endpoint (host instance) walk back
+     to the instances that reference it. `back-nav: no` on a ref field opts that
+     relation out (default on). `kind.back-group-by` / `kind.back-sort-by` on the
+     SOURCE kind drive the listing's grouping/sort (sort defaults to modified). -->
+\function kind.field-back-nav-on(type-tid, field-key) [function[kind.field-prop],<type-tid>,<field-key>,[back-nav]] ~[[]] +[!match[no]]
+\function kind.nav-back-fields-of(type-tid, target-key) [function[kind.ref-back-fields-of],<type-tid>,<target-key>] :filter[function[kind.field-back-nav-on],<type-tid>,<currentTiddler>]
+\function kind.referencing-instances(host-tid, source-tid, field-key) [<source-tid>get[kind.type]] :map:flat[function[kind.instances-of],<currentTiddler>] :filter[get<field-key>enlist-input[]match<host-tid>]
+\function kind.rel-has-instances(host-tid, source-tid, field-key) [function[kind.referencing-instances],<host-tid>,<source-tid>,<field-key>] +[first[]]
+\function kind.back-source-kinds(host-tid) [<host-tid>get[kind.type]] :map:flat[function[kind.kinds-with-back-ref-to],<currentTiddler>]
+\function kind.qual-back-fields(host-tid, source-tid) [<host-tid>get[kind.type]] :map:flat[function[kind.nav-back-fields-of],<source-tid>,<currentTiddler>] :filter[function[kind.rel-has-instances],<host-tid>,<source-tid>,<currentTiddler>!is[blank]]
+\function kind.qual-source-kinds(host-tid) [function[kind.back-source-kinds],<host-tid>] :filter[function[kind.qual-back-fields],<host-tid>,<currentTiddler>!is[blank]]
+\function kind.back-rel-count(host-tid) [function[kind.qual-source-kinds],<host-tid>] :map:flat[function[kind.qual-back-fields],<host-tid>,<currentTiddler>] +[count[]]
+\function kind.back-sort-field-eff(source-tid) [<source-tid>get[kind.back-sort-by]!is[blank]] ~[[modified]]
+\function kind.inst-group-val(source-tid, inst-tid) [<source-tid>get[kind.back-group-by]!is[blank]] :map[<inst-tid>get<currentTiddler>]
+
 \function kind.auto-children-array(type-tid) [<type-tid>get[kind.auto-children]]
 \function kind.auto-children-indexes(type-tid) [<type-tid>get[kind.auto-children]jsonindexes[]]
 \function kind.auto-child-kind-at(type-tid, idx) [<type-tid>get[kind.auto-children]jsonget<idx>,[kind]]
