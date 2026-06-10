@@ -132,6 +132,8 @@ A wizard turns the cascade-palette ''Create here…'' flow for a kind from one a
 
 In ''both'' layouts ''Enter'' on a row commits it as the field value AND finalises the instance — choosing IS the create (`ca-enter-fires`) — each focused row shows its kind ''context graph'' in the side preview, and after the create the palette returns to the entity you launched ''Create here…'' from (`ca-after-fire: pop-to-actions`) rather than closing. The chosen layout is ''remembered per step'' in a persisted JSON-map config tiddler (`$:/config/rimir/kind/wizard/pick-mode`, keyed by step title), so a user's preference sticks across creates. The ⇄ row lives at the picker root; deep in the tree, back out (Esc) to reach it.
 
+''Preferred spawn-locations'' (`kind.spawn-locations` on the launching instance). An instance can carry a `kind.spawn-locations` field — a list of tiddler titles — surfaced as ★-marked rows pinned to the ''top'' of the picker (above the ⇄ Switch row), in ''both'' layouts and ''regardless'' of which kind is being created. Picking a ★ row behaves exactly like picking any other node (commit + finalise + context graph + return-to-entity), giving one-keystroke placement into a frequent parent. One list per instance; set it via //Edit fields// / the field bar (add the addable ''Spawn locations'' common field, or write `kind.spawn-locations` directly). A location is not de-duplicated against its natural tree/list position — the ★ copy is the shortcut. Empty / missing field → no ★ rows (no change to the picker).
+
 !! Engine functions (engine.tid)
 
 |!Function |!Returns |

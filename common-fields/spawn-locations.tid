@@ -1,0 +1,5 @@
+title: $:/plugins/rimir/kind/common-fields/spawn-locations
+tags: $:/tags/rimir/kind/common-field
+def: {"key":"kind.spawn-locations","typed":"ref","caption":"Spawn locations","icon":"★","cardinality":"multi"}
+
+Preferred parent / spawn locations for this instance — a list of tiddler titles. When you run ''Create here…'' on this instance and reach a tree/flat parent-picker step, these locations are listed first (★) at the top of the picker for one-keystroke placement, in both the tree and the flat layout. One list per instance, shown regardless of which kind you are creating. Edit via Edit-fields / the field bar (a ref-multi picker); arbitrary namespace titles can also be hand-added.
