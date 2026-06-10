@@ -105,6 +105,28 @@ All constraints are blocking — they show up in red in the validator and disabl
 |`$:/state/rimir/kind/cascade-spawn-draft/<parent-tid>/<parent-field>/<ref-type-key>` |Draft for a nested ''+ Create new <X>'' spawn from a ref-field picker (per spawn point — survives drill-in/out and supports arbitrary nesting depth) |
 |`$:/state/rimir/kind/create-here-draft/<host-tid>/<target-field>/<ref-type-key>` |Draft for the ''Create here…'' per-instance action (parallel to the spawn draft, but the back-ref direction is inverted — host title is pre-set on the NEW instance's `<target-field>` rather than written to the host's field). |
 |`$:/state/rimir/kind/__spawn-result` |Transient capture of the just-spawned tiddler title (used by `kind.cascade-spawn-save` to wire into the parent's ref field) |
+|`<create-here-draft-tid>/wizidx` |Current 1-based step index for a creation-wizard run (per draft; set to `1` on drill-open, bumped by ← Back / Next →, deleted on ✓ Create) |
+
+!! Creation wizards (multi-step guided create)
+
+A wizard turns the cascade-palette ''Create here…'' flow for a kind from one all-fields form into an ordered sequence of steps, each asking only the field(s) the designer assigns — so an inexperienced user is guided to a valid instance without ever opening //Edit fields//. Define one step per tiddler:
+
+|!Field |!Required |!Meaning |
+|tag |Yes |`$:/tags/rimir/kind/wizard-step` |
+|`ca-wizard-kind` |Yes |Target type-key being created (e.g. `topic`). |
+|`ca-wizard-context` |No |Host type-key this wizard variant applies to (e.g. `person` — the kind you launched ''Create here…'' from). Empty = the ''default'' wizard for the kind. Resolution per (target, host): the context-specific step set wins; if none exists, the default set is used. |
+|`ca-order` |Yes |Step order within the wizard (numeric, `nsort`ed). |
+|`ca-step-name` |Yes |Short prompt shown in the progress row (//Step n of m · <name>//). Avoid `"` in the value. |
+|`ca-step-fields` |Yes |Space-separated field keys to ask for in this step. Each renders via the standard field editor (`kind.field-edit-json`) — text, enum, ref picker, date, etc. |
+|`ca-step-hint` |No |Longer help text for the step. |
+|`ca-step-pick-tree` |No |`yes` turns a ''single-`ca-step-fields`'' ref step into a drillable namespace ''tree'' picker (see below) instead of the flat ref picker. Use on the //final// step (pick = create). |
+|`ca-step-pick-roots` |No |Filter for the tree picker's root nodes (tree step only). Default `$:/config/rimir/kind/wizard/pick-roots` = `[all[tiddlers]!is[system]cp-child-of[]]`. Children come from `$:/config/rimir/kind/wizard/pick-children` (= `cp-child-of<currentTiddler>`, the namespace tree). |
+
+''Behaviour:'' the whole wizard is one drill stage backed by `<draft>/wizidx`. ''Next →'' is blocked (⛔ row) until the current step's fields pass `kind.viol-any`; the final ''✓ Create'' re-checks the whole draft via `kind.any-invalid` then runs `kind.finalize-create` (title-formula, validation, auto-children all behave as in the Creator). The launch context pre-seeds the back-ref (parent or ref field), but a `parent`/ref step lets the user redirect it. ''Esc'' cancels the whole wizard. ⚠️ Every ''required'' field of the kind must appear in some step (or carry a `default`), otherwise the final ''Create'' stays ⛔-blocked.
+
+''Hands-free landing.'' A single-field step ''auto-opens'' its one input — a text/enum step lands directly in value-edit mode (Enter commits → Next), a ref/tree step lands directly in the picker (uses cascade-palette's `ca-auto` / `ca-auto-token`). A non-selectable heading bar above the input names each step (cascade-palette `ca-stage-heading` / `ca-next-heading`). So a guided create is mostly just ''type · Enter · pick · Enter''.
+
+''Tree picker'' (`ca-step-pick-tree: yes`). Instead of the flat ref list, the step renders a drillable hierarchy (same structure as the //By Namespace// view): ''Right-arrow'' descends into a node's children, ''Enter'' on //any// node commits it as the field value AND finalises the instance — so choosing the placement IS the create (`ca-enter-fires`). Each focused node shows its kind ''context graph'' in the side preview (the `$:/plugins/rimir/kind/palette/preview/context` template, per-row). After the create, the palette stays open and returns to the entity you launched ''Create here…'' from (cascade-palette `ca-after-fire: pop-to-actions`) rather than closing — solving "everything created from a person is forced under that person" while keeping you in flow. Roots/children are overridable via `ca-step-pick-roots` and the `pick-roots` / `pick-children` config tiddlers.
 
 !! Engine functions (engine.tid)
 

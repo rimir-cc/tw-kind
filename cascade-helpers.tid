@@ -201,7 +201,7 @@ type: text/vnd.tiddlywiki
 \function kind.create-here-row-pre(host-tid, target-kind-tid, target-field, target-card, full-name, icon, group) [<target-kind-tid>get[kind.type]] :map[function[kind.create-here-draft-tid],<host-tid>,<target-field>,<currentTiddler>] :map[function[kind.create-here-row-build],<host-tid>,<target-kind-tid>,<target-field>,<target-card>,<full-name>,<icon>,<group>,<currentTiddler>]
 \function kind.create-here-row-build(host-tid, target-kind-tid, target-field, target-card, full-name, icon, group, draft-tid) [<full-name>] +[addprefix[{"ca-name":"+ ]] +[addsuffix[","ca-icon":"]] +[addsuffix<icon>] +[addsuffix[","ca-group":"]] +[addsuffix<group>] +[addsuffix[","ca-kind":"drill","ca-next-title":"New ]] +[addsuffix<full-name>] +[addsuffix[","ca-items-from":"]] +[addsuffix{$:/plugins/rimir/kind/_brackets!!lb}] +[addsuffix[function]] +[addsuffix{$:/plugins/rimir/kind/_brackets!!lb}] +[addsuffix[kind.cascade-create-here-fields]] +[addsuffix{$:/plugins/rimir/kind/_brackets!!rb}] +[addsuffix[,]] +[addsuffix{$:/plugins/rimir/kind/_brackets!!lb}] +[addsuffix<target-kind-tid>] +[addsuffix{$:/plugins/rimir/kind/_brackets!!rb}] +[addsuffix[,]] +[addsuffix{$:/plugins/rimir/kind/_brackets!!lb}] +[addsuffix<host-tid>] +[addsuffix{$:/plugins/rimir/kind/_brackets!!rb}] +[addsuffix[,]] +[addsuffix{$:/plugins/rimir/kind/_brackets!!lb}] +[addsuffix<target-field>] +[addsuffix{$:/plugins/rimir/kind/_brackets!!rb}] +[addsuffix[,]] +[addsuffix{$:/plugins/rimir/kind/_brackets!!lb}] +[addsuffix<target-card>] +[addsuffix{$:/plugins/rimir/kind/_brackets!!rb}] +[addsuffix{$:/plugins/rimir/kind/_brackets!!rb}] +[addsuffix[","ca-actions":"<$transclude $variable=\"kind.cascade-create-here-init\" host-tid=\"]] +[addsuffix<host-tid>] +[addsuffix[\" target-field=\"]] +[addsuffix<target-field>] +[addsuffix[\" target-card=\"]] +[addsuffix<target-card>] +[addsuffix[\" kind-tid=\"]] +[addsuffix<target-kind-tid>] +[addsuffix[\"/>","ca-preview-context":"]] +[addsuffix{$:/plugins/rimir/kind/_brackets!!lb}] +[addsuffix{$:/plugins/rimir/kind/_brackets!!lb}] +[addsuffix<draft-tid>] +[addsuffix{$:/plugins/rimir/kind/_brackets!!rb}] +[addsuffix{$:/plugins/rimir/kind/_brackets!!rb}] +[addsuffix["}]]
 
-\function kind.cascade-create-here-fields(target-kind-tid, host-tid, target-field, target-card) [function[kind.create-here-save-or-warn-leaf],<target-kind-tid>,<host-tid>,<target-field>,<target-card>] [function[kind.create-here-clone-row],<target-kind-tid>,<host-tid>,<target-field>] [function[kind.create-here-field-edit-items],<target-kind-tid>,<host-tid>,<target-field>]
+\function kind.cascade-create-here-fields(target-kind-tid, host-tid, target-field, target-card) [function[kind.cchf-route],<target-kind-tid>,<host-tid>,<target-field>,<target-card>]
 \function kind.create-here-save-or-warn-leaf(target-kind-tid, host-tid, target-field, target-card) [<target-kind-tid>get[kind.type]] :map[function[kind.create-here-draft-tid],<host-tid>,<target-field>,<currentTiddler>] :map[function[kind.create-here-save-or-warn-for-draft],<target-kind-tid>,<host-tid>,<target-field>,<target-card>,<currentTiddler>]
 \function kind.create-here-save-or-warn-for-draft(target-kind-tid, host-tid, target-field, target-card, draft-tid) [function[kind.eval-title],<target-kind-tid>,<draft-tid>!is[blank]] :map[function[kind.create-here-save-or-invalid],<target-kind-tid>,<host-tid>,<target-field>,<target-card>,<draft-tid>,<currentTiddler>] ~[function[kind.save-warning-row],<target-kind-tid>,<draft-tid>]
 \function kind.create-here-save-or-invalid(target-kind-tid, host-tid, target-field, target-card, draft-tid, title) [<target-kind-tid>get[kind.type]] :map[function[kind.create-here-save-or-invalid-with-key],<target-kind-tid>,<host-tid>,<target-field>,<target-card>,<draft-tid>,<title>,<currentTiddler>]
@@ -218,12 +218,28 @@ type: text/vnd.tiddlywiki
      The same seed runs again at save time as a safety net (idempotent). -->
 <$let kind-type-key={{{ [<kind-tid>get[kind.type]] }}}>
 <$let draft-tid={{{ [function[kind.create-here-draft-tid],<host-tid>,<target-field>,<kind-type-key>] }}}>
+<$let host-key={{{ [<host-tid>get[kind.type]] }}}>
+<!-- Wizard fresh-start: a wizard advances / creates hands-free once each step
+     validates, so a stale draft left by an abandoned run must NOT silently
+     resurface — pre-filled steps would auto-skip and could create a duplicate.
+     On every wizard drill-open, discard the prior draft + step-index so the run
+     begins clean at step 1. Non-wizard create-here keeps its draft-reuse. -->
+<$list filter="[function[kind.wizard-has],<kind-type-key>,<host-key>]" variable="_wiz">
+<$action-deletetiddler $tiddler=<<draft-tid>>/>
+<$action-deletetiddler $tiddler={{{ [function[kind.wizard-idx-tid],<draft-tid>] }}}/>
+</$list>
 <$transclude $variable="kind.apply-defaults-to" type-tid=<<kind-tid>> target-tid=<<draft-tid>>/>
 <%if [<target-card>match[multi]] %>
 <$action-listops $tiddler=<<draft-tid>> $field=<<target-field>> $subfilter="+[append<host-tid>]"/>
 <%else%>
 <$action-setfield $tiddler=<<draft-tid>> $field=<<target-field>> $value=<<host-tid>>/>
 <%endif%>
+<!-- If a wizard governs this (target, host) pair, (re)start it at step 1 so a
+     fresh drill-open always begins at the first step. No-op otherwise. -->
+<$list filter="[function[kind.wizard-has],<kind-type-key>,<host-key>]" variable="_wiz">
+<$action-setfield $tiddler={{{ [function[kind.wizard-idx-tid],<draft-tid>] }}} text="1"/>
+</$list>
+</$let>
 </$let>
 </$let>
 \end

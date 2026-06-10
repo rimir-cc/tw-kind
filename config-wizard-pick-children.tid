@@ -1,0 +1,3 @@
+title: $:/config/rimir/kind/wizard/pick-children
+
+[all[tiddlers]!is[system]cp-child-of<currentTiddler>]

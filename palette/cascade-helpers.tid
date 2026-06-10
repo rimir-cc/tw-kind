@@ -290,3 +290,202 @@ type: text/vnd.tiddlywiki
      DEL on a field-override row. -->
 <$action-setfield $tiddler=<<target-tid>> kind.auto-children={{{ [<target-tid>get[kind.auto-children]jsondelete<ac-idx>,[fields],<field-key>] }}}/>
 \end
+
+<!-- ===== Creation wizard (designer-defined, multi-step guided create) =====
+     A wizard is an ordered set of tiddlers tagged $:/tags/rimir/kind/wizard-step,
+     each carrying: ca-wizard-kind (target type-key), ca-wizard-context (host
+     type-key this variant applies to; empty = default), ca-order, ca-step-name,
+     ca-step-fields (space-separated field keys), optional ca-step-hint.
+
+     The whole wizard occupies ONE drill stage; a per-draft step-index state
+     tiddler (<draft>/wizidx) tracks position. The stage re-renders whenever
+     that index changes (ca-items-from re-evaluates) to show the current step.
+
+     Minimal-interaction model (relies on cascade-palette's generic ca-auto):
+     each step's field(s) render under a group header = the step name (the
+     palette renders group labels as non-selectable dimmed headings). For a
+     SINGLE-field step the field row carries ca-auto:edit (text/number/date) or
+     ca-auto:drill (ref/enum) + ca-auto-token=<wizidx>, so the palette lands the
+     user straight in that one input/picker. Once the step validates, a
+     transient ca-auto:fire row (token=<wizidx>-go) advances the index — or, on
+     the last step, finalises the instance — hands-free; no explicit "Next".
+     MULTI-field steps fall back to explicit Next/Create leaves (kind.wizard-go-row).
+     Reuses kind.field-edit-json (every field type) and kind.viol-any (per-step
+     validation). cascade-create-here-fields routes here when a wizard exists. -->
+
+\function kind.wizard-steps-ctx(target-key, context-key) [all[shadows+tiddlers]tag[$:/tags/rimir/kind/wizard-step]] :filter[function[kind.wiz-step-match],<currentTiddler>,<target-key>,<context-key>] +[nsort[ca-order]]
+\function kind.wiz-step-match(step-tid, target-key, context-key) [<step-tid>get[ca-wizard-kind]match<target-key>then[K1]] [function[kind.wiz-ctx-ok],<step-tid>,<context-key>] +[count[]match[2]then[Y]]
+\function kind.wiz-ctx-ok(step-tid, context-key) [<step-tid>get[ca-wizard-context]] ~[[]] +[match<context-key>then[Y]]
+\function kind.wizard-steps(target-key, context-key) [function[kind.wizard-steps-ctx],<target-key>,<context-key>] ~[function[kind.wizard-steps-ctx],<target-key>,[]]
+\function kind.wizard-has(target-key, context-key) [function[kind.wizard-steps],<target-key>,<context-key>] +[first[]]
+\function kind.wizard-count(target-key, context-key) [function[kind.wizard-steps],<target-key>,<context-key>] +[count[]]
+\function kind.wizard-step-at(target-key, context-key, idx) [function[kind.wizard-steps],<target-key>,<context-key>] +[nth<idx>]
+
+\function kind.wizard-idx-tid(draft-tid) [<draft-tid>addsuffix[/wizidx]]
+\function kind.wizard-cur-idx(draft-tid) [function[kind.wizard-idx-tid],<draft-tid>] :map[function[kind.wiz-tid-text],<currentTiddler>] ~[[1]]
+\function kind.wiz-tid-text(t) [<t>get[text]]
+\function kind.wizard-cur-step(draft-tid, target-key, context-key) [function[kind.wizard-cur-idx],<draft-tid>] :map[function[kind.wizard-step-at],<target-key>,<context-key>,<currentTiddler>]
+\function kind.wizard-cur-fields(draft-tid, target-key, context-key) [function[kind.wizard-cur-step],<draft-tid>,<target-key>,<context-key>] :map:flat[function[kind.wiz-step-fields],<currentTiddler>]
+\function kind.wiz-step-fields(step-tid) [<step-tid>get[ca-step-fields]enlist-input[]]
+\function kind.wizard-has-next(draft-tid, target-key, context-key) [function[kind.wizard-cur-idx],<draft-tid>add[1]] :map[function[kind.wizard-step-at],<target-key>,<context-key>,<currentTiddler>] +[!is[blank]]
+
+\function kind.wizard-current-rows(target-kind-tid, host-tid, target-field, target-card, target-key, context-key) [<target-kind-tid>get[kind.type]] :map[function[kind.create-here-draft-tid],<host-tid>,<target-field>,<currentTiddler>] :map:flat[function[kind.wizard-rows-for-draft],<target-kind-tid>,<host-tid>,<target-key>,<context-key>,<currentTiddler>]
+\function kind.wizard-rows-for-draft(target-kind-tid, host-tid, target-key, context-key, draft-tid) [function[kind.wizard-field-rows],<target-kind-tid>,<draft-tid>,<target-key>,<context-key>] [function[kind.wizard-advance-rows],<target-kind-tid>,<host-tid>,<draft-tid>,<target-key>,<context-key>] [function[kind.wizard-back-row],<draft-tid>] +[!is[blank]]
+
+<!-- Field rows for the current step, grouped under the step name (dimmed
+     header) and — for single-field steps that still need input — auto-opened. -->
+\function kind.wizard-field-rows(target-kind-tid, draft-tid, target-key, context-key) [function[kind.wizard-cur-step],<draft-tid>,<target-key>,<context-key>] :map:flat[function[kind.wiz-step-field-rows],<target-kind-tid>,<draft-tid>,<target-key>,<context-key>,<currentTiddler>]
+\function kind.wiz-step-field-rows(target-kind-tid, draft-tid, target-key, context-key, step-tid) [<step-tid>get[ca-step-fields]enlist-input[]] :map:flat[function[kind.wiz-one-field-row],<target-kind-tid>,<draft-tid>,<target-key>,<context-key>,<step-tid>,<currentTiddler>]
+<!-- A step opting into tree picking (ca-step-pick-tree:yes) renders its single
+     ref field as a navigable tree (kind.wiz-tree-*); otherwise the flat
+     field-edit-json row + decoration. -->
+\function kind.wiz-one-field-row(target-kind-tid, draft-tid, target-key, context-key, step-tid, field-key) [function[kind.wiz-use-tree],<step-tid>!is[blank]] :map[function[kind.wiz-tree-field-row],<target-kind-tid>,<draft-tid>,<step-tid>,<field-key>] ~[function[kind.wiz-flat-field-row],<target-kind-tid>,<draft-tid>,<target-key>,<context-key>,<step-tid>,<field-key>]
+\function kind.wiz-flat-field-row(target-kind-tid, draft-tid, target-key, context-key, step-tid, field-key) [function[kind.field-edit-json],<target-kind-tid>,<draft-tid>,<field-key>] :map[function[kind.wiz-decorate-field],<target-kind-tid>,<draft-tid>,<target-key>,<context-key>,<step-tid>,<currentTiddler>]
+\function kind.wiz-use-tree(step-tid) [<step-tid>get[ca-step-pick-tree]match[yes]then[Y]]
+
+<!-- ===== Tree picker for a single ref step (ca-step-pick-tree:yes) =====
+     Renders the field as a recursive, drillable tree: each node row drills its
+     children on Right-arrow (ca-items-from → kind.wiz-tree-children) and, on
+     Enter, commits itself as the field value AND finalises the instance
+     (kind.wiz-tree-pick) — so picking the placement IS the create. Structure
+     comes from the step's ca-step-pick-roots / ca-step-pick-children filters,
+     defaulting to the cp-child-of namespace tree (same as By Namespace). Any
+     navigated node is pickable. Use on the FINAL step (pick = create). -->
+<!-- Roots may be overridden per step (ca-step-pick-roots), default config tiddler.
+     Children use the global config filter, which references <currentTiddler> as
+     the parent (e.g. cp-child-of<currentTiddler>). A bare subfilter does NOT
+     rebind currentTiddler, so we run it inside :map:flat — which sets
+     currentTiddler to each iterated node — letting the config resolve the node's
+     children. :map:flat (not :map) keeps ALL children, not just the first. -->
+\function kind.wiz-roots-filter(step-tid) [<step-tid>get[ca-step-pick-roots]] ~[[$:/config/rimir/kind/wizard/pick-roots]get[text]]
+\function kind.wiz-seed-roots(rf) [[__wizroot__]subfilter<rf>]
+\function kind.wiz-root-nodes(step-tid) [function[kind.wiz-roots-filter],<step-tid>] :map:flat[function[kind.wiz-seed-roots],<currentTiddler>]
+\function kind.wiz-child-nodes(node) [<node>] :map:flat[subfilter{$:/config/rimir/kind/wizard/pick-children}]
+\function kind.wiz-has-children(node) [function[kind.wiz-child-nodes],<node>] +[first[]]
+
+<!-- Extra JSON keys shared by every tree node row (leaf + drill):
+       * side preview = the kind context graph (same template as the
+         "Context" side-preview / By-Namespace drill graph), pinned per-row
+         so ↑/↓ re-renders it for the focused node. ca-preview-context is a
+         literal `[[node]]` filter so <<currentTiddler>> in the template
+         resolves to the node regardless of the (titleless) synthetic row.
+       * ca-after-fire = pop-to-actions → after the pick creates the
+         instance, pop the wizard + picker stages back to the launching
+         entity's action menu instead of closing the palette. -->
+\function kind.wiz-node-ctx-kv(node) [<node>addprefix{$:/plugins/rimir/kind/_brackets!!lb}addprefix{$:/plugins/rimir/kind/_brackets!!lb}addsuffix{$:/plugins/rimir/kind/_brackets!!rb}addsuffix{$:/plugins/rimir/kind/_brackets!!rb}addprefix["ca-preview-context":"]addsuffix["]]
+\function kind.wiz-row-extras(node) [function[kind.kv],[ca-preview-template],[$:/plugins/rimir/kind/palette/preview/context]] [function[kind.kv],[ca-preview-per-row],[yes]] [function[kind.wiz-node-ctx-kv],<node>] [function[kind.kv],[ca-after-fire],[pop-to-actions]]
+
+<!-- The field row itself: a drill whose ca-items-from yields the root nodes,
+     auto-opened (ca-auto:drill), labelled with the step name. -->
+\function kind.wiz-tree-field-row(target-kind-tid, draft-tid, step-tid, field-key) [function[kind.field-caption],<target-kind-tid>,<field-key>] ~[<field-key>] :map[function[kind.wiz-tree-field-row-2],<target-kind-tid>,<draft-tid>,<step-tid>,<field-key>,<currentTiddler>]
+\function kind.wiz-tree-field-row-2(target-kind-tid, draft-tid, step-tid, field-key, caption) [function[kind.wiz-tree-roots-call],<draft-tid>,<field-key>,<target-kind-tid>,<step-tid>] :map[function[kind.wiz-tree-field-row-3],<draft-tid>,<step-tid>,<caption>,<currentTiddler>]
+\function kind.wiz-tree-field-row-3(draft-tid, step-tid, caption, roots-call) [<step-tid>get[ca-step-name]] ~[<caption>] :map[function[kind.wiz-tree-field-row-4],<draft-tid>,<caption>,<roots-call>,<currentTiddler>]
+\function kind.wiz-tree-field-row-4(draft-tid, caption, roots-call, heading) [function[kind.wizard-cur-idx],<draft-tid>] :map[function[kind.wiz-tree-field-row-5],<caption>,<roots-call>,<heading>,<currentTiddler>]
+\function kind.wiz-tree-field-row-5(caption, roots-call, heading, idx) [function[kind.kv],[ca-name],<caption>] [function[kind.kv],[ca-icon],[📂]] [function[kind.kv],[ca-kind],[drill]] [function[kind.kv],[ca-items-from],<roots-call>] [function[kind.kv],[ca-auto],[drill]] [function[kind.kv],[ca-auto-token],<idx>] [function[kind.kv],[ca-stage-heading],<heading>] [function[kind.kv],[ca-next-heading],<heading>] [function[kind.kv],[ca-next-title],<heading>] +[join[,]addprefix[{]addsuffix[}]]
+
+<!-- Root + child row producers (ca-items-from targets). -->
+\function kind.wiz-tree-roots(draft-tid, field-key, kind-tid, step-tid) [function[kind.wiz-root-nodes],<step-tid>] :map[function[kind.wiz-tree-row],<draft-tid>,<field-key>,<kind-tid>,<step-tid>,<currentTiddler>]
+\function kind.wiz-tree-children(node, draft-tid, field-key, kind-tid, step-tid) [function[kind.wiz-child-nodes],<node>] :map[function[kind.wiz-tree-row],<draft-tid>,<field-key>,<kind-tid>,<step-tid>,<currentTiddler>]
+
+<!-- One node row: leaf (no children) or drill (has children); both Enter-pick. -->
+\function kind.wiz-tree-row(draft-tid, field-key, kind-tid, step-tid, node) [function[kind.resolve-ref],<node>] ~[<node>] :map[function[kind.wiz-tree-row-2],<draft-tid>,<field-key>,<kind-tid>,<step-tid>,<node>,<currentTiddler>]
+\function kind.wiz-tree-row-2(draft-tid, field-key, kind-tid, step-tid, node, display) [function[kind.wiz-has-children],<node>!is[blank]] :map[function[kind.wiz-tree-drill-row],<draft-tid>,<field-key>,<kind-tid>,<step-tid>,<node>,<display>] ~[function[kind.wiz-tree-leaf-row],<draft-tid>,<field-key>,<kind-tid>,<node>,<display>]
+\function kind.wiz-tree-pick-action(draft-tid, field-key, kind-tid, node) [<node>] +[addprefix[<$transclude $variable='kind.wiz-tree-pick' node-tid=']addsuffix[' draft-tid=']addsuffix<draft-tid>addsuffix[' field-key=']addsuffix<field-key>addsuffix[' kind-tid=']addsuffix<kind-tid>addsuffix['/>]]
+\function kind.wiz-tree-leaf-row(draft-tid, field-key, kind-tid, node, display) [function[kind.wiz-tree-pick-action],<draft-tid>,<field-key>,<kind-tid>,<node>] :map[function[kind.wiz-tree-leaf-json],<display>,<node>,<currentTiddler>]
+\function kind.wiz-tree-leaf-json(display, node, action) [function[kind.kv],[ca-name],<display>] [function[kind.kv],[ca-hint],<node>] [function[kind.kv],[ca-kind],[leaf]] [function[kind.kv],[ca-actions],<action>] [function[kind.wiz-row-extras],<node>] +[join[,]addprefix[{]addsuffix[}]]
+\function kind.wiz-tree-drill-row(draft-tid, field-key, kind-tid, step-tid, node, display) [function[kind.wiz-tree-pick-action],<draft-tid>,<field-key>,<kind-tid>,<node>] :map[function[kind.wiz-tree-drill-json],<draft-tid>,<field-key>,<kind-tid>,<step-tid>,<node>,<display>,<currentTiddler>]
+\function kind.wiz-tree-drill-json(draft-tid, field-key, kind-tid, step-tid, node, display, action) [function[kind.wiz-children-call],<node>,<draft-tid>,<field-key>,<kind-tid>,<step-tid>] :map[function[kind.wiz-tree-drill-json-2],<display>,<node>,<action>,<currentTiddler>]
+\function kind.wiz-tree-drill-json-2(display, node, action, children-call) [function[kind.kv],[ca-name],<display>] [function[kind.kv],[ca-hint],<node>] [function[kind.kv],[ca-kind],[drill]] [function[kind.kv],[ca-enter-fires],[yes]] [function[kind.kv],[ca-actions],<action>] [function[kind.kv],[ca-items-from],<children-call>] [function[kind.kv],[ca-next-title],<display>] [function[kind.wiz-row-extras],<node>] +[join[,]addprefix[{]addsuffix[}]]
+
+<!-- Embedded ca-items-from call strings (literal-operand function calls). -->
+\function kind.wiz-tree-roots-call(draft-tid, field-key, kind-tid, step-tid) [[kind.wiz-tree-roots]addprefix{$:/plugins/rimir/kind/_brackets!!lb}addsuffix{$:/plugins/rimir/kind/_brackets!!rb}addprefix[function]] :map[function[kind.cat-arg],<currentTiddler>,<draft-tid>] :map[function[kind.cat-arg],<currentTiddler>,<field-key>] :map[function[kind.cat-arg],<currentTiddler>,<kind-tid>] :map[function[kind.cat-arg],<currentTiddler>,<step-tid>] :map[function[kind.wrap-array],<currentTiddler>]
+\function kind.wiz-children-call(node, draft-tid, field-key, kind-tid, step-tid) [[kind.wiz-tree-children]addprefix{$:/plugins/rimir/kind/_brackets!!lb}addsuffix{$:/plugins/rimir/kind/_brackets!!rb}addprefix[function]] :map[function[kind.cat-arg],<currentTiddler>,<node>] :map[function[kind.cat-arg],<currentTiddler>,<draft-tid>] :map[function[kind.cat-arg],<currentTiddler>,<field-key>] :map[function[kind.cat-arg],<currentTiddler>,<kind-tid>] :map[function[kind.cat-arg],<currentTiddler>,<step-tid>] :map[function[kind.wrap-array],<currentTiddler>]
+
+\procedure kind.wiz-tree-pick(node-tid, draft-tid, field-key, kind-tid)
+<!-- Commit the picked tree node as the field value, then materialise the
+     instance (this is the final step) and clear wizard scratch state. -->
+<$action-setfield $tiddler=<<draft-tid>> $field=<<field-key>> $value=<<node-tid>>/>
+<$let kind-type-key={{{ [<kind-tid>get[kind.type]] }}}>
+<$transclude $variable="kind.finalize-create" kind-tid=<<kind-tid>> kind-type-key=<<kind-type-key>> draft-tid=<<draft-tid>> savetitle="$:/state/rimir/kind/__wizard-result"/>
+<$action-deletetiddler $tiddler=<<draft-tid>>/>
+<$action-deletetiddler $tiddler={{{ [function[kind.wizard-idx-tid],<draft-tid>] }}}/>
+<$action-deletetiddler $tiddler={{{ [function[kind.qc-meta-tid],<draft-tid>] }}}/>
+</$let>
+\end
+
+<!-- Decorate a field-edit-json row: always add ca-group (= step name → dimmed
+     heading); when the step is single-field AND still invalid, add ca-auto
+     (edit|drill, keyed to the step index) so the palette lands in it directly. -->
+\function kind.wiz-decorate-field(target-kind-tid, draft-tid, target-key, context-key, step-tid, base-json) [function[kind.wiz-auto-mode],<target-kind-tid>,<draft-tid>,<target-key>,<context-key>,<step-tid>,<base-json>] :map[function[kind.wiz-assemble-field],<draft-tid>,<step-tid>,<base-json>,<currentTiddler>]
+<!-- Always emits exactly one value: the auto mode ("edit"/"drill") when the
+     current field should auto-open, else empty (~[[]] guarantees presence so
+     the caller's :map still fires once and the field row never vanishes). -->
+\function kind.wiz-auto-mode(target-kind-tid, draft-tid, target-key, context-key, step-tid, base-json) [function[kind.wiz-auto-mode-gate],<target-kind-tid>,<draft-tid>,<target-key>,<context-key>,<step-tid>] :map[function[kind.wiz-base-mode],<base-json>] ~[[]]
+\function kind.wiz-auto-mode-gate(target-kind-tid, draft-tid, target-key, context-key, step-tid) [function[kind.wiz-step-single],<step-tid>match[Y]] :map[function[kind.wiz-step-invalid-flag],<target-kind-tid>,<draft-tid>,<target-key>,<context-key>]
+\function kind.wiz-step-invalid-flag(target-kind-tid, draft-tid, target-key, context-key) [function[kind.wizard-step-invalid],<target-kind-tid>,<target-key>,<draft-tid>,<context-key>!is[blank]then[Y]]
+\function kind.wiz-step-single(step-tid) [<step-tid>get[ca-step-fields]enlist-input[]count[]match[1]then[Y]]
+\function kind.wiz-base-mode(base-json) [<base-json>regexp[ca-kind":"drill]then[drill]] ~[[edit]]
+
+\function kind.wiz-assemble-field(draft-tid, step-tid, base-json, auto-mode) [<base-json>removesuffix[}]] :map[function[kind.wiz-assemble-2],<draft-tid>,<step-tid>,<auto-mode>,<currentTiddler>]
+\function kind.wiz-assemble-2(draft-tid, step-tid, auto-mode, base-open) [<step-tid>get[ca-step-name]] ~[[Step]] :map[function[kind.wiz-assemble-3],<draft-tid>,<auto-mode>,<base-open>,<currentTiddler>]
+\function kind.wiz-assemble-3(draft-tid, auto-mode, base-open, group) [<auto-mode>!is[blank]] :map[function[kind.wiz-assemble-auto],<draft-tid>,<auto-mode>,<base-open>,<group>] ~[function[kind.wiz-assemble-plain],<base-open>,<group>]
+<!-- Re-appended (= step name), JSON last-key-wins overriding what field-edit-json
+     set: ca-stage-heading → the wizard stage's prominent above-input heading
+     (the text/edit step, e.g. "Name it"); ca-next-heading + ca-next-title →
+     the heading + breadcrumb of the picker a drill step pushes ("File it under").
+     ca-group is kept for multi-field grouping. Unused keys are harmless. -->
+\function kind.wiz-assemble-plain(base-open, group) [<base-open>] +[addsuffix[,"ca-group":"]addsuffix<group>addsuffix[","ca-next-title":"]addsuffix<group>addsuffix[","ca-stage-heading":"]addsuffix<group>addsuffix[","ca-next-heading":"]addsuffix<group>addsuffix["}]]
+\function kind.wiz-assemble-auto(draft-tid, auto-mode, base-open, group) [function[kind.wizard-cur-idx],<draft-tid>] :map[function[kind.wiz-assemble-auto-2],<auto-mode>,<base-open>,<group>,<currentTiddler>]
+\function kind.wiz-assemble-auto-2(auto-mode, base-open, group, idx) [<base-open>] +[addsuffix[,"ca-group":"]addsuffix<group>addsuffix[","ca-next-title":"]addsuffix<group>addsuffix[","ca-stage-heading":"]addsuffix<group>addsuffix[","ca-next-heading":"]addsuffix<group>addsuffix[","ca-auto":"]addsuffix<auto-mode>addsuffix[","ca-auto-token":"]addsuffix<idx>addsuffix["}]]
+
+<!-- Advance: single-field steps advance hands-free (ca-auto:fire) once valid;
+     multi-field steps keep explicit Next/Create leaves (kind.wizard-go-row). -->
+\function kind.wizard-advance-rows(target-kind-tid, host-tid, draft-tid, target-key, context-key) [function[kind.wiz-step-single-cur],<draft-tid>,<target-key>,<context-key>!is[blank]] :map[function[kind.wizard-auto-advance-row],<target-kind-tid>,<host-tid>,<draft-tid>,<target-key>,<context-key>] ~[function[kind.wizard-go-row],<target-kind-tid>,<host-tid>,<draft-tid>,<target-key>,<context-key>]
+\function kind.wiz-step-single-cur(draft-tid, target-key, context-key) [function[kind.wizard-cur-step],<draft-tid>,<target-key>,<context-key>] :map[function[kind.wiz-step-single],<currentTiddler>]
+\function kind.wizard-auto-advance-row(target-kind-tid, host-tid, draft-tid, target-key, context-key) [function[kind.wizard-step-valid],<target-kind-tid>,<target-key>,<draft-tid>,<context-key>!is[blank]] :map[function[kind.wizard-auto-go],<target-kind-tid>,<host-tid>,<draft-tid>,<target-key>,<context-key>]
+\function kind.wizard-step-valid(target-kind-tid, target-key, draft-tid, context-key) [function[kind.wizard-step-invalid],<target-kind-tid>,<target-key>,<draft-tid>,<context-key>] +[count[]match[0]then[Y]]
+\function kind.wizard-auto-go(target-kind-tid, host-tid, draft-tid, target-key, context-key) [function[kind.wizard-has-next],<draft-tid>,<target-key>,<context-key>!is[blank]] :map[function[kind.wiz-auto-advance-build],<draft-tid>] ~[function[kind.wiz-auto-finish-build],<target-kind-tid>,<host-tid>,<draft-tid>]
+\function kind.wiz-auto-advance-build(draft-tid) [function[kind.wiz-idx-action],<draft-tid>,[1]] :map[function[kind.wiz-auto-advance-build-2],<draft-tid>,<currentTiddler>]
+\function kind.wiz-auto-advance-build-2(draft-tid, action) [function[kind.wizard-cur-idx],<draft-tid>addsuffix[-go]] :map[function[kind.wiz-auto-advance-build-3],<action>,<currentTiddler>]
+\function kind.wiz-auto-advance-build-3(action, token) [function[kind.kv],[ca-name],[Continuing…]] [function[kind.kv],[ca-icon],[➡]] [function[kind.kv],[ca-kind],[leaf]] [function[kind.kv],[ca-after-fire],[keep]] [function[kind.kv],[ca-order],[9990]] [function[kind.kv],[ca-search-skip],[yes]] [function[kind.kv],[ca-auto],[fire]] [function[kind.kv],[ca-auto-token],<token>] [function[kind.kv],[ca-actions],<action>] [function[kind.kv],[ca-hint],[Advancing…]] +[join[,]addprefix[{]addsuffix[}]]
+\function kind.wiz-auto-finish-build(target-kind-tid, host-tid, draft-tid) [function[kind.wiz-finish-action],<target-kind-tid>,<host-tid>,<draft-tid>] :map[function[kind.wiz-auto-finish-build-2],<draft-tid>,<currentTiddler>]
+\function kind.wiz-auto-finish-build-2(draft-tid, action) [function[kind.wizard-cur-idx],<draft-tid>addsuffix[-go]] :map[function[kind.wiz-auto-finish-build-3],<action>,<currentTiddler>]
+\function kind.wiz-auto-finish-build-3(action, token) [function[kind.kv],[ca-name],[Creating…]] [function[kind.kv],[ca-icon],[✅]] [function[kind.kv],[ca-kind],[leaf]] [function[kind.kv],[ca-order],[9990]] [function[kind.kv],[ca-search-skip],[yes]] [function[kind.kv],[ca-auto],[fire]] [function[kind.kv],[ca-auto-token],<token>] [function[kind.kv],[ca-actions],<action>] [function[kind.kv],[ca-hint],[Creating the instance…]] +[join[,]addprefix[{]addsuffix[}]]
+\function kind.wizard-back-row(draft-tid) [function[kind.wizard-cur-idx],<draft-tid>compare:integer:gt[1]] :map[function[kind.wizard-back-row-2],<draft-tid>]
+\function kind.wizard-back-row-2(draft-tid) [function[kind.wiz-idx-action],<draft-tid>,[-1]] :map[function[kind.wizard-back-build],<currentTiddler>]
+\function kind.wizard-back-build(action) [function[kind.kv],[ca-name],[← Back]] [function[kind.kv],[ca-icon],[◀]] [function[kind.kv],[ca-kind],[leaf]] [function[kind.kv],[ca-after-fire],[keep]] [function[kind.kv],[ca-order],[9999]] [function[kind.kv],[ca-actions],<action>] [function[kind.kv],[ca-hint],[Return to the previous step]] +[join[,]addprefix[{]addsuffix[}]]
+
+\function kind.wizard-go-row(target-kind-tid, host-tid, draft-tid, target-key, context-key) [function[kind.wizard-step-invalid],<target-kind-tid>,<target-key>,<draft-tid>,<context-key>!is[blank]] :map[function[kind.wizard-blocked-row],<currentTiddler>] ~[function[kind.wizard-go-valid],<target-kind-tid>,<host-tid>,<draft-tid>,<target-key>,<context-key>]
+\function kind.wizard-step-invalid(target-kind-tid, target-key, draft-tid, context-key) [function[kind.wizard-cur-fields],<draft-tid>,<target-key>,<context-key>] :filter[function[kind.viol-any],<target-kind-tid>,<target-key>,<currentTiddler>,<draft-tid>] +[first[]]
+\function kind.wizard-blocked-row(viol-field) [<viol-field>] +[addprefix[{"ca-name":"Complete “]] +[addsuffix[” to continue","ca-icon":"⛔","ca-kind":"leaf","ca-after-fire":"keep","ca-order":"9990","ca-hint":"This step has a required or invalid field. Fill the field row above, then continue."}]]
+\function kind.wizard-go-valid(target-kind-tid, host-tid, draft-tid, target-key, context-key) [function[kind.wizard-has-next],<draft-tid>,<target-key>,<context-key>!is[blank]] :map[function[kind.wizard-next-row],<draft-tid>] ~[function[kind.wizard-finish-row],<target-kind-tid>,<host-tid>,<draft-tid>,<target-key>]
+\function kind.wizard-next-row(draft-tid) [function[kind.wiz-idx-action],<draft-tid>,[1]] :map[function[kind.wizard-next-build],<currentTiddler>]
+\function kind.wizard-next-build(action) [function[kind.kv],[ca-name],[Next →]] [function[kind.kv],[ca-icon],[▶]] [function[kind.kv],[ca-kind],[leaf]] [function[kind.kv],[ca-after-fire],[keep]] [function[kind.kv],[ca-order],[9990]] [function[kind.kv],[ca-actions],<action>] [function[kind.kv],[ca-hint],[Continue to the next step]] +[join[,]addprefix[{]addsuffix[}]]
+\function kind.wizard-finish-row(target-kind-tid, host-tid, draft-tid, target-key) [function[kind.any-invalid],<target-kind-tid>,<target-key>,<draft-tid>!is[blank]] :map[function[kind.invalid-warning-row-build],<target-kind-tid>,<draft-tid>,<currentTiddler>] ~[function[kind.wizard-finish-leaf],<target-kind-tid>,<host-tid>,<draft-tid>]
+\function kind.wizard-finish-leaf(target-kind-tid, host-tid, draft-tid) [function[kind.wiz-finish-action],<target-kind-tid>,<host-tid>,<draft-tid>] :map[function[kind.wizard-finish-build],<currentTiddler>]
+\function kind.wizard-finish-build(action) [function[kind.kv],[ca-name],[✓ Create]] [function[kind.kv],[ca-icon],[✅]] [function[kind.kv],[ca-kind],[leaf]] [function[kind.kv],[ca-order],[9990]] [function[kind.kv],[ca-actions],<action>] [function[kind.kv],[ca-hint],[Create the instance and close the palette]] +[join[,]addprefix[{]addsuffix[}]]
+
+\function kind.wiz-idx-action(draft-tid, delta) [function[kind.wizard-idx-tid],<draft-tid>] :map[function[kind.wiz-idx-action-2],<draft-tid>,<delta>,<currentTiddler>]
+\function kind.wiz-idx-action-2(draft-tid, delta, idx-tid) [function[kind.wizard-cur-idx],<draft-tid>add<delta>] :map[function[kind.wiz-idx-action-3],<idx-tid>,<currentTiddler>]
+\function kind.wiz-idx-action-3(idx-tid, new-idx) [<new-idx>] +[addprefix[' text=']] +[addprefix<idx-tid>] +[addprefix[<$action-setfield $tiddler=']] +[addsuffix['/>]]
+\function kind.wiz-finish-action(target-kind-tid, host-tid, draft-tid) [<target-kind-tid>] +[addprefix[<$transclude $variable='kind.wizard-finish' kind-tid=']] +[addsuffix[' host-tid=']] +[addsuffix<host-tid>] +[addsuffix[' draft-tid=']] +[addsuffix<draft-tid>] +[addsuffix['/>]]
+
+\procedure kind.wizard-finish(kind-tid, host-tid, draft-tid)
+<!-- Final-step action: materialise the instance from the accumulated draft
+     (parent/back-ref already seeded by cascade-create-here-init, all step
+     fields set), then clear the wizard's scratch state. -->
+<$let kind-type-key={{{ [<kind-tid>get[kind.type]] }}}>
+<$transclude $variable="kind.finalize-create" kind-tid=<<kind-tid>> kind-type-key=<<kind-type-key>> draft-tid=<<draft-tid>> savetitle="$:/state/rimir/kind/__wizard-result"/>
+<$action-deletetiddler $tiddler=<<draft-tid>>/>
+<$action-deletetiddler $tiddler={{{ [function[kind.wizard-idx-tid],<draft-tid>] }}}/>
+<$action-deletetiddler $tiddler={{{ [function[kind.qc-meta-tid],<draft-tid>] }}}/>
+</$let>
+\end
+
+<!-- Router for cascade-create-here-fields: if a wizard exists for (target-kind,
+     host-kind) — context-specific else default — emit the wizard stage; else the
+     flat all-fields form (original behaviour). host-key empty -> default wizard. -->
+\function kind.cchf-route(target-kind-tid, host-tid, target-field, target-card) [<target-kind-tid>get[kind.type]] :map:flat[function[kind.cchf-route-2],<target-kind-tid>,<host-tid>,<target-field>,<target-card>,<currentTiddler>]
+\function kind.cchf-route-2(target-kind-tid, host-tid, target-field, target-card, target-key) [<host-tid>get[kind.type]] ~[[]] :map:flat[function[kind.cchf-route-3],<target-kind-tid>,<host-tid>,<target-field>,<target-card>,<target-key>,<currentTiddler>]
+\function kind.cchf-route-3(target-kind-tid, host-tid, target-field, target-card, target-key, context-key) [function[kind.wizard-has],<target-key>,<context-key>!is[blank]] :map:flat[function[kind.wizard-current-rows],<target-kind-tid>,<host-tid>,<target-field>,<target-card>,<target-key>,<context-key>] ~[function[kind.cchf-flat],<target-kind-tid>,<host-tid>,<target-field>,<target-card>]
+\function kind.cchf-flat(target-kind-tid, host-tid, target-field, target-card) [function[kind.create-here-save-or-warn-leaf],<target-kind-tid>,<host-tid>,<target-field>,<target-card>] [function[kind.create-here-clone-row],<target-kind-tid>,<host-tid>,<target-field>] [function[kind.create-here-field-edit-items],<target-kind-tid>,<host-tid>,<target-field>]
