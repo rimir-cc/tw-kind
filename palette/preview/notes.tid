@@ -1,0 +1,121 @@
+title: $:/plugins/rimir/kind/palette/preview/notes
+tags: $:/tags/rimir/cascade-palette/side-preview
+type: text/vnd.tiddlywiki
+ca-preview-applies: [<currentTiddler>has[kind.type]]
+ca-preview-name: Notes
+ca-preview-title: Notes
+ca-preview-order: 45
+
+\whitespace trim
+\import $:/plugins/rimir/kind/engine
+
+<!-- Side-preview: "Notes" for the active kind-instance. Shows the
+     instance's OWN content first (its `text` field and/or its Streams
+     note-structure), then every kind-instance that points to it — via the
+     `parent` field (typed children) or any back-navigable ref field —
+     newest-first by `created`. Stream child-nodes are NOT listed as
+     separate notes: they lack `kind.type`, so the `has[kind.type]` gate on
+     the children filter excludes them (they render inside their root's
+     stream block instead).
+
+     Two view modes, both backed by state tiddlers so toggling refreshes
+     the pane in place (the cp side-preview cache survives a state change
+     and dispatches refresh() into the live tree):
+       stream  — all notes stacked, newest at top
+       tabbed  — one pill per note (newest leftmost), active note shown
+
+     Streams render through sq/streams' nodes-list-template, whose
+     double-click in-place editing is pure $action-*/$eventcatcher (no
+     navigator messages), so it works in this body-mounted pane with no
+     <$navigator> ancestor. Streams is a SOFT dependency: the stream block
+     only renders when the plugin is installed AND the note actually has a
+     stream structure (`stream-list`). -->
+
+\function kind.streams-on() [[$:/plugins/sq/streams]is[tiddler]]
+\function kind.note-children(host) [all[tiddlers]has[kind.type]] :filter[get[parent]match<host>]
+\function kind.note-ref-for-source(host, source-tid) [function[kind.qual-back-fields],<host>,<source-tid>] :map:flat[function[kind.referencing-instances],<host>,<source-tid>,<currentTiddler>]
+\function kind.note-ref-referrers(host) [function[kind.qual-source-kinds],<host>] :map:flat[function[kind.note-ref-for-source],<host>,<currentTiddler>]
+\function kind.note-referrers(host) [function[kind.note-children],<host>] [function[kind.note-ref-referrers],<host>] +[!match<host>unique[]sort[created]reverse[]]
+\function kind.note-has-stream(n) [<n>has[stream-list]]
+\function kind.note-has-text(n) [<n>get[text]!is[blank]]
+\function kind.note-has-content(n) [function[kind.note-has-text],<n>] [function[kind.note-has-stream],<n>]
+\function kind.note-caption(n) [<n>get[caption]!is[blank]] ~[<n>]
+
+\procedure notes-mode-pill(value, label)
+<$button class={{{ [<mode>match<value>then[kind-pill kind-pill-on]] ~[[kind-pill]] }}}>
+<$action-setfield $tiddler="$:/state/rimir/kind/notes/mode" text=<<value>>/>
+<$text text=<<label>>/>
+</$button>
+\end
+
+\procedure note-pill(n)
+<$button class={{{ [<n>match<active>then[kind-pill kind-pill-on]] ~[[kind-pill]] }}}>
+<$action-setfield $tiddler="$:/state/rimir/kind/notes/active" text=<<n>>/>
+<$text text={{{ [function[kind.note-caption],<n>] }}}/>
+</$button>
+\end
+
+\procedure render-note-body(n)
+<div class="kind-notes-item">
+<div class="kind-notes-head">
+<$text text={{{ [function[kind.note-caption],<n>] }}}/>
+<%if [<n>match<host>] %><span class="kind-notes-self">this</span><%endif%>
+</div>
+<%if [function[kind.note-has-text],<n>] %>
+<div class="kind-notes-text"><$transclude $tiddler=<<n>> $mode="block"/></div>
+<%endif%>
+<%if [function[kind.streams-on]] :filter[function[kind.note-has-stream],<n>] %>
+<div class="kind-notes-stream"><$tiddler tiddler=<<n>>>{{||$:/plugins/sq/streams/nodes-list-template}}</$tiddler></div>
+<%endif%>
+<%if [function[kind.note-has-content],<n>count[]match[0]] %>
+<div class="kind-view-empty">No content.</div>
+<%endif%>
+</div>
+\end
+
+<$let
+  host=<<currentTiddler>>
+  mode={{{ [[$:/state/rimir/kind/notes/mode]get[text]trim[]] ~[[stream]] }}}
+>
+<%if [<host>get[kind.type]is[blank]] %>
+<div class="kind-view-empty">Not a kind-instance — no <code>kind.type</code> on <code><$text text=<<host>>/></code>.</div>
+<%else%>
+
+<div class="kind-notes-fill">
+
+<div class="kind-ctx-controls">
+<span class="kind-ctx-label">View:</span>
+<span class="kind-ctx-group kind-pill-row">
+<$transclude $variable="notes-mode-pill" value="stream" label="≡ Stream"/>
+<$transclude $variable="notes-mode-pill" value="tabbed" label="▭ Tabbed"/>
+</span>
+</div>
+
+<%if [<mode>match[tabbed]] %>
+
+<$let
+  activeStored={{{ [[$:/state/rimir/kind/notes/active]get[text]trim[]] }}}
+  active={{{ [<host>] [function[kind.note-referrers],<host>] +[match<activeStored>] ~[<host>] }}}
+>
+<div class="kind-notes-tabs kind-pill-row">
+<$transclude $variable="note-pill" n=<<host>>/>
+<$list filter="[function[kind.note-referrers],<host>]" variable="n">
+<$transclude $variable="note-pill" n=<<n>>/>
+</$list>
+</div>
+<$transclude $variable="render-note-body" n=<<active>>/>
+</$let>
+
+<%else%>
+
+<$transclude $variable="render-note-body" n=<<host>>/>
+<$list filter="[function[kind.note-referrers],<host>]" variable="n">
+<$transclude $variable="render-note-body" n=<<n>>/>
+</$list>
+
+<%endif%>
+
+</div>
+
+<%endif%>
+</$let>
