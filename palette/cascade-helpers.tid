@@ -501,12 +501,23 @@ type: text/vnd.tiddlywiki
      current field should auto-open, else empty (~[[]] guarantees presence so
      the caller's :map still fires once and the field row never vanishes). -->
 \function kind.wiz-auto-mode(target-kind-tid, draft-tid, target-key, context-key, step-tid, base-json) [function[kind.wiz-auto-mode-gate],<target-kind-tid>,<draft-tid>,<target-key>,<context-key>,<step-tid>] :map[function[kind.wiz-base-mode],<base-json>] ~[[]]
-\function kind.wiz-auto-mode-gate(target-kind-tid, draft-tid, target-key, context-key, step-tid) [function[kind.wiz-step-single],<step-tid>match[Y]] :map[function[kind.wiz-step-invalid-flag],<target-kind-tid>,<draft-tid>,<target-key>,<context-key>]
+<!-- Auto-open a single-field step when it is INVALID (needs input) OR when it
+     opts in via ca-step-auto-edit (an OPTIONAL field — e.g. tickler's `until` —
+     that should still land in its editor so the user can set it or just ↵ past
+     it, rather than being auto-advanced/skipped because empty is already valid). -->
+\function kind.wiz-auto-mode-gate(target-kind-tid, draft-tid, target-key, context-key, step-tid) [function[kind.wiz-step-single],<step-tid>match[Y]] :map[function[kind.wiz-auto-edit-flag],<target-kind-tid>,<draft-tid>,<target-key>,<context-key>,<step-tid>]
+\function kind.wiz-auto-edit-flag(target-kind-tid, draft-tid, target-key, context-key, step-tid) [<step-tid>get[ca-step-auto-edit]match[yes]then[Y]] [function[kind.wiz-step-invalid-flag],<target-kind-tid>,<draft-tid>,<target-key>,<context-key>] +[first[]]
 \function kind.wiz-step-invalid-flag(target-kind-tid, draft-tid, target-key, context-key) [function[kind.wizard-step-invalid],<target-kind-tid>,<target-key>,<draft-tid>,<context-key>!is[blank]then[Y]]
 \function kind.wiz-step-single(step-tid) [<step-tid>get[ca-step-fields]enlist-input[]count[]match[1]then[Y]]
 \function kind.wiz-base-mode(base-json) [<base-json>regexp[ca-kind":"drill]then[drill]] ~[[edit]]
 
-\function kind.wiz-assemble-field(draft-tid, step-tid, base-json, auto-mode) [<base-json>removesuffix[}]] :map[function[kind.wiz-assemble-2],<draft-tid>,<step-tid>,<auto-mode>,<currentTiddler>]
+<!-- A date step may declare ca-step-date-default (a smart-date / offset expr,
+     e.g. +2w) — inject it as ca-date-default on the field row so the palette
+     seeds the still-blank field when the step's editor auto-opens (pre-fill).
+     Harmless on non-date rows (the palette only reads it for ca-kind:date). -->
+\function kind.wiz-assemble-field(draft-tid, step-tid, base-json, auto-mode) [<base-json>removesuffix[}]] :map[function[kind.wiz-inject-date-default],<step-tid>,<currentTiddler>] :map[function[kind.wiz-assemble-2],<draft-tid>,<step-tid>,<auto-mode>,<currentTiddler>]
+\function kind.wiz-inject-date-default(step-tid, base-open) [<step-tid>get[ca-step-date-default]!is[blank]] :map[function[kind.wiz-date-default-append],<base-open>,<currentTiddler>] ~[<base-open>]
+\function kind.wiz-date-default-append(base-open, expr) [<base-open>addsuffix[,"ca-date-default":"]addsuffix<expr>addsuffix["]]
 \function kind.wiz-assemble-2(draft-tid, step-tid, auto-mode, base-open) [<step-tid>get[ca-step-name]] ~[[Step]] :map[function[kind.wiz-assemble-3],<draft-tid>,<auto-mode>,<base-open>,<currentTiddler>]
 \function kind.wiz-assemble-3(draft-tid, auto-mode, base-open, group) [<auto-mode>!is[blank]] :map[function[kind.wiz-assemble-auto],<draft-tid>,<auto-mode>,<base-open>,<group>] ~[function[kind.wiz-assemble-plain],<base-open>,<group>]
 <!-- Re-appended (= step name), JSON last-key-wins overriding what field-edit-json
@@ -530,7 +541,7 @@ type: text/vnd.tiddlywiki
 \function kind.wiz-auto-advance-build-3(action, token) [function[kind.kv],[ca-name],[Continuing…]] [function[kind.kv],[ca-icon],[➡]] [function[kind.kv],[ca-kind],[leaf]] [function[kind.kv],[ca-after-fire],[keep]] [function[kind.kv],[ca-order],[9990]] [function[kind.kv],[ca-search-skip],[yes]] [function[kind.kv],[ca-auto],[fire]] [function[kind.kv],[ca-auto-token],<token>] [function[kind.kv],[ca-actions],<action>] [function[kind.kv],[ca-hint],[Advancing…]] +[join[,]addprefix[{]addsuffix[}]]
 \function kind.wiz-auto-finish-build(target-kind-tid, host-tid, draft-tid) [function[kind.wiz-finish-action],<target-kind-tid>,<host-tid>,<draft-tid>] :map[function[kind.wiz-auto-finish-build-2],<draft-tid>,<currentTiddler>]
 \function kind.wiz-auto-finish-build-2(draft-tid, action) [function[kind.wizard-cur-idx],<draft-tid>addsuffix[-go]] :map[function[kind.wiz-auto-finish-build-3],<action>,<currentTiddler>]
-\function kind.wiz-auto-finish-build-3(action, token) [function[kind.kv],[ca-name],[Creating…]] [function[kind.kv],[ca-icon],[✅]] [function[kind.kv],[ca-kind],[leaf]] [function[kind.kv],[ca-order],[9990]] [function[kind.kv],[ca-search-skip],[yes]] [function[kind.kv],[ca-auto],[fire]] [function[kind.kv],[ca-auto-token],<token>] [function[kind.kv],[ca-actions],<action>] [function[kind.kv],[ca-hint],[Creating the instance…]] +[join[,]addprefix[{]addsuffix[}]]
+\function kind.wiz-auto-finish-build-3(action, token) [function[kind.kv],[ca-name],[Creating…]] [function[kind.kv],[ca-icon],[✅]] [function[kind.kv],[ca-kind],[leaf]] [function[kind.kv],[ca-order],[9990]] [function[kind.kv],[ca-search-skip],[yes]] [function[kind.kv],[ca-auto],[fire]] [function[kind.kv],[ca-auto-token],<token>] [function[kind.kv],[ca-after-fire],[pop-to-actions]] [function[kind.kv],[ca-actions],<action>] [function[kind.kv],[ca-hint],[Creating the instance…]] +[join[,]addprefix[{]addsuffix[}]]
 \function kind.wizard-back-row(draft-tid) [function[kind.wizard-cur-idx],<draft-tid>compare:integer:gt[1]] :map[function[kind.wizard-back-row-2],<draft-tid>]
 \function kind.wizard-back-row-2(draft-tid) [function[kind.wiz-idx-action],<draft-tid>,[-1]] :map[function[kind.wizard-back-build],<currentTiddler>]
 \function kind.wizard-back-build(action) [function[kind.kv],[ca-name],[← Back]] [function[kind.kv],[ca-icon],[◀]] [function[kind.kv],[ca-kind],[leaf]] [function[kind.kv],[ca-after-fire],[keep]] [function[kind.kv],[ca-order],[9999]] [function[kind.kv],[ca-actions],<action>] [function[kind.kv],[ca-hint],[Return to the previous step]] +[join[,]addprefix[{]addsuffix[}]]
@@ -543,7 +554,7 @@ type: text/vnd.tiddlywiki
 \function kind.wizard-next-build(action) [function[kind.kv],[ca-name],[Next →]] [function[kind.kv],[ca-icon],[▶]] [function[kind.kv],[ca-kind],[leaf]] [function[kind.kv],[ca-after-fire],[keep]] [function[kind.kv],[ca-order],[9990]] [function[kind.kv],[ca-actions],<action>] [function[kind.kv],[ca-hint],[Continue to the next step]] +[join[,]addprefix[{]addsuffix[}]]
 \function kind.wizard-finish-row(target-kind-tid, host-tid, draft-tid, target-key) [function[kind.any-invalid],<target-kind-tid>,<target-key>,<draft-tid>!is[blank]] :map[function[kind.invalid-warning-row-build],<target-kind-tid>,<draft-tid>,<currentTiddler>] ~[function[kind.wizard-finish-leaf],<target-kind-tid>,<host-tid>,<draft-tid>]
 \function kind.wizard-finish-leaf(target-kind-tid, host-tid, draft-tid) [function[kind.wiz-finish-action],<target-kind-tid>,<host-tid>,<draft-tid>] :map[function[kind.wizard-finish-build],<currentTiddler>]
-\function kind.wizard-finish-build(action) [function[kind.kv],[ca-name],[✓ Create]] [function[kind.kv],[ca-icon],[✅]] [function[kind.kv],[ca-kind],[leaf]] [function[kind.kv],[ca-order],[9990]] [function[kind.kv],[ca-actions],<action>] [function[kind.kv],[ca-hint],[Create the instance and close the palette]] +[join[,]addprefix[{]addsuffix[}]]
+\function kind.wizard-finish-build(action) [function[kind.kv],[ca-name],[✓ Create]] [function[kind.kv],[ca-icon],[✅]] [function[kind.kv],[ca-kind],[leaf]] [function[kind.kv],[ca-order],[9990]] [function[kind.kv],[ca-after-fire],[pop-to-actions]] [function[kind.kv],[ca-actions],<action>] [function[kind.kv],[ca-hint],[Create the instance and return to the launching entity]] +[join[,]addprefix[{]addsuffix[}]]
 
 \function kind.wiz-idx-action(draft-tid, delta) [function[kind.wizard-idx-tid],<draft-tid>] :map[function[kind.wiz-idx-action-2],<draft-tid>,<delta>,<currentTiddler>]
 \function kind.wiz-idx-action-2(draft-tid, delta, idx-tid) [function[kind.wizard-cur-idx],<draft-tid>add<delta>] :map[function[kind.wiz-idx-action-3],<idx-tid>,<currentTiddler>]
