@@ -82,6 +82,7 @@ All constraints are blocking — they show up in red in the validator and disabl
 |`$:/config/rimir/kind/instances-overview/edge-fields` |''Instances Overview'': ref-field keys drawn as edges, stored in the `edges` field (titlelist; ships defaulting to `parent`). The field is named `edges`, NOT `fields`: a custom field literally named `fields` collides with the TiddlyWeb sync wire-format's reserved `fields` container and is silently dropped on every browser→server save |
 |`$:/config/rimir/kind/instances-overview/hidden-types` |''Instances Overview'': type keys hidden from the graph (titlelist; empty/absent = all types shown) |
 |`$:/config/rimir/kind/instances-overview/structure` |''Instances Overview'': persisted node positions — data tiddler whose index keys are instance titles and values are `x,y` |
+|`$:/config/rimir/kind/notes-preview/kinds` |''Notes'' side-preview: space-separated list of `kind.type`s to include as related notes (default `note`). Filters BOTH the `parent`-children and ref-referrer paths, so a non-note child (e.g. a conversation that has the instance as `parent`) is not listed. The instance's own content is always shown first regardless of its kind. Add type keys (e.g. `note p-note`) to widen. |
 
 !! State tiddlers
 
@@ -104,6 +105,7 @@ All constraints are blocking — they show up in red in the validator and disabl
 |`$:/state/rimir/kind/cascade-preview-draft/<type-key>` |Manage-kinds side-preview form draft (per type — survives drill-in/out) |
 |`$:/state/rimir/kind/notes/mode` |''Notes'' side-preview layout: `stream` (default) or `tabbed` |
 |`$:/state/rimir/kind/notes/active` |''Notes'' side-preview active tab (note title) in `tabbed` mode; self-heals to the instance when not in the current note set |
+|`$:/state/rimir/kind/notes/text-edit` |''Notes'' side-preview: which empty note (if any) is currently being initialised as a plain-`text` body via the ''✎ Text'' button; while set, that note renders an inline `$edit-text` textarea instead of its init buttons |
 |`$:/state/rimir/kind/cascade-spawn-draft/<parent-tid>/<parent-field>/<ref-type-key>` |Draft for a nested ''+ Create new <X>'' spawn from a ref-field picker (per spawn point — survives drill-in/out and supports arbitrary nesting depth) |
 |`$:/state/rimir/kind/create-here-draft/<host-tid>/<target-field>/<ref-type-key>` |Draft for the ''Create here…'' per-instance action (parallel to the spawn draft, but the back-ref direction is inverted — host title is pre-set on the NEW instance's `<target-field>` rather than written to the host's field). |
 |`$:/state/rimir/kind/__spawn-result` |Transient capture of the just-spawned tiddler title (used by `kind.cascade-spawn-save` to wire into the parent's ref field) |
