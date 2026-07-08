@@ -49,28 +49,11 @@ ca-preview-order: 45
      has this instance as `parent` is NOT shown here; only actual notes are.
      The host's OWN content is always shown first regardless of its kind. -->
 
-\function kind.streams-on() [[$:/plugins/sq/streams]is[tiddler]]
-\function kind.note-kinds() [[$:/config/rimir/kind/notes-preview/kinds]get[text]trim[]!is[blank]] ~[[note]]
-\function kind.note-kind-ok(n) [function[kind.note-kinds]enlist-input[]] :filter[<n>get[kind.type]match<currentTiddler>] +[first[]]
-\function kind.note-children(host) [all[tiddlers]has[kind.type]] :filter[get[parent]match<host>]
-\function kind.note-ref-for-source(host, source-tid) [function[kind.qual-back-fields],<host>,<source-tid>] :map:flat[function[kind.referencing-instances],<host>,<source-tid>,<currentTiddler>]
-\function kind.note-ref-referrers(host) [function[kind.qual-source-kinds],<host>] :map:flat[function[kind.note-ref-for-source],<host>,<currentTiddler>]
-\function kind.note-referrers(host) [function[kind.note-children],<host>] [function[kind.note-ref-referrers],<host>] +[!match<host>unique[]] :filter[function[kind.note-kind-ok],<currentTiddler>] +[sort[created]reverse[]]
-\function kind.note-has-stream(n) [<n>has[stream-list]]
-\function kind.note-has-text(n) [<n>get[text]!is[blank]]
-\function kind.note-has-content(n) [function[kind.note-has-text],<n>] [function[kind.note-has-stream],<n>]
-\function kind.note-empty(n) [function[kind.note-has-content],<n>count[]match[0]]
-\function kind.note-caption(n) [<n>get[caption]!is[blank]] ~[<n>]
+<!-- The referrer-list helpers (kind.note-kinds / -kind-ok / -children /
+     -ref-for-source / -ref-referrers / -referrers), the content helpers, the
+     kind.instance-content renderer, and caption resolution (kind.resolve-ref)
+     all live in engine.tid now — shared with conversation-view + person-view. -->
 
-<!-- render the stream block for a note when it already IS a stream root OR is
-     still empty (so the empty note gets Streams' native "+" add-node button,
-     which creates the first node and drops it straight into edit mode). A
-     note that has text but no stream does NOT get the "+". -->
-\function kind.note-stream-slot(n) [<n>has[stream-list]] [function[kind.note-empty],<n>] +[first[]]
-
-<!-- which note (if any) is currently being edited as a plain text-field body,
-     toggled by the ✎ Text button below; single state, like notes/active. -->
-\function kind.note-text-editing(n) [[$:/state/rimir/kind/notes/text-edit]get[text]trim[]match<n>]
 
 \procedure notes-mode-pill(value, label)
 <$button class={{{ [<mode>match<value>then[kind-pill kind-pill-on]] ~[[kind-pill]] }}}>
@@ -82,40 +65,17 @@ ca-preview-order: 45
 \procedure note-pill(n)
 <$button class={{{ [<n>match<active>then[kind-pill kind-pill-on]] ~[[kind-pill]] }}}>
 <$action-setfield $tiddler="$:/state/rimir/kind/notes/active" text=<<n>>/>
-<$text text={{{ [function[kind.note-caption],<n>] }}}/>
+<$text text={{{ [function[kind.resolve-ref],<n>] }}}/>
 </$button>
 \end
 
 \procedure render-note-body(n)
 <div class="kind-notes-item">
 <div class="kind-notes-head">
-<$text text={{{ [function[kind.note-caption],<n>] }}}/>
+<$text text={{{ [function[kind.resolve-ref],<n>] }}}/>
 <%if [<n>match<host>] %><span class="kind-notes-self">this</span><%endif%>
 </div>
-<%if [function[kind.note-text-editing],<n>] %>
-<!-- text-field editor, started via the ✎ Text button on an empty note -->
-<div class="kind-notes-textedit">
-<$edit-text tiddler=<<n>> field="text" tag="textarea" class="kind-notes-textarea" placeholder="Write note text…"/>
-<div class="kind-notes-textedit-foot">
-<$button class="kind-pill" actions="""<$action-deletetiddler $tiddler="$:/state/rimir/kind/notes/text-edit"/>""">✓ Done</$button>
-</div>
-</div>
-<%else%>
-<%if [function[kind.note-has-text],<n>] %>
-<div class="kind-notes-text"><$transclude $tiddler=<<n>> $mode="block"/></div>
-<%endif%>
-<%if [function[kind.streams-on]] :filter[function[kind.note-stream-slot],<n>] %>
-<div class="kind-notes-stream"><$tiddler tiddler=<<n>>>{{||$:/plugins/sq/streams/nodes-list-template}}</$tiddler></div>
-<%endif%>
-<%if [function[kind.note-empty],<n>] %>
-<!-- empty note: offer the two init paths. Streams' own "+" (rendered just
-     above when installed) is the stream path; this button starts a text body. -->
-<div class="kind-notes-init">
-<span class="kind-notes-init-label">Empty note — start as <%if [function[kind.streams-on]] %>a stream (＋ above) or <%endif%>text:</span>
-<$button class="kind-pill" actions="""<$action-setfield $tiddler="$:/state/rimir/kind/notes/text-edit" text=<<n>>/>""">✎ Text</$button>
-</div>
-<%endif%>
-<%endif%>
+<$transclude $variable="kind.instance-content" n=<<n>>/>
 </div>
 \end
 

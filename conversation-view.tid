@@ -1,0 +1,103 @@
+title: $:/plugins/rimir/kind/conversation-view
+tags: $:/tags/ViewTemplate
+list-after: $:/plugins/rimir/kind/person-view
+type: text/vnd.tiddlywiki
+
+\whitespace trim
+\import $:/plugins/rimir/kind/engine
+
+<!-- "Meeting cockpit" panel rendered when a `conversation` instance is opened
+     in the story river. Three sections:
+       Participants — the conversation's `participants` refs (person/team) as
+                      clickable chips (↗ open / ⇆ split, shared iview chrome).
+       Minutes      — the conversation's OWN editable content (text + sq/streams
+                      structure) via kind.instance-content. The heart of it.
+       Notes        — notes that reference this conversation (kind.note-referrers:
+                      `parent`-children ∪ back-ref referrers, note-kinds only).
+     Click-mode (open/split) + the right-hand detail pane are the SAME shared
+     kind.iview-* chrome as person-view; selection is per-host. No status filter
+     (a conversation is a single event). -->
+
+<%if [<currentTiddler>get[kind.type]match[conversation]] %>
+<$let host=<<currentTiddler>>>
+<$let
+  selected={{{ [function[kind.iview-selected],<host>] }}}
+  split-active={{{ [function[kind.iview-split-active],<host>] }}}
+>
+<div class="kpv-panel">
+
+<!-- top bar: parent context + click-mode toggle -->
+<div class="kpv-filters">
+<$list filter="[<host>get[parent]!is[blank]]" variable="_p">
+<span class="kcv-context">Context: <$transclude $variable="kind.iview-link" t={{{ [<host>get[parent]] }}} host=<<host>>/></span>
+</$list>
+<$transclude $variable="kind.iview-click-toggle"/>
+</div>
+
+<div class={{{ [<split-active>match[yes]then[kpv-split]] ~[[kpv-nosplit]] }}}>
+<div class="kpv-split-main">
+
+<!-- Participants -->
+<$let p-count={{{ [<host>get[participants]enlist-input[]count[]] }}}>
+<div class="kpv-section">
+<div class="kpv-section-title">
+<span class="kpv-section-icon">👥</span>
+<span class="kpv-section-cap">Participants</span>
+<span class="kpv-section-count"><<p-count>></span>
+</div>
+<%if [<p-count>compare:integer:gt[0]] %>
+<div class="kcv-chips">
+<$list filter="[<host>get[participants]enlist-input[]]" variable="p">
+<span class={{{ [<p>match<selected>then[kcv-chip kcv-chip-active]] ~[[kcv-chip]] }}}><span class="kpv-row-icon">{{{ [function[kind.inst-icon],<p>] }}}</span> <$transclude $variable="kind.iview-link" t=<<p>> host=<<host>>/></span>
+</$list>
+</div>
+<%else%>
+<div class="kpv-empty">No participants yet.</div>
+<%endif%>
+</div>
+</$let>
+
+<!-- Minutes: the conversation's own editable content (text + streams) -->
+<div class="kpv-section">
+<div class="kpv-section-title">
+<span class="kpv-section-icon">📝</span>
+<span class="kpv-section-cap">Minutes</span>
+</div>
+<div class="kind-notes-item kcv-minutes">
+<$transclude $variable="kind.instance-content" n=<<host>>/>
+</div>
+</div>
+
+<!-- Notes: referring notes -->
+<$let n-count={{{ [function[kind.note-referrers],<host>count[]] }}}>
+<div class="kpv-section">
+<div class="kpv-section-title">
+<span class="kpv-section-icon">🗒</span>
+<span class="kpv-section-cap">Notes</span>
+<span class="kpv-section-count"><<n-count>></span>
+</div>
+<%if [<n-count>compare:integer:gt[0]] %>
+<div class="kpv-rows">
+<$list filter="[function[kind.note-referrers],<host>]" variable="note">
+<div class={{{ [<note>match<selected>then[kpv-row kpv-row-active]] ~[[kpv-row]] }}}>
+<span class="kpv-row-icon">{{{ [function[kind.inst-icon],<note>] }}}</span>
+<span class="kpv-row-cap"><$transclude $variable="kind.iview-link" t=<<note>> host=<<host>>/></span>
+</div>
+</$list>
+</div>
+<%else%>
+<div class="kpv-empty">No notes reference this conversation yet.</div>
+<%endif%>
+</div>
+</$let>
+
+</div>
+<%if [<split-active>match[yes]] %>
+<$transclude $variable="kind.iview-detail" host=<<host>>/>
+<%endif%>
+</div>
+
+</div>
+</$let>
+</$let>
+<%endif%>

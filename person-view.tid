@@ -1,0 +1,128 @@
+title: $:/plugins/rimir/kind/person-view
+tags: $:/tags/ViewTemplate
+list-after: $:/plugins/rimir/kind/viewtemplate
+type: text/vnd.tiddlywiki
+
+\whitespace trim
+\import $:/plugins/rimir/kind/engine
+\function kpv.status-default(status) [<status>match[archived]then[no]] ~[[yes]]
+\function kpv.status-on(status) [[$:/state/rimir/kind/person-view/status/]addsuffix<status>get[text]!is[blank]] ~[function[kpv.status-default],<status>]
+\function kpv.role-on(bucket) [[$:/state/rimir/kind/person-view/role/]addsuffix<bucket>get[text]!is[blank]] ~[[yes]]
+\function kpv.role-bucket(field-key) [<field-key>match[assignee]then[mine]] [<field-key>match[parent]then[mine]] ~[[involved]]
+\function kpv.status-rank(status) [<status>match[now]then[0]] [<status>match[planned]then[1]] [<status>match[evaluate]then[2]] [<status>match[active]then[3]] [<status>match[done]then[4]] [<status>match[archived]then[5]] ~[[6]]
+\function kpv.type-rank(type-key) [<type-key>match[task]then[0]] [<type-key>match[todo]then[1]] [<type-key>match[conversation]then[2]] [<type-key>match[project]then[3]] [<type-key>match[topic]then[4]] [<type-key>match[note]then[5]] ~[[6]]
+\function kpv.inst-rank(t) [<t>get[status]] :map[function[kpv.status-rank],<currentTiddler>] ~[[6]] +[first[]]
+\function kpv.source-rank(t) [<t>get[kind.type]] :map[function[kpv.type-rank],<currentTiddler>] ~[[6]] +[first[]]
+\function kpv.sections(host) [function[kind.qual-source-kinds],<host>] :sort:integer[function[kpv.source-rank],<currentTiddler>]
+\function kpv.insts-of-source(host, source) [function[kind.qual-back-fields],<host>,<source>] :map:flat[function[kind.referencing-instances],<host>,<source>,<currentTiddler>] +[!is[blank]unique[]]
+\function kpv.fields-for-inst(host, source, inst) [function[kind.qual-back-fields],<host>,<source>] :filter[<inst>get<currentTiddler>enlist-input[]match<host>]
+\function kpv.buckets-for-inst(host, source, inst) [function[kpv.fields-for-inst],<host>,<source>,<inst>] :map[function[kpv.role-bucket],<currentTiddler>] +[unique[]]
+\function kpv.status-visible(inst) [<inst>get[status]] :filter[function[kpv.status-on],<currentTiddler>match[yes]] ~[<inst>!has[status]]
+\function kpv.role-visible(host, source, inst) [function[kpv.buckets-for-inst],<host>,<source>,<inst>] :filter[function[kpv.role-on],<currentTiddler>match[yes]] +[first[]]
+\function kpv.visible-insts(host, source) [function[kpv.insts-of-source],<host>,<source>] :filter[function[kpv.status-visible],<currentTiddler>] :filter[function[kpv.role-visible],<host>,<source>,<currentTiddler>] :sort:integer[function[kpv.inst-rank],<currentTiddler>]
+\function kpv.primary-date(inst) [<inst>get[due-date]] ~[<inst>get[planned-at]] +[first[]]
+
+<!-- Rich related-content panel rendered when a `person` instance is opened in
+     the story river (iteration 1).
+
+     Discovery is fully generic: every kind that points at this person through a
+     ref field (task.assignee/stakeholder, todo.assignee/waiting-for/stakeholder,
+     conversation.participants, project.assignee/stakeholder, topic.stakeholder,
+     note.parent) is surfaced via the engine's back-reference machinery
+     (kind.qual-source-kinds -> kind.qual-back-fields -> kind.referencing-instances).
+     The matching field gives both the role badge AND the Mine/Involved bucket.
+     Role buckets: assignee + note-parent => Mine; everything else => Involved.
+
+     Gated on `person` for now; broadening to other main kinds is a one-line
+     change to the <%if%> below (the rest is type-agnostic). -->
+
+<%if [<currentTiddler>get[kind.type]match[person]] %>
+<$let host=<<currentTiddler>>>
+<$let
+  selected={{{ [function[kind.iview-selected],<host>] }}}
+  split-active={{{ [function[kind.iview-split-active],<host>] }}}
+>
+<div class="kpv-panel">
+
+<!-- filter bars -->
+<div class="kpv-filters">
+<div class="kpv-filter-group">
+<span class="kpv-filter-label">Status</span>
+<$list filter="now planned evaluate active done archived" variable="st">
+<$let on={{{ [function[kpv.status-on],<st>] }}}>
+<$button class={{{ [<on>match[yes]then[kind-pill kind-pill-on]] ~[[kind-pill]] }}} tooltip="toggle status filter">
+<$action-setfield $tiddler={{{ [[$:/state/rimir/kind/person-view/status/]addsuffix<st>] }}} text={{{ [<on>match[yes]then[no]] ~[[yes]] }}}/>
+<<st>>
+</$button>
+</$let>
+</$list>
+</div>
+<div class="kpv-filter-group">
+<span class="kpv-filter-label">Role</span>
+<$list filter="mine involved" variable="rb">
+<$let on={{{ [function[kpv.role-on],<rb>] }}}>
+<$button class={{{ [<on>match[yes]then[kind-pill kind-pill-on]] ~[[kind-pill]] }}} tooltip="toggle role filter">
+<$action-setfield $tiddler={{{ [[$:/state/rimir/kind/person-view/role/]addsuffix<rb>] }}} text={{{ [<on>match[yes]then[no]] ~[[yes]] }}}/>
+<<rb>>
+</$button>
+</$let>
+</$list>
+</div>
+<$transclude $variable="kind.iview-click-toggle"/>
+</div>
+
+<!-- master/detail split: left = sections, right = clicked item's content -->
+<div class={{{ [<split-active>match[yes]then[kpv-split]] ~[[kpv-nosplit]] }}}>
+<div class="kpv-split-main">
+
+<!-- sections, one per referencing kind -->
+<$list filter="[function[kpv.sections],<host>]" variable="source" emptyMessage="<div class='kpv-empty'>Nothing references this person yet.</div>">
+<$let
+  type-key={{{ [<source>get[kind.type]] }}}
+  type-icon={{{ [<source>get[kind.icon]] }}}
+  type-cap={{{ [<source>get[kind.caption]!is[blank]] ~[<source>get[kind.type]] }}}
+  vis-count={{{ [function[kpv.visible-insts],<host>,<source>count[]] }}}
+  coll-state={{{ [[$:/state/rimir/kind/person-view/collapsed/]addsuffix<type-key>] }}}
+>
+<$let collapsed={{{ [<coll-state>get[text]] ~[[no]] }}}>
+<div class={{{ [<vis-count>match[0]then[kpv-section kpv-section-empty]] ~[[kpv-section]] }}}>
+<$button class="kpv-section-head tc-btn-invisible" tooltip="collapse / expand">
+<$action-setfield $tiddler=<<coll-state>> text={{{ [<collapsed>match[yes]then[no]] ~[[yes]] }}}/>
+<span class="kpv-section-caret"><%if [<collapsed>match[yes]] %>▸<%else%>▾<%endif%></span>
+<span class="kpv-section-icon"><<type-icon>></span>
+<span class="kpv-section-cap"><<type-cap>></span>
+<span class="kpv-section-count"><<vis-count>></span>
+</$button>
+<%if [<collapsed>!match[yes]] %>
+<div class="kpv-rows">
+<$list filter="[function[kpv.visible-insts],<host>,<source>]" variable="inst">
+<$let
+  inst-status={{{ [<inst>get[status]] }}}
+  inst-date={{{ [function[kpv.primary-date],<inst>] }}}
+  roles={{{ [function[kpv.fields-for-inst],<host>,<source>,<inst>] :map[function[kind.field-caption],<source>,<currentTiddler>] +[join[, ]] }}}
+>
+<div class={{{ [<inst>match<selected>then[kpv-row kpv-row-active]] ~[[kpv-row]] }}}>
+<span class="kpv-row-icon"><<type-icon>></span>
+<span class="kpv-row-cap"><$transclude $variable="kind.iview-link" t=<<inst>> host=<<host>>/></span>
+<span class="kpv-row-date"><$list filter="[<inst-date>!is[blank]]" variable="_d"><$text text={{{ [<inst-date>format:date[0DD.0MM.YY]] }}}/></$list></span>
+<$list filter="[<inst-status>!is[blank]]" variable="_s"><span class={{{ [<inst-status>addprefix[kpv-status kpv-status-]] }}}><<inst-status>></span></$list>
+<span class="kpv-row-role"><<roles>></span>
+</div>
+</$let>
+</$list>
+</div>
+<%endif%>
+</div>
+</$let>
+</$let>
+</$list>
+</div>
+<%if [<split-active>match[yes]] %>
+<$transclude $variable="kind.iview-detail" host=<<host>>/>
+<%endif%>
+</div>
+
+</div>
+</$let>
+</$let>
+<%endif%>
