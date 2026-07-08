@@ -83,6 +83,8 @@ All constraints are blocking — they show up in red in the validator and disabl
 |`$:/config/rimir/kind/instances-overview/hidden-types` |''Instances Overview'': type keys hidden from the graph (titlelist; empty/absent = all types shown) |
 |`$:/config/rimir/kind/instances-overview/structure` |''Instances Overview'': persisted node positions — data tiddler whose index keys are instance titles and values are `x,y` |
 |`$:/config/rimir/kind/notes-preview/kinds` |''Notes'' side-preview: space-separated list of `kind.type`s to include as related notes (default `note`). Filters BOTH the `parent`-children and ref-referrer paths, so a non-note child (e.g. a conversation that has the instance as `parent`) is not listed. The instance's own content is always shown first regardless of its kind. Add type keys (e.g. `note p-note`) to widen. |
+|`$:/config/rimir/kind/type-selector-enable` |Story-river ''type selector'': `yes`/`no` (default `yes`). When `yes`, tiddlers with no `kind.type` show a ''＋ type'' picker under the title to assign a kind. Typed tiddlers' field-bar type icon is a picker regardless of this setting. |
+|`$:/config/rimir/kind/type-selector-filter` |Story-river ''type selector'': qualifying filter deciding which untyped tiddlers get the ''＋ type'' picker (default `[all[current]!is[system]!has[draft.of]]`). Evaluated with the tiddler as `all[current]`. |
 
 !! State tiddlers
 

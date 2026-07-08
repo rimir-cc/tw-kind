@@ -5,8 +5,17 @@ tags: $:/tags/ViewTemplate
 title: $:/plugins/rimir/kind/viewtemplate
 type: text/vnd.tiddlywiki
 
-<%if [<currentTiddler>has[kind.type]] %>
 <$let target-tid=<<currentTiddler>>>
+<%if [<currentTiddler>has[kind.type]] %>
 <$transclude $tiddler="$:/plugins/rimir/kind/stream-view"/>
-</$let>
+<%else%>
+<!-- Untyped tiddler: offer a "+ type" picker to assign a kind type.
+     Gated by the settings toggle AND a qualifying filter (both configurable
+     in the kind plugin settings). -->
+<$list filter="[subfilter{$:/config/rimir/kind/type-selector-filter}] :filter[[$:/config/rimir/kind/type-selector-enable]get[text]trim[]match[yes]]" variable="_" emptyMessage="">
+<div class="kind-field-bar kind-field-bar-assign">
+<$transclude $tiddler="$:/plugins/rimir/kind/type-picker"/>
+</div>
+</$list>
 <%endif%>
+</$let>

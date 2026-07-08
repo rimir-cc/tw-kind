@@ -41,3 +41,18 @@ Maximum characters per field value shown in the stream-river field bar. Longer v
 Max length:
 <$edit-text tiddler="$:/config/rimir/kind/streambar-max-length" field="text" tag="input" type="number" class="kind-input" default="20" style="width:6em;"/>
 </div>
+
+!! Type selector in the story river
+
+<div style="font-size:0.9em;opacity:0.75;margin-bottom:6px;">
+Tiddlers that already have a kind type show the type icon in the field bar as a <strong>picker</strong> — click it to change or remove the type. Enable the option below to also show a compact <code>＋ type</code> picker under the title of tiddlers that have //no// kind type yet, so you can assign one. The qualifying filter controls which untyped tiddlers get that picker. Only <em>top-level</em> types in the active namespace are offered.
+</div>
+
+<div class="kind-ns-row">
+<$checkbox tiddler="$:/config/rimir/kind/type-selector-enable" field="text" checked="yes" unchecked="no" default="yes"/> Show <code>＋ type</code> on untyped tiddlers
+</div>
+
+<div class="kind-ns-row">
+<strong>Qualifying filter:</strong>
+<$edit-text tiddler="$:/config/rimir/kind/type-selector-filter" field="text" tag="input" class="kind-input" default="[all[current]!is[system]!has[draft.of]]" style="width:24em;"/>
+</div>

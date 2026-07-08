@@ -171,6 +171,37 @@ textarea.kind-input,
 }
 .kind-mode-toggle:hover { opacity: 1; border-color: <<colour tiddler-border>>; }
 
+/* === type picker (set / change / clear kind.type) === */
+.kind-type-picker { display: inline-flex; align-items: center; }
+.kind-type-picker-btn {
+	display: inline-flex;
+	align-items: center;
+	gap: 2px;
+	cursor: pointer;
+	border-radius: 4px;
+	padding: 0 2px;
+}
+.kind-type-picker-btn:hover { background: <<colour tiddler-info-background>>; }
+.kind-type-picker-add {
+	font-size: 0.9em;
+	opacity: 0.7;
+}
+.kind-type-picker-caret {
+	font-size: 0.7em;
+	opacity: 0.5;
+}
+.kind-type-picker-popup {
+	min-width: 240px;
+	max-width: 360px;
+	padding: 8px;
+	border: 1px solid <<colour tiddler-border>>;
+	border-radius: 6px;
+	background: <<colour background>>;
+	box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+}
+/* standalone assign bar on untyped tiddlers — lighter than the full field bar */
+.kind-field-bar-assign { opacity: 0.85; }
+
 /* === single-instance view (card layout) === */
 .kind-view-card {
 	display: flex;
@@ -851,4 +882,223 @@ input.kind-text-arg {
 .kind-graph-modal-danger {
 	color: #c0392b;
 	border-color: #c0392b;
+}
+
+/* === person-view (rich related-content ViewTemplate panel) === */
+.kpv-panel {
+	margin: 6px 0 12px 0;
+}
+.kpv-filters {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 6px 18px;
+	padding-bottom: 8px;
+	margin-bottom: 8px;
+	border-bottom: 1px solid <<colour tiddler-border>>;
+}
+.kpv-filter-group {
+	display: inline-flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 4px;
+}
+.kpv-filter-label {
+	color: <<colour muted-foreground>>;
+	font-size: 0.72em;
+	font-weight: 600;
+	text-transform: uppercase;
+	letter-spacing: 0.04em;
+	margin-right: 2px;
+}
+.kpv-filters .kind-pill { text-transform: capitalize; }
+
+.kpv-section { margin: 2px 0; }
+.kpv-section-empty { opacity: 0.5; }
+.kpv-section-head {
+	display: flex;
+	align-items: center;
+	gap: 6px;
+	width: 100%;
+	text-align: left;
+	padding: 4px 2px;
+	border-radius: 4px;
+}
+.kpv-section-head:hover { background: <<colour tiddler-info-background>>; }
+.kpv-section-caret {
+	width: 1em;
+	color: <<colour muted-foreground>>;
+	flex-shrink: 0;
+}
+.kpv-section-icon { font-size: 1.1em; }
+.kpv-section-cap { font-weight: 600; }
+.kpv-section-count {
+	min-width: 1.4em;
+	padding: 0 6px;
+	border-radius: 9px;
+	background: <<colour tiddler-info-background>>;
+	color: <<colour muted-foreground>>;
+	font-size: 0.78em;
+	text-align: center;
+}
+
+.kpv-rows {
+	display: flex;
+	flex-direction: column;
+	gap: 1px;
+	margin: 2px 0 6px 1.6em;
+}
+.kpv-row {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	padding: 3px 6px;
+	border-radius: 4px;
+}
+.kpv-row:hover { background: <<colour tiddler-info-background>>; }
+.kpv-row-icon { font-size: 1em; flex-shrink: 0; opacity: 0.85; }
+.kpv-row-cap {
+	flex: 1 1 auto;
+	min-width: 0;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+.kpv-row-cap a,
+.kpv-row-cap a:hover,
+.kpv-row-cap a:visited {
+	color: <<colour foreground>>;
+	text-decoration: none;
+	border-bottom: 1px dashed transparent;
+}
+.kpv-row-cap a:hover { border-bottom-color: <<colour muted-foreground>>; }
+.kpv-row-date {
+	flex-shrink: 0;
+	color: <<colour muted-foreground>>;
+	font-size: 0.82em;
+	white-space: nowrap;
+	font-variant-numeric: tabular-nums;
+}
+.kpv-row-role {
+	flex-shrink: 0;
+	color: <<colour muted-foreground>>;
+	font-size: 0.78em;
+	font-style: italic;
+	white-space: nowrap;
+}
+
+/* status chips — distinct hue per status, low-alpha so they read in both themes */
+.kpv-status {
+	display: inline-flex;
+	align-items: center;
+	flex-shrink: 0;
+	padding: 1px 8px;
+	border-radius: 10px;
+	border: 1px solid <<colour tiddler-border>>;
+	background: <<colour tiddler-info-background>>;
+	color: <<colour foreground>>;
+	font-size: 0.76em;
+	white-space: nowrap;
+	text-transform: capitalize;
+}
+.kpv-status-now { background: rgba(220,53,69,0.15); color: #c0392b; border-color: rgba(220,53,69,0.45); font-weight: 600; }
+.kpv-status-planned { background: rgba(13,110,253,0.13); color: #0d6efd; border-color: rgba(13,110,253,0.40); }
+.kpv-status-evaluate { background: rgba(111,66,193,0.14); color: #6f42c1; border-color: rgba(111,66,193,0.40); }
+.kpv-status-active { background: rgba(25,135,84,0.14); color: #198754; border-color: rgba(25,135,84,0.40); }
+.kpv-status-done { background: rgba(108,117,125,0.16); color: #6c757d; border-color: rgba(108,117,125,0.40); }
+.kpv-status-archived { background: transparent; color: <<colour muted-foreground>>; border-color: <<colour tiddler-border>>; }
+
+.kpv-empty {
+	padding: 8px 10px;
+	color: <<colour muted-foreground>>;
+	font-style: italic;
+	font-size: 0.88em;
+}
+
+/* master/detail split: clicking a row in "split" mode fills the right half */
+.kpv-split {
+	display: flex;
+	gap: 16px;
+	align-items: flex-start;
+}
+.kpv-split-main { flex: 1 1 0; min-width: 0; }
+.kpv-split-detail {
+	flex: 1 1 0;
+	min-width: 0;
+	border-left: 1px solid <<colour tiddler-border>>;
+	padding-left: 16px;
+}
+.kpv-detail-head {
+	display: flex;
+	align-items: center;
+	justify-content: flex-end;
+	gap: 8px;
+	margin-bottom: 6px;
+}
+.kpv-detail-open {
+	font-size: 0.82em;
+	color: <<colour muted-foreground>>;
+	text-decoration: none;
+	border: 1px solid <<colour tiddler-border>>;
+	border-radius: 4px;
+	padding: 1px 8px;
+}
+.kpv-detail-open:hover { color: <<colour primary>>; border-color: <<colour primary>>; }
+.kpv-detail-close {
+	font-size: 0.9em;
+	color: <<colour muted-foreground>>;
+	line-height: 1;
+	padding: 2px 7px;
+	border-radius: 4px;
+}
+.kpv-detail-close:hover { color: <<colour foreground>>; background: <<colour tiddler-info-background>>; }
+.kpv-detail-body { font-size: 0.95em; }
+
+.kpv-row-active {
+	background: <<colour tiddler-info-background>>;
+	box-shadow: inset 2px 0 0 <<colour primary>>;
+}
+.kpv-row-active:hover { background: <<colour tiddler-info-background>>; }
+.kpv-row-link {
+	color: <<colour foreground>>;
+	cursor: pointer;
+	text-align: left;
+	padding: 0;
+	border-bottom: 1px dashed transparent;
+}
+.kpv-row-link:hover { border-bottom-color: <<colour muted-foreground>>; }
+
+/* conversation-view: static section titles, context line, participant chips */
+.kpv-section-title {
+	display: flex;
+	align-items: center;
+	gap: 6px;
+	padding: 4px 2px;
+	margin-top: 4px;
+}
+.kcv-context {
+	color: <<colour muted-foreground>>;
+	font-size: 0.85em;
+}
+.kcv-chips {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 6px;
+	margin: 4px 0 6px 1.6em;
+}
+.kcv-chip {
+	display: inline-flex;
+	align-items: center;
+	gap: 4px;
+	padding: 2px 10px;
+	border: 1px solid <<colour tiddler-border>>;
+	border-radius: 12px;
+	background: <<colour tiddler-info-background>>;
+}
+.kcv-chip-active {
+	border-color: <<colour primary>>;
+	box-shadow: inset 0 0 0 1px <<colour primary>>;
+}
+.kcv-minutes {
+	margin: 4px 0 6px 1.6em;
 }

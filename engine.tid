@@ -31,6 +31,7 @@ type: text/vnd.tiddlywiki
 
 \function kind.field-value-count(target-tid, field-key) [<target-tid>get<field-key>enlist-input[]count[]] ~[[0]]
 \function kind.field-value-length(target-tid, field-key) [<target-tid>get<field-key>length[]] ~[[0]]
+\function kind.field-display-list(type-tid, target-tid, field-key) [function[kind.field-cardinality],<type-tid>,<field-key>match[multi]] :map:flat[<target-tid>get<field-key>enlist-input[]] ~[<target-tid>get<field-key>] :map[function[kind.resolve-ref],<currentTiddler>] +[!is[blank]]
 
 \function kind.is-ref-typed(type-tid, field-key) [function[kind.field-typed],<type-tid>,<field-key>match[ref]]
 \function kind.is-enum-typed(type-tid, field-key) [function[kind.field-typed],<type-tid>,<field-key>match[enum]]
@@ -118,6 +119,38 @@ type: text/vnd.tiddlywiki
 \function kind.resolve-ref(val) [<val>get[caption]!is[blank]] ~[<val>]
 
 \function kind.stream-fields(type-tid) [<type-tid>get[kind.stream-fields]enlist-input[]]
+
+<!-- instance content rendering (text body + sq/streams structure, editable).
+     Shared by the cascade-palette Notes side-preview and the person-view
+     detail pane. Streams is a SOFT dep (kind.streams-on). The `notes/text-edit`
+     state title is shared across both surfaces (only one inline text-edit at a
+     time, which is fine). See kind.instance-content procedure below. -->
+\function kind.streams-on() [[$:/plugins/sq/streams]is[tiddler]]
+\function kind.note-has-stream(n) [<n>has[stream-list]]
+\function kind.note-has-text(n) [<n>get[text]!is[blank]]
+\function kind.note-has-content(n) [function[kind.note-has-text],<n>] [function[kind.note-has-stream],<n>]
+\function kind.note-empty(n) [function[kind.note-has-content],<n>count[]match[0]]
+\function kind.note-stream-slot(n) [<n>has[stream-list]] [function[kind.note-empty],<n>] +[first[]]
+\function kind.note-text-editing(n) [[$:/state/rimir/kind/notes/text-edit]get[text]trim[]match<n>]
+
+<!-- referring-note discovery (children via `parent` ∪ back-nav ref referrers,
+     restricted to configured note-kinds, newest first). Shared by the Notes
+     side-preview and conversation-view. -->
+\function kind.note-kinds() [[$:/config/rimir/kind/notes-preview/kinds]get[text]trim[]!is[blank]] ~[[note]]
+\function kind.note-kind-ok(n) [function[kind.note-kinds]enlist-input[]] :filter[<n>get[kind.type]match<currentTiddler>] +[first[]]
+\function kind.note-children(host) [all[tiddlers]has[kind.type]] :filter[get[parent]match<host>]
+\function kind.note-ref-for-source(host, source-tid) [function[kind.qual-back-fields],<host>,<source-tid>] :map:flat[function[kind.referencing-instances],<host>,<source-tid>,<currentTiddler>]
+\function kind.note-ref-referrers(host) [function[kind.qual-source-kinds],<host>] :map:flat[function[kind.note-ref-for-source],<host>,<currentTiddler>]
+\function kind.note-referrers(host) [function[kind.note-children],<host>] [function[kind.note-ref-referrers],<host>] +[!match<host>unique[]] :filter[function[kind.note-kind-ok],<currentTiddler>] +[sort[created]reverse[]]
+\function kind.inst-icon(inst) [<inst>get[kind.type]] :map[function[kind.locate-type],<currentTiddler>] :map[<currentTiddler>get[kind.icon]] +[first[]]
+
+<!-- instance-view chrome shared by person-view + conversation-view: a global
+     "Click" mode (open = navigate to story river / split = show in a right-hand
+     detail pane) and a PER-HOST selection. State resets on reload (session). -->
+\function kind.iview-click-mode() [[$:/state/rimir/kind/iview/click-mode]get[text]trim[]] ~[[open]]
+\function kind.iview-sel-state(host) [[$:/state/rimir/kind/iview/selected/]addsuffix<host>]
+\function kind.iview-selected(host) [[$:/state/rimir/kind/iview/selected/]addsuffix<host>get[text]trim[]]
+\function kind.iview-split-active(host) [function[kind.iview-click-mode]match[split]] :filter[function[kind.iview-selected],<host>!is[blank]] +[first[]then[yes]] ~[[no]]
 
 \function kind.value-of(tid, field-key) [<tid>get<field-key>]
 \function kind.same-value-of(other-tid, target-tid, field-key, type-tid) [function[kind.is-multi-counted],<type-tid>,<field-key>!is[blank]] :map:flat[function[kind.multi-result-with-sentinel],<target-tid>,<other-tid>,<field-key>] ~[function[kind.same-whole-value],<target-tid>,<other-tid>,<field-key>] -[[__kind-no-share__]] +[first[]]
@@ -244,4 +277,90 @@ type: text/vnd.tiddlywiki
 <$action-setfield $tiddler=<<target-tid>> $field=<<field-key>> $value={{{ [function[kind.compute-default],<type-tid>,<field-key>,<target-tid>!is[blank]] ~[<target-tid>get<field-key>] +[first[]] }}}/>
 </$list>
 </$list>
+\end
+
+\procedure kind.instance-content(n)
+<!-- Renders instance <<n>>'s editable own-content: the `text` body and/or its
+     sq/streams structure, with empty-state init affordances. Streams render via
+     sq/streams' nodes-list-template, whose in-place double-click editing is pure
+     $action-*/$eventcatcher (no navigator messages), so it works wherever this
+     is mounted (story-river ViewTemplate, body-mounted cp side-preview, etc.).
+     For an empty instance: Streams' OWN "+" button (rendered by the template
+     when installed) starts a stream; the "✎ Text" button starts a text body by
+     setting $:/state/rimir/kind/notes/text-edit. Shared by notes.tid + person-view. -->
+<%if [function[kind.note-text-editing],<n>] %>
+<div class="kind-notes-textedit">
+<$edit-text tiddler=<<n>> field="text" tag="textarea" class="kind-notes-textarea" placeholder="Write text…"/>
+<div class="kind-notes-textedit-foot">
+<$button class="kind-pill" actions="""<$action-deletetiddler $tiddler="$:/state/rimir/kind/notes/text-edit"/>""">✓ Done</$button>
+</div>
+</div>
+<%else%>
+<%if [function[kind.note-has-text],<n>] %>
+<div class="kind-notes-text"><$transclude $tiddler=<<n>> $mode="block"/></div>
+<%endif%>
+<%if [function[kind.streams-on]] :filter[function[kind.note-stream-slot],<n>] %>
+<div class="kind-notes-stream"><$tiddler tiddler=<<n>>>{{||$:/plugins/sq/streams/nodes-list-template}}</$tiddler></div>
+<%endif%>
+<%if [function[kind.note-empty],<n>] %>
+<div class="kind-notes-init">
+<span class="kind-notes-init-label">Empty — start as <%if [function[kind.streams-on]] %>a stream (＋ above) or <%endif%>text:</span>
+<$button class="kind-pill" actions="""<$action-setfield $tiddler="$:/state/rimir/kind/notes/text-edit" text=<<n>>/>""">✎ Text</$button>
+</div>
+<%endif%>
+<%endif%>
+\end
+
+\procedure kind.iview-click-toggle()
+<!-- the global open/split mode toggle pills (one filter-group) -->
+<div class="kpv-filter-group">
+<span class="kpv-filter-label">Click</span>
+<$list filter="open split" variable="cm">
+<$button class={{{ [function[kind.iview-click-mode]match<cm>then[kind-pill kind-pill-on]] ~[[kind-pill]] }}} tooltip="how clicking an item behaves">
+<$action-setfield $tiddler="$:/state/rimir/kind/iview/click-mode" text=<<cm>>/>
+<%if [<cm>match[open]] %>↗ open<%else%>⇆ split<%endif%>
+</$button>
+</$list>
+</div>
+\end
+
+\procedure kind.iview-link(t, host)
+<!-- a clickable target caption: in open mode a normal link; in split mode a
+     button that pins <<t>> into this host's detail pane. -->
+<$let cap-text={{{ [<t>get[caption]!is[blank]] ~[<t>] }}}>
+<%if [function[kind.iview-click-mode]match[split]] %>
+<$button class="kpv-row-link tc-btn-invisible">
+<$action-setfield $tiddler={{{ [function[kind.iview-sel-state],<host>] }}} text=<<t>>/>
+<$text text=<<cap-text>>/>
+</$button>
+<%else%>
+<$link to=<<t>>><$text text=<<cap-text>>/></$link>
+<%endif%>
+</$let>
+\end
+
+\procedure kind.iview-detail(host)
+<!-- right-hand detail pane for the host's currently-selected item: the kind
+     read-only field card + its editable text/streams content, plus open/close. -->
+<$let selected={{{ [function[kind.iview-selected],<host>] }}} sel-state={{{ [function[kind.iview-sel-state],<host>] }}}>
+<div class="kpv-split-detail">
+<div class="kpv-detail-head">
+<$link to=<<selected>> class="kpv-detail-open" tooltip="open in story river">↗ open</$link>
+<$button class="kpv-detail-close tc-btn-invisible" tooltip="close detail">
+<$action-deletetiddler $tiddler=<<sel-state>>/>
+✕
+</$button>
+</div>
+<div class="kpv-detail-body">
+<$tiddler tiddler=<<selected>>>
+<$let target-tid=<<selected>>>
+<$transclude $tiddler="$:/plugins/rimir/kind/view"/>
+</$let>
+<div class="kind-notes-item kpv-detail-content">
+<$transclude $variable="kind.instance-content" n=<<selected>>/>
+</div>
+</$tiddler>
+</div>
+</div>
+</$let>
 \end

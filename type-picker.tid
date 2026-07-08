@@ -1,0 +1,60 @@
+title: $:/plugins/rimir/kind/type-picker
+type: text/vnd.tiddlywiki
+
+\whitespace trim
+\import $:/plugins/rimir/kind/engine
+
+<!-- Kind type picker: a button that opens a popup to set / change / clear
+     the kind.type of target-tid. Reused by the story-river field bar
+     (stream-view) and by viewtemplate for untyped tiddlers, so both places
+     share one implementation.
+
+     Required vars in scope:
+       target-tid — the tiddler whose kind.type is set
+-->
+
+<$let
+  active-ns={{{ [function[kind.active-ns]] }}}
+  cur-key={{{ [<target-tid>get[kind.type]] }}}
+  picker-state={{{ [<target-tid>addsuffix[/kind-type-picker]] }}}
+>
+<$let cur-type-tid={{{ [function[kind.locate-type],<cur-key>] }}}>
+
+<span class="kind-type-picker tc-popup-keep">
+<$button popup=<<picker-state>> class="tc-btn-invisible kind-type-picker-btn" tooltip={{{ [<cur-type-tid>get[kind.caption]!is[blank]] ~[<cur-key>!is[blank]] ~[[Assign a kind type]] }}}>
+<%if [<cur-key>!is[blank]] %>
+<span class="kind-field-bar-icon"><$text text={{{ [<cur-type-tid>get[kind.icon]] }}}/></span>
+<%else%>
+<span class="kind-type-picker-add">＋ type</span>
+<%endif%>
+<span class="kind-type-picker-caret">▾</span>
+</$button>
+
+<$reveal state=<<picker-state>> type="popup" position="belowleft" animate="yes" class="tc-popup-keep">
+<div class="kind-type-picker-popup">
+<div class="kind-editor-label" style="margin-bottom:6px;">Select kind type</div>
+<span class="kind-pill-row">
+<$list filter="[function[kind.top-level-types]] :filter[function[kind.belongs-to-ns],<active-ns>] +[sort[kind.type]]" variable="t">
+<$let t-key={{{ [<t>get[kind.type]] }}}>
+<$button class={{{ [<t-key>match<cur-key>then[kind-pill kind-pill-on]] ~[[kind-pill]] }}}>
+<$action-setfield $tiddler=<<target-tid>> $field="kind.type" $value=<<t-key>>/>
+<$action-deletetiddler $tiddler=<<picker-state>>/>
+<$text text={{{ [<t>get[kind.icon]] }}}/> <$text text={{{ [<t>get[kind.caption]!is[blank]] ~[<t-key>] }}}/>
+</$button>
+</$let>
+</$list>
+</span>
+<%if [<cur-key>!is[blank]] %>
+<div style="margin-top:6px;">
+<$button class="kind-pill kind-pill-x">
+<$action-deletefield $tiddler=<<target-tid>> $field="kind.type"/>
+<$action-deletetiddler $tiddler=<<picker-state>>/>
+✕ Remove type
+</$button>
+</div>
+<%endif%>
+</div>
+</$reveal>
+</span>
+</$let>
+</$let>

@@ -22,7 +22,8 @@ type: text/vnd.tiddlywiki
 * ''Discovery'' — `[all[shadows+tiddlers]has[kind.type]has[kind.fields]]` finds all type tiddlers
 * ''Namespaces'' — types declare `kind.namespaces`, the active scope picks one (or all)
 * ''Editor'' — 2-column form (label + input), table-style, with live validation messages
-* ''Field Bar'' — auto-rendered in the stream river on every instance; configurable per type; self-disabling
+* ''Field Bar'' — auto-rendered in the stream river on every instance; configurable per type; the leading type icon always shows (even with no stream-fields) so the type stays changeable
+* ''Type picker'' — the field bar's type icon is a button (`type-picker.tid`) that opens a popup to change the kind or remove it (top-level kinds of the active namespace); untyped tiddlers optionally show a ''＋ type'' assign dropdown under the title, gated by `$:/config/rimir/kind/type-selector-enable` (default `yes`) + a qualifying filter `$:/config/rimir/kind/type-selector-filter` (default `[all[current]!is[system]!has[draft.of]]`)
 * ''Creator'' — pick a type, fill fields, click Create; title computed from `kind.title-formula`
 * ''Validator'' — wiki-wide report of constraint violations
 * ''Type-builder'' — structured editor for type metadata + JSON textarea for fields, with live preview

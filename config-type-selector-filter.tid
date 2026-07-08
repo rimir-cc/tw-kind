@@ -1,0 +1,3 @@
+title: $:/config/rimir/kind/type-selector-filter
+
+[all[current]!is[system]!has[draft.of]]

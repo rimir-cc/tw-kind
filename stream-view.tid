@@ -20,7 +20,6 @@ type: text/vnd.tiddlywiki
 <!-- no kind.type — nothing to show -->
 <%else%>
 <$let type-tid={{{ [function[kind.locate-type],<type-key>] }}}>
-<$list filter="[function[kind.stream-fields],<type-tid>limit[1]]" variable="_first">
 
 <$let
   mode-state={{{ [[$:/state/rimir/kind/edit-mode/]addsuffix<target-tid>] }}}
@@ -28,9 +27,9 @@ type: text/vnd.tiddlywiki
 >
 <div class="kind-field-bar">
 
-<span class="kind-field-bar-icon" title={{{ [<type-tid>get[kind.caption]!is[blank]] ~[<type-key>] }}}>
-<$text text={{{ [<type-tid>get[kind.icon]] }}}/>
-</span>
+<!-- Leading type pill = picker: click to change or remove the kind type.
+     Always shown when typed, even if the type has no stream-fields. -->
+<$transclude $tiddler="$:/plugins/rimir/kind/type-picker"/>
 
 <$list filter="[function[kind.stream-fields],<type-tid>]" variable="field-key">
 <!-- Stable per row (no dependency on the target field's value):
@@ -48,7 +47,7 @@ type: text/vnd.tiddlywiki
 <!-- inline edit mode: render field-input directly in the cell -->
 <span class="kind-field-cell">
 <span class="kind-field-cell-icon"><<field-icon>></span>
-<$transclude $tiddler="$:/plugins/rimir/kind/field-input" inline="yes"/>
+<$let inline="yes"><$transclude $tiddler="$:/plugins/rimir/kind/field-input"/></$let>
 </span>
 <%else%>
 <!-- popup edit mode: click cell → field-input in popup -->
@@ -56,7 +55,7 @@ type: text/vnd.tiddlywiki
 <$button popup=<<popup-state>> class="tc-btn-invisible" tooltip=<<field-cap>>>
 <span class="kind-field-cell-icon"><<field-icon>></span>
 <$let
-  display-val={{{ [<target-tid>get<field-key>enlist-input[]] :map[function[kind.resolve-ref],<currentTiddler>] +[join[, ]] }}}
+  display-val={{{ [function[kind.field-display-list],<type-tid>,<target-tid>,<field-key>] +[join[, ]] }}}
   truncated={{{ [function[kind.display],<display-val>,<bar-max-length>] }}}
 >
  <<truncated>>
@@ -66,13 +65,15 @@ type: text/vnd.tiddlywiki
 <$reveal state=<<popup-state>> type="popup" position="belowleft" animate="yes" class="tc-popup-keep">
 <div class="kind-field-popup">
 <div class="kind-editor-label" style="margin-bottom:6px;"><<field-icon>> <<field-cap>></div>
-<$transclude $tiddler="$:/plugins/rimir/kind/field-input"/>
+<$let autofocus="yes"><$transclude $tiddler="$:/plugins/rimir/kind/field-input"/></$let>
 </div>
 </$reveal>
 <%endif%>
 </$let>
 </$list>
 
+<!-- mode toggle only when the type defines stream-fields -->
+<$list filter="[function[kind.stream-fields],<type-tid>limit[1]]" variable="_first">
 <$button class="kind-mode-toggle" tooltip="toggle inline/popup edit mode">
 <%if [<edit-mode>match[inline]] %>
 <$action-setfield $tiddler=<<mode-state>> text="popup"/>
@@ -82,11 +83,10 @@ type: text/vnd.tiddlywiki
 ✎ inline
 <%endif%>
 </$button>
+</$list>
 
 </div>
 </$let>
-
-</$list>
 </$let>
 <%endif%>
 </$let>
