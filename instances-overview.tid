@@ -28,6 +28,9 @@ A graph of every [[kind|$:/plugins/rimir/kind]] instance in the wiki. Nodes star
 </$reveal>
 </span>
 <label title="On: keep the current zoom/pan while searching and grey out non-matches, so you can see where matches sit in the big picture. Off: shrink the graph to just the matches and refit."><$checkbox tiddler="$:/config/rimir/kind/instances-overview/search-mode" field="text" checked="keep" unchecked="fit" default="fit"/> keep view &amp; highlight</label>
+</div>
+
+<div class="kg-controls">
 <span style="opacity:0.7;">Edges:</span>
 <$list filter="[function[kg.ref-fields]]" variable="_rf">
 <label><$checkbox tiddler="$:/config/rimir/kind/instances-overview/edge-fields" listField="edges" checked=<<_rf>>/> <$text text=<<_rf>>/></label>

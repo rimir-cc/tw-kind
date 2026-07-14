@@ -4,6 +4,7 @@ type: text/vnd.tiddlywiki
 ! Changelog
 
 |!Version |!Date |!Changes |
+|v0.1.83 |2026-07-14 |''Instances Overview'' layout: the ''Edges'' controls now sit on their own row (own `.kg-controls` block) instead of trailing the search row, matching the ''Types'' row. |
 |v0.1.82 |2026-07-14 |''Instances Overview'' search gains a ''keep view & highlight'' mode: instead of shrinking the graph to just the matches and refitting (still the default), it holds the current zoom/pan and greys out non-matches so you can see //where// matches sit in the whole picture (persisted to `$:/config/rimir/kind/instances-overview/search-mode`). Added a clear (✕) button next to the search box. Search wiring now lives in the shared `kg-graph` renderer (new `searchText`/`searchMode` params), so the Context preview is unaffected. |
 |v0.1.81 |2026-07-08 |New per-kind story-river cockpit ViewTemplates: ''person-view'' (instances referencing the person, grouped/ranked, with role + status filters) and ''conversation-view'' (Participants · editable Minutes · Notes). Shared notes/content helpers moved from `palette/preview/notes.tid` into `engine.tid`. |
 |v0.1.80 |2026-07-08 |Story-river kind-type picker: click the field-bar type icon to change/remove the type; untyped tiddlers get an optional ''＋ type'' assign dropdown (settings toggle + qualifying filter). Fixes: single-value fields with spaces no longer split on a comma in the bar; popup field editor now autofocuses (and inline-mode validation now engages). |
