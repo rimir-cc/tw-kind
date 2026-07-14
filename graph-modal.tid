@@ -97,7 +97,7 @@ Cancel
 
 <div class="kind-graph-modal-footer">
 <$button disabled={{{ [function[kind.any-invalid],<type-tid>,<type-key>,<target-tid>!is[blank]then[yes]] }}}>
-<$transclude $variable="kind.finalize-create" kind-tid=<<type-tid>> kind-type-key=<<type-key>> draft-tid=<<target-tid>> savetitle="$:/state/rimir/kind/__graph-created"/>
+<$transclude $variable="kind.finalize-create" kind-tid=<<type-tid>> kind-type-key=<<type-key>> draft-tid=<<target-tid>> savetitle="$:/state/rimir/kind/__graph-created" after-create={{{ [<gm-state>get[after-create]] }}}/>
 <$action-deletetiddler $tiddler=<<target-tid>>/>
 <$action-deletetiddler $tiddler=<<gm-state>>/>
 Create

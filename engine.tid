@@ -241,7 +241,7 @@ type: text/vnd.tiddlywiki
 <$action-setfield $tiddler="$:/state/rimir/kind/graph-modal" kind-tid=<<child-type-tid>> host=<<host-tid>>/>
 \end
 
-\procedure kind.finalize-create(kind-tid, kind-type-key, draft-tid, savetitle)
+\procedure kind.finalize-create(kind-tid, kind-type-key, draft-tid, savetitle, after-create)
 <!-- Shared "create the new instance" tail used by every save path (creator,
      cascade-save-instance, cascade-spawn-save, cascade-create-here). Computes
      the title via the kind's title-formula, creates the tiddler from the draft
@@ -257,9 +257,23 @@ type: text/vnd.tiddlywiki
      refreshChildren() call (core action-createtiddler.js) — both fired before
      the child action chain runs. A sibling read of {{{[<savetitle>get[text]]}}}
      is evaluated at render time (the change event is async), so it sees a stale
-     or empty savetitle and the auto-child's parent comes out wrong. -->
+     or empty savetitle and the auto-child's parent comes out wrong.
+
+     Optional `after-create`: the NAME of a procedure (a global macro, so it is in
+     scope wherever the save runs) invoked — also nested inside the createtiddler —
+     after apply-auto-children, with <<createTiddler-title>> in scope. Lets a caller
+     react to the FRESH new title without hitting the async-savetitle staleness. It
+     MUST be a `$variable` transclude, not a `$tiddler` one: core action-createtiddler
+     calls `refreshChildren()` with no argument, and a title-based transclude child
+     then dereferences `undefined[transcludeTitle]` and throws (a `$variable`
+     transclude short-circuits before that — which is why apply-auto-children is
+     also `$variable`). Used by rimir/dashboard to drop a tile for the new instance
+     into the same group; empty = no-op, so every existing caller is unaffected. -->
 <$action-createtiddler $basetitle={{{ [function[kind.eval-title],<kind-tid>,<draft-tid>] }}} $template=<<draft-tid>> $savetitle=<<savetitle>> kind.type=<<kind-type-key>>>
 <$transclude $variable="kind.apply-auto-children" parent-tid=<<createTiddler-title>> type-tid=<<kind-tid>>/>
+<$list filter="[<after-create>!is[blank]]" variable="_fac">
+<$transclude $variable=<<after-create>>/>
+</$list>
 </$action-createtiddler>
 \end
 

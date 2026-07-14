@@ -17,6 +17,15 @@ type: text/vnd.tiddlywiki
      Reads from the caller's scope (set an ancestor <$let> before transcluding):
        ea-entity        the instance tiddler to act on (default <currentTiddler>)
        ea-allow-delete  "yes" to include the Delete action (default "no")
+       ea-after-create  optional NAME of a (global) procedure to invoke inside
+                        kind.finalize-create — with <<createTiddler-title>> in
+                        scope — after an "Add child" create; stored on the shared
+                        graph-modal state as `after-create`. rimir/dashboard uses
+                        this to drop a tile for the new instance.
+       ea-ctx-a / ea-ctx-b  two opaque context values stored alongside (on the
+                        modal state as `ctx-a` / `ctx-b`) for the after-create
+                        hook to read. dashboard passes the dashboard id + the
+                        source tile's group here.
 
      Imports the engine + graph so the kind.* / kg.* functions resolve when this
      is transcluded from a widget tree that doesn't inherit the page macros
@@ -55,6 +64,9 @@ type: text/vnd.tiddlywiki
 <$list filter="[function[kg.child-kinds],<ea-type-key>]" variable="ea-ck">
 <$button class="kg-tip-btn" tooltip={{{ [<ea-ck>get[kind.type]addprefix[Create a new ]addsuffix[ under this entity]] }}}>
 <$transclude $variable="kind.gm-add-child" child-type-tid=<<ea-ck>> host-tid=<<ea-entity>>/>
+<$list filter="[<ea-after-create>!is[blank]]" variable="_eac">
+<$action-setfield $tiddler="$:/state/rimir/kind/graph-modal" after-create=<<ea-after-create>> ctx-a=<<ea-ctx-a>> ctx-b=<<ea-ctx-b>>/>
+</$list>
 <$text text={{{ [<ea-ck>get[kind.icon]] }}}/> <$text text={{{ [<ea-ck>get[kind.caption]!is[blank]] ~[<ea-ck>get[kind.type]] }}}/>
 </$button>
 </$list>

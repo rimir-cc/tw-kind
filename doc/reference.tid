@@ -181,6 +181,7 @@ In ''both'' layouts ''Enter'' on a row commits it as the field value AND finalis
 |`kind.apply-defaults-to(type-tid, target-tid)` |Stamps `kind.type` + walks all defaultable fields and writes `compute-default` onto `target-tid` for fields currently blank (idempotent — leaves user-set fields alone). Used by every create path before save, AND re-fired from field-input action chains after each ref/enum change so dependent defaults populate. |
 |`kind.force-apply-defaults(type-tid, target-tid)` |Like `apply-defaults-to` but unconditional. Used by the //Reset to defaults// flow. |
 |`kind.apply-auto-children(parent-tid, type-tid)` |Walks `type-tid.kind.auto-children` and materialises each entry as a new tiddler with `parent: <<parent-tid>>` + per-entry `fields` overrides + the child kind's own field defaults. Transcluded by `kind.finalize-create` //nested inside// its `$action-createtiddler`, with `parent-tid` taken from `<<createTiddler-title>>` (the real post-uniquification title — a sibling read of `$savetitle` is evaluated at render time and sees a stale value, so the nesting is load-bearing). Entries pointing at non-existent kinds are skipped silently. Not recursive. |
+|`kind.finalize-create(kind-tid, kind-type-key, draft-tid, savetitle[, after-create])` |The shared create tail (title-formula → `$action-createtiddler` → apply-auto-children). Optional 5th arg `after-create` = the //name of a global procedure// invoked //inside// the createtiddler (so `<<createTiddler-title>>` is the fresh new title, dodging the async-savetitle staleness). Must be a `$variable` transclude — core `action-createtiddler` calls `refreshChildren()` with no argument, and a `$tiddler` transclude child would then throw. Empty = no-op. Used by rimir/dashboard to drop a tile for the new instance. |
 |`kind.gm-edit(entity-tid)` |Action procedure — opens the shared graph-modal (`$:/plugins/rimir/kind/graph-modal`, `$:/tags/AboveStory`) in EDIT mode for an instance. The single source for "edit this entity", used by the Instances Overview graph tooltip //and// external surfaces (e.g. rimir/dashboard). |
 |`kind.gm-delete(entity-tid)` |Action procedure — opens the graph-modal in DELETE-confirm mode (the modal re-checks for `parent`-field children before allowing it). |
 |`kind.gm-add-child(child-type-tid, host-tid)` |Action procedure — seeds `…/graph-modal/draft` with `parent = host` + the child kind's defaults and opens the modal in create mode (reusing the editor + `kind.finalize-create`). |
@@ -192,8 +193,10 @@ A self-contained, transcludable tiddler that renders the //edit// + //Add child/
 |!Variable |!Meaning |
 |`ea-entity` |The instance tiddler to act on (default `<currentTiddler>`) |
 |`ea-allow-delete` |`yes` to also render the //delete// action (default `no`) |
+|`ea-after-create` |Optional name of a global procedure to run after an //Add child// create (via `kind.finalize-create`'s `after-create`), stored on the modal state as `after-create` |
+|`ea-ctx-a` / `ea-ctx-b` |Two opaque context values stored on the modal state as `ctx-a` / `ctx-b` for the after-create procedure to read |
 
-Renders nothing when `ea-entity` has no `kind.type`. Consumed by [[rimir/dashboard|$:/plugins/rimir/dashboard]] to put entity edit / add-child into a kind-instance tile's menu.
+Renders nothing when `ea-entity` has no `kind.type`. Consumed by [[rimir/dashboard|$:/plugins/rimir/dashboard]] to put entity edit / add-child into a kind-instance tile's menu — and, via `ea-after-create` + `ea-ctx-*`, to drop a dashboard tile for the newly-created child into the same group as the source tile.
 
 </$fill>
 </$transclude>
