@@ -5,12 +5,14 @@ type: text/vnd.tiddlywiki
 
 ! 🕸️ Kind: Instances Overview
 
-A graph of every [[kind|$:/plugins/rimir/kind]] instance in the wiki. Nodes start on a stable grid; **drag a node to reposition it — that position is saved** (to `$:/config/rimir/kind/instances-overview/structure`) and restored on reload. Double-click a node to open it, hover for a tooltip — the tooltip offers ''edit'' (live field editor), ''delete'' (with confirmation; disabled while the node still has children) and ''Add child'' buttons for every kind whose `parent` field accepts this node's type, opening a create form with the parent pre-filled. Tick edge fields to draw those relationships; untick a type to hide its instances.
+A graph of every [[kind|$:/plugins/rimir/kind]] instance in the wiki. Nodes start on a stable grid; **drag a node to reposition it — that position is saved** (to `$:/config/rimir/kind/instances-overview/structure`) and restored on reload. Double-click a node to open it, hover for a tooltip — the tooltip offers ''edit'' (live field editor), ''delete'' (with confirmation; disabled while the node still has children) and ''Add child'' buttons for every kind whose `parent` field accepts this node's type, opening a create form with the parent pre-filled. Tick edge fields to draw those relationships; untick a type to hide its instances. Type in the search box to narrow to matching nodes: by default the graph shrinks to just the matches and refits, but tick **keep view &amp; highlight** to instead hold the current zoom/pan and merely grey out non-matches — so you can see //where// the matches sit in the whole picture.
 
 <style>
 .kg-controls { display:flex; gap:14px; align-items:center; flex-wrap:wrap; margin-bottom:6px; }
 .kg-controls label { white-space:nowrap; cursor:pointer; }
 .kg-controls .kg-legend { display:inline-flex; align-items:center; gap:5px; font-weight:500; background:none; border:none; padding:0; cursor:pointer; }
+.kg-controls .kg-search { flex:0 0 240px; display:inline-flex; align-items:center; gap:2px; }
+.kg-controls .kg-search input { flex:1 1 auto; min-width:0; }
 </style>
 
 <$let
@@ -19,7 +21,13 @@ A graph of every [[kind|$:/plugins/rimir/kind]] instance in the wiki. Nodes star
 >
 
 <div class="kg-controls">
-<$edit-text tiddler="$:/state/rimir/kind/instances-overview/search" tag="input" placeholder="Search nodes…" class="tc-edit-texteditor" default="" style="flex:0 0 220px;"/>
+<span class="kg-search">
+<$edit-text tiddler="$:/state/rimir/kind/instances-overview/search" tag="input" placeholder="Search nodes…" class="tc-edit-texteditor" default=""/>
+<$reveal type="nomatch" state="$:/state/rimir/kind/instances-overview/search" text="" tag="span">
+<$button tooltip="Clear search" class="tc-btn-invisible" style="cursor:pointer; padding:0 4px;"><$action-deletetiddler $tiddler="$:/state/rimir/kind/instances-overview/search"/>&#10005;</$button>
+</$reveal>
+</span>
+<label title="On: keep the current zoom/pan while searching and grey out non-matches, so you can see where matches sit in the big picture. Off: shrink the graph to just the matches and refit."><$checkbox tiddler="$:/config/rimir/kind/instances-overview/search-mode" field="text" checked="keep" unchecked="fit" default="fit"/> keep view &amp; highlight</label>
 <span style="opacity:0.7;">Edges:</span>
 <$list filter="[function[kg.ref-fields]]" variable="_rf">
 <label><$checkbox tiddler="$:/config/rimir/kind/instances-overview/edge-fields" listField="edges" checked=<<_rf>>/> <$text text=<<_rf>>/></label>
@@ -45,12 +53,17 @@ A graph of every [[kind|$:/plugins/rimir/kind]] instance in the wiki. Nodes star
 
 <%if [[$:/plugins/flibbles/graph]is[tiddler]] %>
 <div class="boundingbox" style="height:95vh; min-height:480px;">
-<$let searchText={{{ [[$:/state/rimir/kind/instances-overview/search]get[text]] }}}>
+<$let
+  searchText={{{ [[$:/state/rimir/kind/instances-overview/search]get[text]] }}}
+  searchMode={{{ [[$:/config/rimir/kind/instances-overview/search-mode]get[text]] ~[[fit]] }}}
+>
 <$transclude $variable="kg-graph"
-  nodeFilter="[all[tiddlers]has[kind.type]!has[kind.fields]search:caption,title<searchText>] :filter[function[kg.type-shown],<currentTiddler>,<hiddenTypes>]"
+  nodeFilter="[all[tiddlers]has[kind.type]!has[kind.fields]] :filter[function[kg.type-shown],<currentTiddler>,<hiddenTypes>]"
   selFields=<<selFields>>
   dataTiddler="$:/config/rimir/kind/instances-overview/structure"
   physics="no"
+  searchText=<<searchText>>
+  searchMode=<<searchMode>>
   $mode="block"/>
 </$let>
 </div>

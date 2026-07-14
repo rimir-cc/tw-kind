@@ -25,7 +25,7 @@ type: text/vnd.tiddlywiki
 
 \procedure kg-open() <$action-navigate $to=<<nodeTiddler>>/>
 
-\procedure kg-graph(nodeFilter, selFields, dataTiddler, physics)
+\procedure kg-graph(nodeFilter, selFields, dataTiddler, physics, searchText, searchMode)
 <$let kgSpacing="180" kgCount={{{ [function[kg.count]] }}}>
 <$let kgCols={{{ [<kgCount>power[0.5]ceil[]max[1]] }}}>
 <$let kgRows={{{ [<kgCount>divide<kgCols>ceil[]max[1]] }}} kgOriginX={{{ [<kgCols>subtract[1]multiply<kgSpacing>divide[2]] }}}>
@@ -100,15 +100,27 @@ type: text/vnd.tiddlywiki
   _sx={{{ [<_ni>remainder<kgCols>multiply<kgSpacing>subtract<kgOriginX>] }}}
   _sy={{{ [<_ni>divide<kgCols>floor[]multiply<kgSpacing>subtract<kgOriginY>] }}}
   _color={{{ [function[kg.color-of],<_tk>] }}}
+  _match={{{ [<_nodeT>search:caption,title<searchText>count[]] }}}
 >
-<$node label={{{ [<currentTiddler>get[caption]] ~[<currentTiddler>] }}} color=<<_color>> $pos={{{ [<_stored>] ~[<_sx>addsuffix[,]addsuffix<_sy>] }}} actions=<<kg-open>>/>
+<!-- searchMode "keep": render every node (count stays constant so the engine
+     never refits/rezooms) and grey out non-matches. Otherwise (fit mode):
+     drop non-matching nodes so the engine refits to the survivors. Blank
+     search → _match>0 for all → everything shown, nothing dimmed (both modes). -->
+<$let
+  _show={{{ [<searchMode>match[keep]] [<_match>compare:integer:gt[0]] +[limit[1]] }}}
+  _dim={{{ [<searchMode>match[keep]] :filter[<_match>match[0]] +[limit[1]] }}}
+>
+<%if [<_show>!is[blank]] %>
+<$node label={{{ [<currentTiddler>get[caption]] ~[<currentTiddler>] }}} color={{{ [<_dim>!is[blank]then[#cccccc]] ~[<_color>] }}} $pos={{{ [<_stored>] ~[<_sx>addsuffix[,]addsuffix<_sy>] }}} actions=<<kg-open>>/>
 <$list filter="[enlist<selFields>]" variable="_ef" counter="_efi">
-<$let _ec={{{ [enlist<_selColors>nth<_efi>] }}} _es={{{ [enlist<_selStrokes>nth<_efi>] }}} _elabel={{{ [<_multiEdge>match[1]then<_ef>] }}}>
+<$let _ec={{{ [<_dim>!is[blank]then[#dddddd]] ~[enlist<_selColors>nth<_efi>] }}} _es={{{ [enlist<_selStrokes>nth<_efi>] }}} _elabel={{{ [<_multiEdge>match[1]then<_ef>] }}}>
 <$list filter="[<_nodeT>get<_ef>enlist-input[]]" variable="_tgt">
 <$edge $from=<<_nodeT>> $to=<<_tgt>> color=<<_ec>> stroke=<<_es>> label=<<_elabel>>/>
 </$list>
 </$let>
 </$list>
+<%endif%>
+</$let>
 </$let>
 </$let>
 </$list>
