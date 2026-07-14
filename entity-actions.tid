@@ -1,0 +1,67 @@
+title: $:/plugins/rimir/kind/entity-actions
+type: text/vnd.tiddlywiki
+
+\whitespace trim
+\import $:/plugins/rimir/kind/engine
+\import $:/plugins/rimir/kind/graph
+
+<!-- Reusable "entity hover actions" for a kind instance: Edit (live modal),
+     optional Delete (confirm modal), and Add-child buttons for every kind whose
+     `parent` ref accepts this entity's type (plus explicit kind.parent-kinds
+     children — kg.child-kinds). Drives the shared graph-modal
+     ($:/plugins/rimir/kind/graph-modal, tagged $:/tags/AboveStory) via the same
+     kind.gm-* procedures the Instances Overview graph tooltip uses, so the two
+     surfaces behave identically. Consumed by rimir/dashboard (a kind-instance
+     tile's actions menu) and available to any other surface.
+
+     Reads from the caller's scope (set an ancestor <$let> before transcluding):
+       ea-entity        the instance tiddler to act on (default <currentTiddler>)
+       ea-allow-delete  "yes" to include the Delete action (default "no")
+
+     Imports the engine + graph so the kind.* / kg.* functions resolve when this
+     is transcluded from a widget tree that doesn't inherit the page macros
+     (e.g. the dashboard body). Renders nothing when the entity has no kind.type. -->
+
+<$let
+  ea-entity={{{ [<ea-entity>!is[blank]] ~[<currentTiddler>] }}}
+  ea-allow-delete={{{ [<ea-allow-delete>match[yes]then[yes]] ~[[no]] }}}
+>
+<$list filter="[<ea-entity>has[kind.type]]" variable="_" emptyMessage="">
+<$let ea-type-key={{{ [<ea-entity>get[kind.type]] }}}>
+
+<div class="kind-entity-actions kg-tip-actions">
+<$button class="kg-tip-btn" tooltip="Edit this entity's fields">
+<$transclude $variable="kind.gm-edit" entity-tid=<<ea-entity>>/>
+&#9998; edit
+</$button>
+<%if [<ea-allow-delete>match[yes]] %>
+<$let ea-child-count={{{ [all[tiddlers]has[kind.type]!has[kind.fields]field:parent<ea-entity>count[]] }}}>
+<%if [<ea-child-count>match[0]] %>
+<$button class="kg-tip-btn kg-tip-btn-danger" tooltip="Delete this entity (asks for confirmation)">
+<$transclude $variable="kind.gm-delete" entity-tid=<<ea-entity>>/>
+&#128465; delete
+</$button>
+<%else%>
+<$button class="kg-tip-btn" disabled="yes" tooltip="This entity has child instances — delete or re-parent them first">&#128465; delete</$button>
+<%endif%>
+</$let>
+<%endif%>
+</div>
+
+<$list filter="[function[kg.child-kinds],<ea-type-key>limit[1]]" variable="_">
+<div class="kind-entity-create kg-tip-create">
+<span class="kg-tip-create-label">Add child:</span>
+<div class="kg-tip-create-row">
+<$list filter="[function[kg.child-kinds],<ea-type-key>]" variable="ea-ck">
+<$button class="kg-tip-btn" tooltip={{{ [<ea-ck>get[kind.type]addprefix[Create a new ]addsuffix[ under this entity]] }}}>
+<$transclude $variable="kind.gm-add-child" child-type-tid=<<ea-ck>> host-tid=<<ea-entity>>/>
+<$text text={{{ [<ea-ck>get[kind.icon]] }}}/> <$text text={{{ [<ea-ck>get[kind.caption]!is[blank]] ~[<ea-ck>get[kind.type]] }}}/>
+</$button>
+</$list>
+</div>
+</div>
+</$list>
+
+</$let>
+</$list>
+</$let>

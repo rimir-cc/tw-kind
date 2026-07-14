@@ -212,6 +212,35 @@ type: text/vnd.tiddlywiki
 </$list>
 \end
 
+\procedure kind.gm-edit(entity-tid)
+<!-- Open the shared graph-modal ($:/plugins/rimir/kind/graph-modal, tagged
+     $:/tags/AboveStory) in EDIT mode for an existing instance. Single source for
+     "edit this entity", used by the Instances Overview graph tooltip AND the
+     rimir/dashboard entity actions, so both drive the same modal identically. -->
+<$action-deletetiddler $tiddler="$:/state/rimir/kind/graph-modal"/>
+<$action-setfield $tiddler="$:/state/rimir/kind/graph-modal" edit=<<entity-tid>>/>
+\end
+
+\procedure kind.gm-delete(entity-tid)
+<!-- Open the shared graph-modal in DELETE-confirm mode; the modal re-checks for
+     parent-field children before allowing the delete. -->
+<$action-deletetiddler $tiddler="$:/state/rimir/kind/graph-modal"/>
+<$action-setfield $tiddler="$:/state/rimir/kind/graph-modal" delete=<<entity-tid>>/>
+\end
+
+\procedure kind.gm-add-child(child-type-tid, host-tid)
+<!-- Open the shared graph-modal in CREATE-CHILD mode: seed the draft at
+     $:/state/rimir/kind/graph-modal/draft with parent = host and the child kind's
+     field defaults applied, then point the modal at the child kind + host. The
+     modal reuses the standard editor + kind.finalize-create (title-formula,
+     validation, auto-children all behave exactly like the Creator). -->
+<$action-deletetiddler $tiddler="$:/state/rimir/kind/graph-modal"/>
+<$action-deletetiddler $tiddler="$:/state/rimir/kind/graph-modal/draft"/>
+<$action-setfield $tiddler="$:/state/rimir/kind/graph-modal/draft" parent=<<host-tid>>/>
+<$transclude $variable="kind.apply-defaults-to" type-tid=<<child-type-tid>> target-tid="$:/state/rimir/kind/graph-modal/draft"/>
+<$action-setfield $tiddler="$:/state/rimir/kind/graph-modal" kind-tid=<<child-type-tid>> host=<<host-tid>>/>
+\end
+
 \procedure kind.finalize-create(kind-tid, kind-type-key, draft-tid, savetitle)
 <!-- Shared "create the new instance" tail used by every save path (creator,
      cascade-save-instance, cascade-spawn-save, cascade-create-here). Computes

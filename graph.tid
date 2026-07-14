@@ -45,16 +45,14 @@ type: text/vnd.tiddlywiki
 <$let _childCount={{{ [all[tiddlers]has[kind.type]!has[kind.fields]field:parent<nodeTiddler>count[]] }}}>
 <div class="kg-tip-actions">
 <$button class="kg-tip-btn" tooltip="Edit this node's fields">
-<$action-deletetiddler $tiddler="$:/state/rimir/kind/graph-modal"/>
-<$action-setfield $tiddler="$:/state/rimir/kind/graph-modal" edit=<<nodeTiddler>>/>
+<$transclude $variable="kind.gm-edit" entity-tid=<<nodeTiddler>>/>
 <$action-deletetiddler $tiddler=<<delayState>>/>
 <$action-popup $state=<<state>>/>
 &#9998; edit
 </$button>
 <%if [<_childCount>match[0]] %>
 <$button class="kg-tip-btn kg-tip-btn-danger" tooltip="Delete this node (asks for confirmation)">
-<$action-deletetiddler $tiddler="$:/state/rimir/kind/graph-modal"/>
-<$action-setfield $tiddler="$:/state/rimir/kind/graph-modal" delete=<<nodeTiddler>>/>
+<$transclude $variable="kind.gm-delete" entity-tid=<<nodeTiddler>>/>
 <$action-deletetiddler $tiddler=<<delayState>>/>
 <$action-popup $state=<<state>>/>
 &#128465; delete
@@ -71,11 +69,7 @@ type: text/vnd.tiddlywiki
 <div class="kg-tip-create-row">
 <$list filter="[function[kg.child-kinds],<_tk>]" variable="_ck">
 <$button class="kg-tip-btn" tooltip={{{ [<_ck>get[kind.type]addprefix[Create a new ]addsuffix[ under this node]] }}}>
-<$action-deletetiddler $tiddler="$:/state/rimir/kind/graph-modal"/>
-<$action-deletetiddler $tiddler="$:/state/rimir/kind/graph-modal/draft"/>
-<$action-setfield $tiddler="$:/state/rimir/kind/graph-modal/draft" parent=<<nodeTiddler>>/>
-<$transclude $variable="kind.apply-defaults-to" type-tid=<<_ck>> target-tid="$:/state/rimir/kind/graph-modal/draft"/>
-<$action-setfield $tiddler="$:/state/rimir/kind/graph-modal" kind-tid=<<_ck>> host=<<nodeTiddler>>/>
+<$transclude $variable="kind.gm-add-child" child-type-tid=<<_ck>> host-tid=<<nodeTiddler>>/>
 <$action-deletetiddler $tiddler=<<delayState>>/>
 <$action-popup $state=<<state>>/>
 <$text text={{{ [<_ck>get[kind.icon]] }}}/> <$text text={{{ [<_ck>get[kind.caption]!is[blank]] ~[<_ck>get[kind.type]] }}}/>

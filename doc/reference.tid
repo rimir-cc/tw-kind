@@ -181,6 +181,19 @@ In ''both'' layouts ''Enter'' on a row commits it as the field value AND finalis
 |`kind.apply-defaults-to(type-tid, target-tid)` |Stamps `kind.type` + walks all defaultable fields and writes `compute-default` onto `target-tid` for fields currently blank (idempotent — leaves user-set fields alone). Used by every create path before save, AND re-fired from field-input action chains after each ref/enum change so dependent defaults populate. |
 |`kind.force-apply-defaults(type-tid, target-tid)` |Like `apply-defaults-to` but unconditional. Used by the //Reset to defaults// flow. |
 |`kind.apply-auto-children(parent-tid, type-tid)` |Walks `type-tid.kind.auto-children` and materialises each entry as a new tiddler with `parent: <<parent-tid>>` + per-entry `fields` overrides + the child kind's own field defaults. Transcluded by `kind.finalize-create` //nested inside// its `$action-createtiddler`, with `parent-tid` taken from `<<createTiddler-title>>` (the real post-uniquification title — a sibling read of `$savetitle` is evaluated at render time and sees a stale value, so the nesting is load-bearing). Entries pointing at non-existent kinds are skipped silently. Not recursive. |
+|`kind.gm-edit(entity-tid)` |Action procedure — opens the shared graph-modal (`$:/plugins/rimir/kind/graph-modal`, `$:/tags/AboveStory`) in EDIT mode for an instance. The single source for "edit this entity", used by the Instances Overview graph tooltip //and// external surfaces (e.g. rimir/dashboard). |
+|`kind.gm-delete(entity-tid)` |Action procedure — opens the graph-modal in DELETE-confirm mode (the modal re-checks for `parent`-field children before allowing it). |
+|`kind.gm-add-child(child-type-tid, host-tid)` |Action procedure — seeds `…/graph-modal/draft` with `parent = host` + the child kind's defaults and opens the modal in create mode (reusing the editor + `kind.finalize-create`). |
+
+!! Reusable entity actions (`$:/plugins/rimir/kind/entity-actions`)
+
+A self-contained, transcludable tiddler that renders the //edit// + //Add child// action cluster for a kind instance — the same actions as the //Kind: Instances Overview// graph tooltip, driven through the `kind.gm-*` procedures above. It `\import`s the engine + graph, so it works when transcluded from a widget tree that doesn't inherit the page macros. Reads from the caller's scope (set via an ancestor `<$let>` before a `$tiddler` transclusion):
+
+|!Variable |!Meaning |
+|`ea-entity` |The instance tiddler to act on (default `<currentTiddler>`) |
+|`ea-allow-delete` |`yes` to also render the //delete// action (default `no`) |
+
+Renders nothing when `ea-entity` has no `kind.type`. Consumed by [[rimir/dashboard|$:/plugins/rimir/dashboard]] to put entity edit / add-child into a kind-instance tile's menu.
 
 </$fill>
 </$transclude>
