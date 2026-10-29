@@ -61,3 +61,7 @@ Give the `ref` field an `inverse` naming the field on the target, e.g. on //conv
 
 </$fill>
 </$transclude>
+
+!! Q: How do I hide the cockpit or give a kind its own one?
+
+Set `kind.cockpit` on the type tiddler. `none` hides the panel for that kind. Any other value is the title of a tiddler that is shown instead of the generic panel, with `currentTiddler` (and `<<host>>`) set to the instance; it can `\import $:/plugins/rimir/kind/engine` and reuse `kind.iview-click-toggle`, `kind.iview-link`, `kind.iview-detail` and `kind.instance-content`. Cockpits that depend on one data model (fixed field names, status values, kind ranking) belong with that model, not in kind.

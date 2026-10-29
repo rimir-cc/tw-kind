@@ -23,6 +23,7 @@ type: text/vnd.tiddlywiki
 |`kind.stream-fields` |No |Space-separated field keys shown in the stream-river field bar. Empty / missing = bar is invisible for instances of this type. |
 |`kind.back-group-by` |No |Reverse-reference navigation (the ''Referenced by…'' action): field key whose value clusters this kind's instances in the listing (e.g. `status`). Empty = one undifferentiated group. |
 |`kind.back-sort-by` |No |Reverse-reference navigation: field key the listing sorts by, ''descending'' (newest-first). Defaults to `modified`. |
+|`kind.cockpit` |No |Panel under an opened instance: blank = the generic cockpit (sections per own ref field and per incoming (kind, field) pair, each with ''＋'' to create and link), `none` = no panel, any other value = title of a custom cockpit tiddler, transcluded with `currentTiddler` = the instance. |
 
 !! Instance tiddler fields
 
@@ -168,6 +169,8 @@ In ''both'' layouts ''Enter'' on a row commits it as the field value AND finalis
 |`kind.create-here-target-kinds(host-key)` `kind.has-create-here-options(host-tid)` |Union of child kinds + ref-back kinds; the cascade-palette ''Create here…'' action's `ca-applies` gates on this. |
 |`kind.referencing-instances(host-tid, source-tid, field-key)` |Reverse-reference core: instances of `source-tid`'s kind whose `field-key` references `host-tid`. The building block for the ''Referenced by…'' drill and any two-hop reverse lookup. |
 |`kind.qual-source-kinds(host-tid)` `kind.qual-back-fields(host-tid, source-tid)` `kind.back-rel-count(host-tid)` |Reverse-nav discovery — which source kinds reference the host (through a `back-nav`-enabled field with ≥1 instance), the qualifying field-keys per source kind, and the total relation count (1 → skip straight to the instance list; ≥2 → entry-level relation rows). |
+|`kind.cockpit-mode(type-tid)` `kind.out-fields(type-tid)` `kind.field-target-kinds(type-tid, field-key)` `kind.in-sources(host-type-tid)` `kind.in-fields(host-type-tid, source-tid)` |Cockpit discovery — the type's cockpit mode (`generic` when blank), its ref fields, the kinds a ref field accepts (all kinds when `ref-types` is empty), and the incoming (source kind, field) pairs, minus pairs that mirror an outgoing field through `inverse`. Unlike `kind.qual-*` these include relations without instances, so the ＋ is available before the first link exists. |
+|`kind.create-title(type-tid, target-tid)` |Base title used on save: the title-formula result, else the kind's caption, else its key (so a kind without formula never saves under the draft's title). |
 |`kind.back-sort-field-eff(source-tid)` `kind.inst-group-val(source-tid, inst-tid)` |Reverse-nav listing helpers — effective sort field (`kind.back-sort-by`, default `modified`) and an instance's group value (`kind.back-group-by`). |
 |`kind.auto-children-array(type-tid)` `kind.auto-children-indexes(type-tid)` `kind.has-auto-children(type-tid)` |Raw access to the parent kind's `kind.auto-children` JSON array. |
 |`kind.auto-child-kind-at(type-tid, idx)` `kind.auto-child-fields-at(type-tid, idx)` `kind.auto-child-field-value-at(type-tid, idx, field-key)` |Walk one entry — get the child kind's type-key, the field-key list, and individual field values that should override the child kind's defaults. |
@@ -186,6 +189,7 @@ In ''both'' layouts ''Enter'' on a row commits it as the field value AND finalis
 |`kind.gm-edit(entity-tid)` |Action procedure — opens the shared graph-modal (`$:/plugins/rimir/kind/graph-modal`, `$:/tags/AboveStory`) in EDIT mode for an instance. The single source for "edit this entity", used by the Instances Overview graph tooltip //and// external surfaces (e.g. rimir/dashboard). |
 |`kind.gm-delete(entity-tid)` |Action procedure — opens the graph-modal in DELETE-confirm mode (the modal re-checks for `parent`-field children before allowing it). |
 |`kind.gm-add-child(child-type-tid, host-tid)` |Action procedure — seeds `…/graph-modal/draft` with `parent = host` + the child kind's defaults and opens the modal in create mode (reusing the editor + `kind.finalize-create`). |
+|`kind.gm-create-linked(type-tid, host-tid, field-key, dir)` `kind.gm-link-created()` |Action procedures behind the cockpit ＋ — open the create modal for a new `type-tid` instance linked to `host-tid`: `dir=in` pre-sets the new instance's `field-key` to the host; `dir=out` adds the new instance to the host's `field-key` after save (the `after-create` hook `kind.gm-link-created`, which also opens the new instance) and pre-sets the inverse field when the new kind defines it. |
 
 !! Reusable entity actions (`$:/plugins/rimir/kind/entity-actions`)
 

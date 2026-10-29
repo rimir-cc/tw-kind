@@ -52,7 +52,7 @@ ca-preview-order: 45
 <!-- The referrer-list helpers (kind.note-kinds / -kind-ok / -children /
      -ref-for-source / -ref-referrers / -referrers), the content helpers, the
      kind.instance-content renderer, and caption resolution (kind.resolve-ref)
-     all live in engine.tid now — shared with conversation-view + person-view. -->
+     all live in engine.tid now — shared with the cockpits. -->
 
 
 \procedure notes-mode-pill(value, label)

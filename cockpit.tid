@@ -1,0 +1,142 @@
+title: $:/plugins/rimir/kind/cockpit
+tags: $:/tags/ViewTemplate
+list-after: $:/plugins/rimir/kind/viewtemplate
+type: text/vnd.tiddlywiki
+
+\whitespace trim
+\import $:/plugins/rimir/kind/engine
+
+<!-- Cockpit panel under an opened kind instance, chosen by the type's
+     `kind.cockpit` field (kind.cockpit-mode):
+       blank   — the generic panel below, built only from the schema
+       none    — no panel
+       <title> — a custom cockpit tiddler, transcluded with currentTiddler =
+                 the instance (and <<host>> / <<host-type>> set)
+     Generic panel: one section per own ref field (outgoing) and one per
+     (source kind, field) pointing here (incoming). Each section's ＋ creates a
+     new instance through the graph-modal and links it (kind.gm-create-linked). -->
+
+\procedure kind.cockpit-add(kinds, field-key, dir)
+<!-- ＋ of one section: direct for a single target kind, a kind menu otherwise -->
+<$let pop={{{ [[$:/state/popup/rimir/kind/cockpit-add/]addsuffix<host>addsuffix[/]addsuffix<dir>addsuffix[/]addsuffix<field-key>] }}}>
+<%if [enlist<kinds>count[]match[1]] %>
+<$let add-tid={{{ [enlist<kinds>] :map[function[kind.locate-type],<currentTiddler>] }}}>
+<$button class="tc-btn-invisible kcp-add" tooltip={{{ [<add-tid>get[kind.caption]!is[blank]] ~[enlist<kinds>] +[addprefix[Create a new ]addsuffix[ and link it]] }}}>
+<$transclude $variable="kind.gm-create-linked" type-tid=<<add-tid>> host-tid=<<host>> field-key=<<field-key>> dir=<<dir>>/>
+＋
+</$button>
+</$let>
+<%else%>
+<$button class="tc-btn-invisible kcp-add" popup=<<pop>> tooltip="Create a new instance and link it">＋</$button>
+<$reveal type="popup" state=<<pop>> tag="div" class="tc-drop-down kcp-add-menu">
+<$list filter="[enlist<kinds>] :map[function[kind.locate-type],<currentTiddler>] +[!is[blank]]" variable="add-tid">
+<$button class="tc-btn-invisible">
+<$transclude $variable="kind.gm-create-linked" type-tid=<<add-tid>> host-tid=<<host>> field-key=<<field-key>> dir=<<dir>>/>
+<$action-deletetiddler $tiddler=<<pop>>/>
+<$text text={{{ [<add-tid>get[kind.icon]] [<add-tid>get[kind.caption]!is[blank]] ~[<add-tid>get[kind.type]] +[join[ ]] }}}/>
+</$button>
+</$list>
+</$reveal>
+<%endif%>
+</$let>
+\end
+
+\procedure kind.cockpit-head(icon, caption, count, kinds, field-key, dir)
+<div class="kpv-section-title">
+<span class="kpv-section-icon"><$text text=<<icon>>/></span>
+<span class="kpv-section-cap"><$text text=<<caption>>/></span>
+<span class="kpv-section-count"><$text text=<<count>>/></span>
+<$transclude $variable="kind.cockpit-add" kinds=<<kinds>> field-key=<<field-key>> dir=<<dir>>/>
+</div>
+\end
+
+\procedure kind.cockpit-generic()
+<$let
+  selected={{{ [function[kind.iview-selected],<host>] }}}
+  split-active={{{ [function[kind.iview-split-active],<host>] }}}
+>
+<div class="kpv-panel kcp-panel">
+<div class="kpv-filters">
+<$transclude $variable="kind.iview-click-toggle"/>
+</div>
+<div class={{{ [<split-active>match[yes]then[kpv-split]] ~[[kpv-nosplit]] }}}>
+<div class="kpv-split-main">
+
+<!-- outgoing: the instance's own ref fields -->
+<$list filter="[function[kind.out-fields],<host-type>]" variable="fk">
+<$let n={{{ [function[kind.field-display-list],<host-type>,<host>,<fk>count[]] }}}>
+<div class={{{ [<n>match[0]then[kpv-section kpv-section-empty]] ~[[kpv-section]] }}}>
+<$transclude $variable="kind.cockpit-head"
+  icon={{{ [function[kind.field-icon],<host-type>,<fk>] }}}
+  caption={{{ [function[kind.field-caption],<host-type>,<fk>] }}}
+  count=<<n>>
+  kinds={{{ [function[kind.field-target-kinds],<host-type>,<fk>] +[format:titlelist[]join[ ]] }}}
+  field-key=<<fk>>
+  dir="out"/>
+<%if [<n>!match[0]] %>
+<div class="kcv-chips">
+<$list filter="[function[kind.field-display-list],<host-type>,<host>,<fk>]" variable="p">
+<span class={{{ [<p>match<selected>then[kcv-chip kcv-chip-active]] ~[[kcv-chip]] }}}><span class="kpv-row-icon">{{{ [function[kind.inst-icon],<p>] }}}</span> <$transclude $variable="kind.iview-link" t=<<p>> host=<<host>>/></span>
+</$list>
+</div>
+<%endif%>
+</div>
+</$let>
+</$list>
+
+<!-- incoming: (source kind, field) pairs pointing at this instance -->
+<$list filter="[function[kind.in-sources],<host-type>]" variable="source">
+<$list filter="[function[kind.in-fields],<host-type>,<source>]" variable="fk">
+<$let sort-field={{{ [function[kind.back-sort-field-eff],<source>] }}}>
+<$let n={{{ [function[kind.referencing-instances],<host>,<source>,<fk>count[]] }}}>
+<div class={{{ [<n>match[0]then[kpv-section kpv-section-empty]] ~[[kpv-section]] }}}>
+<$transclude $variable="kind.cockpit-head"
+  icon={{{ [<source>get[kind.icon]] }}}
+  caption={{{ [<source>get[kind.caption]!is[blank]] ~[<source>get[kind.type]] [function[kind.field-caption],<source>,<fk>] +[join[ · ]] }}}
+  count=<<n>>
+  kinds={{{ [<source>get[kind.type]format:titlelist[]] }}}
+  field-key=<<fk>>
+  dir="in"/>
+<%if [<n>!match[0]] %>
+<div class="kpv-rows">
+<$list filter="[function[kind.referencing-instances],<host>,<source>,<fk>] +[!sort<sort-field>]" variable="inst">
+<div class={{{ [<inst>match<selected>then[kpv-row kpv-row-active]] ~[[kpv-row]] }}}>
+<span class="kpv-row-icon"><$text text={{{ [<source>get[kind.icon]] }}}/></span>
+<span class="kpv-row-cap"><$transclude $variable="kind.iview-link" t=<<inst>> host=<<host>>/></span>
+<$list filter="[<inst>get[status]]" variable="st"><span class={{{ [<st>addprefix[kpv-status kpv-status-]] }}}><<st>></span></$list>
+</div>
+</$list>
+</div>
+<%endif%>
+</div>
+</$let>
+</$let>
+</$list>
+</$list>
+
+</div>
+<%if [<split-active>match[yes]] %>
+<$transclude $variable="kind.iview-detail" host=<<host>>/>
+<%endif%>
+</div>
+</div>
+</$let>
+\end
+
+<%if [<currentTiddler>has[kind.type]!has[kind.fields]!has[draft.of]] %>
+<$let
+  host=<<currentTiddler>>
+  host-type={{{ [<currentTiddler>get[kind.type]] :map[function[kind.locate-type],<currentTiddler>] }}}
+>
+<$let mode={{{ [function[kind.cockpit-mode],<host-type>] }}}>
+<%if [<host-type>is[blank]] [<mode>match[none]] +[first[]] %>
+<%elseif [<mode>match[generic]] %>
+<%if [function[kind.out-fields],<host-type>] [function[kind.in-sources],<host-type>] +[first[]] %>
+<$transclude $variable="kind.cockpit-generic"/>
+<%endif%>
+<%else%>
+<$transclude $tiddler=<<mode>> $mode="block"/>
+<%endif%>
+</$let>
+</$let>
+<%endif%>

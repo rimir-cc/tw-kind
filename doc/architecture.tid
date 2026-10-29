@@ -68,16 +68,24 @@ When `kind.title-formula` is set, the creator computes a new instance's title by
 
 Example formula: `[get[parent]][[/]][get[abbrev]]+[join[]]` produces `parent-title/abbrev` style titles.
 
+On save, `kind.finalize-create` uses `kind.create-title`: the formula result, else the kind's caption, else its key. Without that fallback an empty base title made `$action-createtiddler` reuse the draft's own `$:/state/…` title.
+
 !! Inverse ref fields
 
 A `ref` field def may carry `"inverse": "<field>"`. `inverse.js` (library) keeps the other end in sync: it snapshots the ref values of every instance whose kind has such fields, listens to wiki `change` events, diffs old vs. new values and adds/removes the source title in the target's `<field>`. `inverse-startup.js` attaches it in the browser only — the server gets the mirrored writes through the normal sync.
 
-* Drafts (`draft.of`) are skipped; the mirror happens when the draft is saved.
+* Drafts are skipped — both TW edit drafts (`draft.of`) and kind's create-form drafts under `$:/state/` / `$:/temp/` (`schema.isInstance`, and `kind.instances-of` in wikitext). The mirror happens when the instance is saved, so a link pre-set in a create form never lands on the target while the form is open.
 * Deleting or retyping an instance releases all its targets.
 * A changed type tiddler only re-snapshots (no back-fill of existing data).
 * A write that changes nothing is skipped, so a two-way pair stops after one round.
 
 These are the only JS modules in kind: every other part is wikitext, but ref fields are written from many places (field editors, generated palette action strings, wizard drafts, other plugins), and only a change listener sees all of them.
+
+!! Cockpit
+
+`cockpit.tid` (`$:/tags/ViewTemplate`, after `viewtemplate`) dispatches on the type's `kind.cockpit`: blank = generic panel, `none` = nothing, else a custom cockpit tiddler. The generic panel needs no per-model knowledge: outgoing sections come from the kind's own ref fields, incoming sections from every (source kind, field) whose `ref-types` name this kind. A source field whose `inverse` is a ref field of this kind is skipped there, because the same relation already shows as the outgoing field.
+
+The ＋ of a section reuses the graph-modal create form and the shared `kind.finalize-create` save tail (`kind.gm-create-linked`). The link to the host is written in one of two ways: incoming — pre-set in the draft, so the form shows it and required constraints pass; outgoing — written onto the host by the `after-create` hook (`kind.gm-link-created`), which has the saved title as `<<createTiddler-title>>`. The opposite end of an `inverse` pair is left to inverse sync (outgoing also pre-sets it in the draft so the form shows it).
 
 !! Stream-view (ViewTemplate auto-registration)
 

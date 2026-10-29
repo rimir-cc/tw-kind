@@ -37,9 +37,13 @@ exports.fieldDef = function(wiki, typeKey, key) {
 	return exports.fieldDefs(wiki, typeKey).filter(function(def) { return def.key === key; })[0] || null;
 };
 
+// Create forms keep their unsaved instance under these prefixes
+var DRAFT_PREFIXES = ["$:/state/", "$:/temp/"];
+
 // True for a kind instance (has kind.type, is not itself a type, not a draft)
 exports.isInstance = function(tiddler) {
-	return !!(tiddler && tiddler.fields["kind.type"] && tiddler.fields["kind.fields"] === undefined && !tiddler.fields["draft.of"]);
+	return !!(tiddler && tiddler.fields["kind.type"] && tiddler.fields["kind.fields"] === undefined && !tiddler.fields["draft.of"] &&
+		!DRAFT_PREFIXES.some(function(prefix) { return tiddler.fields.title.indexOf(prefix) === 0; }));
 };
 
 /*

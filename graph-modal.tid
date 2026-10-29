@@ -88,9 +88,15 @@ Cancel
 <div class="kind-graph-modal-panel">
 
 <div class="kind-graph-modal-header">
-<$text text={{{ [<type-tid>get[kind.icon]] }}}/>
- Create <strong><$text text={{{ [<type-tid>get[kind.caption]!is[blank]] ~[<type-key>] }}}/></strong>
- under <code><$text text={{{ [<host-tid>get[caption]] ~[<host-tid>] }}}/></code>
+<$let link-field={{{ [<gm-state>get[link-field]] }}}>
+<$text text={{{ [<type-tid>get[kind.icon]] [[Create]] +[join[ ]] }}}/><$text text=" "/>
+<strong><$text text={{{ [<type-tid>get[kind.caption]!is[blank]] ~[<type-key>] }}}/></strong>
+<$text text={{{ [<link-field>is[blank]then[ under ]] ~[[ for ]] }}}/>
+<code><$text text={{{ [<host-tid>get[caption]] ~[<host-tid>] }}}/></code>
+<%if [<link-field>!is[blank]] %>
+<span class="kind-graph-modal-sub"><$text text={{{ [<gm-state>get[link-dir]match[out]then<host-tid>get[kind.type]] :map[function[kind.locate-type],<currentTiddler>] ~[<type-tid>] :map[function[kind.field-caption],<currentTiddler>,<link-field>] +[addprefix[ — ]] }}}/></span>
+<%endif%>
+</$let>
 </div>
 
 <$transclude $tiddler="$:/plugins/rimir/kind/editor"/>
