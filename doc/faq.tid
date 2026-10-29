@@ -55,5 +55,9 @@ The `kind.fields` field stores stringified-JSON because storing as a `applicatio
 
 `unique` and `unique:wiki` use exact string equality on the whole field value. For multi-value refs/enums where order doesn't semantically matter (e.g. `assignee: "alice bob"` vs `assignee: "bob alice"`), this means a logical-duplicate isn't flagged. Fixing this properly would require value normalization (sort + dedupe before comparison) and a stronger uniqueness predicate. Planned for v0.2 if needed.
 
+!! Q: How do I link both ends of a relation?
+
+Give the `ref` field an `inverse` naming the field on the target, e.g. on //conversation// `{"key":"participants","typed":"ref","cardinality":"multi","ref-types":["person"],"inverse":"conversations"}` and on //person// a `conversations` ref field (optionally with `"inverse":"participants"` back). Adding Anna to a conversation's participants then also lists the conversation under Anna's conversations, and removing her removes it there. Existing links are not back-filled when you add `inverse` later — re-save the source instances, or add the missing values once by hand.
+
 </$fill>
 </$transclude>

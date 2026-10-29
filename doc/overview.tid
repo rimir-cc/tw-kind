@@ -38,7 +38,7 @@ type: text/vnd.tiddlywiki
 !! Schema model
 
 * ''Type tiddlers'' — fields `kind.type` (the key), `kind.caption`, `kind.icon`, `kind.namespaces`, `kind.title-formula`, `kind.stream-fields`, and `kind.fields` (JSON array)
-* ''Field defs'' — entries inside the JSON array with `key`, `typed`, `caption`, `icon`, `constraints`, `options` (enum), `ref-types` + `cardinality` (ref)
+* ''Field defs'' — entries inside the JSON array with `key`, `typed`, `caption`, `icon`, `constraints`, `options` (enum), `ref-types` + `cardinality` + optional `inverse` (ref — mirrors the link onto a field of the target)
 * ''Instance tiddlers'' — any tiddler with `kind.type: <type-key>` is an instance
 
 !! Prerequisites

@@ -68,6 +68,17 @@ When `kind.title-formula` is set, the creator computes a new instance's title by
 
 Example formula: `[get[parent]][[/]][get[abbrev]]+[join[]]` produces `parent-title/abbrev` style titles.
 
+!! Inverse ref fields
+
+A `ref` field def may carry `"inverse": "<field>"`. `inverse.js` (library) keeps the other end in sync: it snapshots the ref values of every instance whose kind has such fields, listens to wiki `change` events, diffs old vs. new values and adds/removes the source title in the target's `<field>`. `inverse-startup.js` attaches it in the browser only — the server gets the mirrored writes through the normal sync.
+
+* Drafts (`draft.of`) are skipped; the mirror happens when the draft is saved.
+* Deleting or retyping an instance releases all its targets.
+* A changed type tiddler only re-snapshots (no back-fill of existing data).
+* A write that changes nothing is skipped, so a two-way pair stops after one round.
+
+These are the only JS modules in kind: every other part is wikitext, but ref fields are written from many places (field editors, generated palette action strings, wizard drafts, other plugins), and only a change listener sees all of them.
+
 !! Stream-view (ViewTemplate auto-registration)
 
 `viewtemplate.tid` is tagged `$:/tags/ViewTemplate` with `list-after: $:/core/ui/ViewTemplate/title`. On any tiddler with a `kind.type` field, it renders `stream-view.tid`, which reads `kind.stream-fields` from the type and emits a compact bar. Empty/missing `kind.stream-fields` = bar renders nothing (self-disabling).
