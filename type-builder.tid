@@ -341,6 +341,7 @@ Cancel
 <tr><th class="kind-editor-label">namespaces (space-sep; empty = visible in every namespace)</th><td><$edit-text tiddler=<<type-tid>> field="kind.namespaces" tag="input" class="kind-input"/></td></tr>
 <tr><th class="kind-editor-label">parent kinds (space-sep kind.type keys; non-empty&nbsp;= ''child kind'', only creatable from within a parent instance via the cascade-palette "Create here…" action)</th><td><$edit-text tiddler=<<type-tid>> field="kind.parent-kinds" tag="input" class="kind-input"/></td></tr>
 <tr><th class="kind-editor-label">title-formula (filter, see&nbsp;<$link to="$:/plugins/rimir/kind/doc/examples">examples</$link>)</th><td><$edit-text tiddler=<<type-tid>> field="kind.title-formula" tag="input" class="kind-input"/></td></tr>
+<tr><th class="kind-editor-label">title fixed (formula applied once on creation, never re-checked)</th><td><$checkbox tiddler=<<type-tid>> field="kind.title-fixed" checked="yes" unchecked="" default=""/></td></tr>
 <tr><th class="kind-editor-label">stream-fields (space-sep field keys; empty = hide bar)</th><td><$edit-text tiddler=<<type-tid>> field="kind.stream-fields" tag="input" class="kind-input"/></td></tr>
 <tr><th class="kind-editor-label">auto-children (JSON array; each entry `{"kind":"&lt;type-key&gt;","fields":{...}}` is created with `parent` pre-set when an instance of this type is saved)</th><td><$edit-text tiddler=<<type-tid>> field="kind.auto-children" tag="textarea" class="kind-input" rows="3"/></td></tr>
 </table>

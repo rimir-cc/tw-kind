@@ -191,7 +191,10 @@ type: text/vnd.tiddlywiki
 \function kind.viol-unique(type-tid, type-key, field-key, target-tid) [function[kind.has-constraint],<type-tid>,<field-key>,[unique]!is[blank]] :filter[<target-tid>has<field-key>] :filter[function[kind.dups-in-type],<target-tid>,<type-key>,<field-key>,<type-tid>!is[blank]]
 \function kind.viol-unique-wiki(type-tid, field-key, target-tid) [function[kind.has-constraint],<type-tid>,<field-key>,[unique:wiki]!is[blank]] :filter[<target-tid>has<field-key>] :filter[function[kind.dups-wiki],<target-tid>,<field-key>,<type-tid>!is[blank]]
 \function kind.viol-self-dup(type-tid, field-key, target-tid) [function[kind.is-multi-counted],<type-tid>,<field-key>!is[blank]] :filter[function[kind.has-constraint-any-unique],<type-tid>,<field-key>!is[blank]] :filter[function[kind.has-self-dup],<target-tid>,<field-key>!is[blank]]
-\function kind.viol-title(type-tid, target-tid) [function[kind.eval-title],<type-tid>,<target-tid>!match<target-tid>]
+<!-- kind.title-fixed: yes = the title is set once on creation (e.g. a timestamp surrogate) and never compared against the formula again -->
+\function kind.title-fixed(type-tid) [<type-tid>get[kind.title-fixed]match[yes]]
+\function kind.title-preview-label(type-tid) [function[kind.title-fixed],<type-tid>then[title on save]] ~[[computed title]]
+\function kind.viol-title(type-tid, target-tid) [function[kind.eval-title],<type-tid>,<target-tid>!match<target-tid>] :filter[function[kind.title-fixed],<type-tid>count[]match[0]]
 
 \function kind.viol-format-url(type-tid, field-key, target-tid) [function[kind.field-typed],<type-tid>,<field-key>match[url]] :filter[<target-tid>get<field-key>!is[blank]] :filter[<target-tid>get<field-key>!prefix[http://]!prefix[https://]]
 \function kind.viol-format-email(type-tid, field-key, target-tid) [function[kind.field-typed],<type-tid>,<field-key>match[email]] :filter[<target-tid>get<field-key>!is[blank]] :filter[<target-tid>get<field-key>!regexp{$:/plugins/rimir/kind/_patterns!!email}]

@@ -113,7 +113,7 @@ Create
 <$action-deletetiddler $tiddler=<<gm-state>>/>
 Cancel
 </$button>
-<span class="kind-graph-modal-title">computed title: <code><$text text={{{ [function[kind.eval-title],<type-tid>,<target-tid>] }}}/></code></span>
+<span class="kind-graph-modal-title"><$text text={{{ [function[kind.title-preview-label],<type-tid>] }}}/>: <code><$text text={{{ [function[kind.eval-title],<type-tid>,<target-tid>] }}}/></code></span>
 </div>
 
 </div>

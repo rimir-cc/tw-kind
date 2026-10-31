@@ -67,7 +67,7 @@ Create
 ♻ Reset to defaults
 </$button>
 &nbsp;
-<span style="opacity:0.6;font-size:0.85em;">computed title: <code><$text text={{{ [function[kind.eval-title],<type-tid>,<target-tid>] }}}/></code></span>
+<span style="opacity:0.6;font-size:0.85em;"><$text text={{{ [function[kind.title-preview-label],<type-tid>] }}}/>: <code><$text text={{{ [function[kind.eval-title],<type-tid>,<target-tid>] }}}/></code></span>
 </p>
 
 </$let>
