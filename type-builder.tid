@@ -343,7 +343,21 @@ Cancel
 <tr><th class="kind-editor-label">title-formula (filter, see&nbsp;<$link to="$:/plugins/rimir/kind/doc/examples">examples</$link>)</th><td><$edit-text tiddler=<<type-tid>> field="kind.title-formula" tag="input" class="kind-input"/></td></tr>
 <tr><th class="kind-editor-label">title fixed (formula applied once on creation, never re-checked)</th><td><$checkbox tiddler=<<type-tid>> field="kind.title-fixed" checked="yes" unchecked="" default=""/></td></tr>
 <tr><th class="kind-editor-label">group of (key of this kind's multi ref field that holds the members; makes the kind a ''group'': fields that take the member kind but not this kind get the members when a group is linked)</th><td><$edit-text tiddler=<<type-tid>> field="kind.group-of" tag="input" class="kind-input"/></td></tr>
-<tr><th class="kind-editor-label">focus (toolbar button on instances: open the instance on top and its `parent` children below, latest first, close the rest)</th><td><$checkbox tiddler=<<type-tid>> field="kind.focus" checked="yes" unchecked="" default=""/></td></tr>
+<tr><th class="kind-editor-label">focus (toolbar button on instances: open the instance on top and what its focus rules find below, close the rest; default rule: its `parent` children, latest first)</th><td><$checkbox tiddler=<<type-tid>> field="kind.focus" checked="yes" unchecked="" default=""/>
+<%if [<type-tid>get[kind.focus]match[yes]] %>
+<$let rules-tid={{{ [<type-tid>get[kind.type]addprefix[$:/config/rimir/kind/focus/]] }}}>
+<%if [<rules-tid>!is[missing]] %>
+<$link to=<<rules-tid>> class="kind-focus-rules-link">rules</$link>
+<%else%>
+<$button class="tc-btn-invisible kind-focus-rules-link" tooltip="Create this kind's focus rules (one filter per line), starting from the default rule">
+<$action-createtiddler $basetitle=<<rules-tid>> text={{$:/plugins/rimir/kind/focus/default-rules}}/>
+<$action-navigate $to=<<rules-tid>>/>
+＋ rules
+</$button>
+<%endif%>
+</$let>
+<%endif%>
+</td></tr>
 <tr><th class="kind-editor-label">spawns (space-sep `kind` or `kind:field` entries; each is a ''＋'' button on instances that creates that kind with `field` (default `parent`) set to the instance and its same-named fields copied)</th><td><$edit-text tiddler=<<type-tid>> field="kind.spawns" tag="input" class="kind-input"/></td></tr>
 <tr><th class="kind-editor-label">stream-fields (space-sep field keys; empty = hide bar)</th><td><$edit-text tiddler=<<type-tid>> field="kind.stream-fields" tag="input" class="kind-input"/></td></tr>
 <tr><th class="kind-editor-label">auto-children (JSON array; each entry `{"kind":"&lt;type-key&gt;","fields":{...}}` is created with `parent` pre-set when an instance of this type is saved)</th><td><$edit-text tiddler=<<type-tid>> field="kind.auto-children" tag="textarea" class="kind-input" rows="3"/></td></tr>

@@ -1162,3 +1162,4 @@ input.kind-text-arg {
 .tc-page-controls svg.tc-image-create-kind { fill: none; stroke: <<colour sidebar-controls-foreground>>; }
 .tc-page-controls button:hover svg.tc-image-create-kind { stroke: <<colour sidebar-controls-foreground-hover>>; }
 .tc-page-controls button.tc-selected svg.tc-image-create-kind { stroke: <<colour sidebar-controls-foreground-hover>>; }
+.kind-focus-rules-link { margin-left: 8px; font-size: 0.9em; }

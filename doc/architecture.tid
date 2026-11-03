@@ -95,7 +95,7 @@ A group kind names its members field in `kind.group-of`. Nothing is stored about
 
 !! Focus
 
-`focus-button.tid` is a ViewToolbar button. Rendering it costs only the type lookup that decides whether it shows (`kind.cockpit-host` + `kind.focus-on`); the `parent` scan runs in the click action (`kind.focus-actions`), which writes `$:/StoryList` directly, like the core close-others. Streams nodes also carry `parent`; the host's own rows are in its `stream-list` and are excluded, so only separately created children (tasks, notes, meetings, …) open.
+`focus-button.tid` is a ViewToolbar button. Rendering it costs only the type lookup that decides whether it shows (`kind.cockpit-host` + `kind.focus-on`); the rules run in the click action (`kind.focus-actions`), which writes `$:/StoryList` directly, like the core close-others. The rules tiddler (`$:/config/rimir/kind/focus/<kind-key>`, else the shipped default) is split into lines; `kind.focus-children` evaluates each line through `:map:flat[all[tiddlers]subfilter<line>!sort[modified]]`, so every rule is an independent filter (a `:filter` run stays inside its line) that starts from all tiddlers like a top-level filter (inside `:map` a bare first step would otherwise see only the rule string), sorted on its own. `+[unique[]]` keeps the first occurrence, which gives the per-rule grouping. Streams nodes also carry `parent`; the host's own rows are in its `stream-list` and are excluded, so only separately created children (tasks, notes, meetings, …) open.
 
 !! Cockpit
 

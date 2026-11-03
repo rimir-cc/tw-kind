@@ -1,0 +1,6 @@
+title: $:/plugins/rimir/kind/focus/default-rules
+
+# Focus rules: one filter per line, <host> is the focused instance.
+# Results are grouped by line, latest modified first within a line.
+# the tiddlers whose parent is the instance
+[function[kind.focus-parent],<host>]

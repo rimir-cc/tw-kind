@@ -518,11 +518,21 @@ type: text/vnd.tiddlywiki
 \end
 
 <!-- Focus (kind.focus: yes on the type): the story becomes the host followed
-     by the tiddlers whose `parent` is the host, latest modified first. Rows of
-     the host's own stream (its stream-list) are left out; the host shows them.
-     Computed on click only. -->
+     by the tiddlers its focus rules find. The rules live in
+     $:/config/rimir/kind/focus/<kind-key>, one filter per line (`#` lines are
+     comments), with <host> = the focused instance; without that tiddler the
+     shipped default applies ($:/plugins/rimir/kind/focus/default-rules: the
+     tiddlers whose `parent` is the host). Each line is its own filter, so a
+     :filter in one rule cannot narrow another; like a top-level filter a rule
+     starts from all (non-shadow) tiddlers. Results are grouped by rule in
+     line order, latest modified first within a rule; a tiddler found by an
+     earlier rule is not repeated. The host and the rows of its own stream
+     (stream-list) are left out; the host shows them. Computed on click only. -->
 \function kind.focus-on(type-tid) [<type-tid>get[kind.focus]match[yes]]
-\function kind.focus-children(host) [all[tiddlers]field:parent<host>!is[draft]] -[<host>get[stream-list]enlist-input[]] +[!sort[modified]]
+\function kind.focus-parent(host) [all[tiddlers]field:parent<host>]
+\function kind.focus-rules-tid(host) [<host>get[kind.type]addprefix[$:/config/rimir/kind/focus/]!is[missing]] ~[[$:/plugins/rimir/kind/focus/default-rules]]
+\function kind.focus-rules(host) [function[kind.focus-rules-tid],<host>get[text]splitregexp[\n]trim[]!is[blank]!prefix[#]]
+\function kind.focus-children(host) [function[kind.focus-rules],<host>] :map:flat[all[tiddlers]subfilter<currentTiddler>!is[draft]!sort[modified]] -[<host>] -[<host>get[stream-list]enlist-input[]] +[unique[]]
 
 \procedure kind.focus-actions(host)
 <$action-listops $tiddler="$:/StoryList" $field="list" $filter="[<host>] [function[kind.focus-children],<host>]"/>
