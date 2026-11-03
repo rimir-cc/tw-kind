@@ -17,10 +17,16 @@ Field definitions of the kind with key `typeKey`, as an array ([] when the kind
 is unknown or its kind.fields is not a JSON array).
 */
 exports.fieldDefs = function(wiki, typeKey) {
+	var type = exports.typeTiddler(wiki, typeKey);
+	return type ? exports.parseFields(type) : [];
+};
+
+// The type tiddler of the kind with key `typeKey`, or null
+exports.typeTiddler = function(wiki, typeKey) {
 	var title = wiki.filterTiddlers(TYPE_FILTER).filter(function(t) {
 		return wiki.getTiddler(t).fields["kind.type"] === typeKey;
 	})[0];
-	return title ? exports.parseFields(wiki.getTiddler(title)) : [];
+	return title ? wiki.getTiddler(title) : null;
 };
 
 exports.parseFields = function(typeTiddler) {
@@ -82,6 +88,31 @@ exports.accepts = function(wiki, def, target) {
 	}
 	var types = def["ref-types"] || [];
 	return !types.length || types.indexOf(tiddler.fields["kind.type"]) !== -1;
+};
+
+/*
+Members to link when the group `target` is connected to the ref field `def`, or
+null when `target` is no group for that field. A group is an instance of a kind
+with `kind.group-of: <field>`; it fits a multi field whose ref-types name one of
+its member kinds but not the group kind itself. The members returned are the
+ones `def` accepts. Same rule as kind.group-members-for in engine.tid.
+*/
+exports.groupMembers = function(wiki, def, target) {
+	var types = def["ref-types"] || [],
+		tiddler = wiki.getTiddler(target);
+	if(def.cardinality !== "multi" || !types.length || !exports.isInstance(tiddler) ||
+		types.indexOf(tiddler.fields["kind.type"]) !== -1) {
+		return null;
+	}
+	var type = exports.typeTiddler(wiki, tiddler.fields["kind.type"]),
+		key = type && (type.fields["kind.group-of"] || "").trim(),
+		memberDef = key && exports.parseFields(type).filter(function(d) { return d.key === key; })[0];
+	if(!memberDef || !(memberDef["ref-types"] || []).some(function(k) { return types.indexOf(k) !== -1; })) {
+		return null;
+	}
+	return exports.values(tiddler, memberDef).filter(function(member) {
+		return exports.accepts(wiki, def, member);
+	});
 };
 
 exports.TYPE_FILTER = TYPE_FILTER;

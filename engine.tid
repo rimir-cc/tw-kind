@@ -12,7 +12,8 @@ type: text/vnd.tiddlywiki
 \function kind.json(type-tid) [<type-tid>get[kind.fields]]
 \function kind.field-idx(type-tid, field-key) [function[kind.json],<type-tid>jsonindexes[]] :filter[function[kind.json],<type-tid>jsonget<currentTiddler>,[key]match<field-key>] +[first[]]
 \function kind.field-keys(type-tid) [function[kind.json],<type-tid>jsonindexes[]] :map[function[kind.json],<type-tid>jsonget<currentTiddler>,[key]]
-\function kind.field-prop(type-tid, field-key, prop) [function[kind.field-idx],<type-tid>,<field-key>] :map[function[kind.json],<type-tid>jsonget<currentTiddler>,<prop>]
+<!-- +[!is[blank]]: :map yields "" for a missing prop, which would block ~ fallbacks (field-caption, field-cardinality, …) -->
+\function kind.field-prop(type-tid, field-key, prop) [function[kind.field-idx],<type-tid>,<field-key>] :map[function[kind.json],<type-tid>jsonget<currentTiddler>,<prop>] +[!is[blank]]
 \function kind.field-typed(type-tid, field-key) [function[kind.field-prop],<type-tid>,<field-key>,[typed]]
 \function kind.field-caption(type-tid, field-key) [function[kind.field-prop],<type-tid>,<field-key>,[caption]] ~[<field-key>]
 \function kind.field-icon(type-tid, field-key) [function[kind.field-prop],<type-tid>,<field-key>,[icon]]
@@ -51,6 +52,26 @@ type: text/vnd.tiddlywiki
 \function kind.ref-candidates-typed(type-tid, field-key) [function[kind.ref-types],<type-tid>,<field-key>] :map:flat[function[kind.instances-of],<currentTiddler>]
 \function kind.ref-candidates-any(type-tid, field-key) [function[kind.ref-types],<type-tid>,<field-key>count[]match[0]] :map:flat[all[shadows+tiddlers]has[kind.type]!has[kind.fields]!prefix[$:/state/]!prefix[$:/temp/]]
 \function kind.ref-candidates(type-tid, field-key) [function[kind.ref-candidates-typed],<type-tid>,<field-key>] [function[kind.ref-candidates-any],<type-tid>,<field-key>] +[unique[]]
+
+<!-- Groups: a kind with `kind.group-of: <field>` is a group; its members are the
+     values of that (multi) ref field, e.g. team → members → person. A multi ref
+     field that names member kinds in ref-types but not the group kind itself
+     offers the groups as extra targets (kind.ref-group-candidates); linking one
+     adds its members that the field accepts (kind.link-group) and stores
+     nothing about the group. A field that accepts the group kind links the
+     group as usual. Same rule in JS: schema.js groupMembers. -->
+\function kind.group-field(type-tid) [<type-tid>get[kind.group-of]trim[]]
+\function kind.group-kinds-all() [function[kind.types-all]] :filter[function[kind.group-field],<currentTiddler>]
+\function kind.ref-accepts-key(type-tid, field-key, key) [function[kind.ref-types],<type-tid>,<field-key>match<key>]
+\function kind.group-accepted-member-kinds(type-tid, field-key, group-type-tid) [function[kind.group-field],<group-type-tid>] :map:flat[function[kind.ref-types],<group-type-tid>,<currentTiddler>] :filter[function[kind.ref-accepts-key],<type-tid>,<field-key>,<currentTiddler>]
+\function kind.group-fits(type-tid, field-key, group-type-tid) [<group-type-tid>get[kind.type]] :filter[function[kind.ref-accepts-key],<type-tid>,<field-key>,<currentTiddler>count[]match[0]] :filter[function[kind.group-accepted-member-kinds],<type-tid>,<field-key>,<group-type-tid>]
+\function kind.group-kinds-for(type-tid, field-key) [function[kind.field-cardinality],<type-tid>,<field-key>match[multi]] :map:flat[function[kind.group-kinds-all]] :filter[function[kind.group-fits],<type-tid>,<field-key>,<currentTiddler>]
+\function kind.ref-group-candidates(type-tid, field-key) [function[kind.group-kinds-for],<type-tid>,<field-key>] :map:flat[<currentTiddler>get[kind.type]] :map:flat[function[kind.instances-of],<currentTiddler>]
+\function kind.group-for(type-tid, field-key, inst) [function[kind.field-cardinality],<type-tid>,<field-key>match[multi]] :map[<inst>get[kind.type]] :map[function[kind.locate-type],<currentTiddler>] :filter[function[kind.group-fits],<type-tid>,<field-key>,<currentTiddler>] +[then[yes]]
+\function kind.member-accepted(type-tid, field-key, member) [<member>has[kind.type]!has[kind.fields]get[kind.type]] :filter[function[kind.ref-accepts-key],<type-tid>,<field-key>,<currentTiddler>]
+\function kind.group-members-for(type-tid, field-key, group) [function[kind.group-for],<type-tid>,<field-key>,<group>] :map[<group>get[kind.type]] :map[function[kind.locate-type],<currentTiddler>] :map[function[kind.group-field],<currentTiddler>] :map:flat[<group>get<currentTiddler>enlist-input[]] :filter[function[kind.member-accepted],<type-tid>,<field-key>,<currentTiddler>]
+\function kind.group-member-note(type-tid, field-key, group) [function[kind.group-for],<type-tid>,<field-key>,<group>] :map[function[kind.group-members-for],<type-tid>,<field-key>,<group>count[]addsuffix[ members]]
+\function kind.group-option-label(type-tid, field-key, group) [function[kind.inst-icon],<group>] [function[kind.resolve-ref],<group>] [function[kind.group-member-note],<type-tid>,<field-key>,<group>addprefix[· ]] +[join[ ]]
 
 <!-- Unsaved create-form drafts live under $:/state/ and $:/temp/ (same rule as schema.js isInstance) -->
 \function kind.instances-of(type-key) [all[shadows+tiddlers]kind.type<type-key>!has[kind.fields]!prefix[$:/state/]!prefix[$:/temp/]]
@@ -270,7 +291,7 @@ type: text/vnd.tiddlywiki
 <$action-setfield $tiddler="$:/state/rimir/kind/graph-modal" kind-tid=<<child-type-tid>> host=<<host-tid>>/>
 \end
 
-\procedure kind.gm-create-linked(type-tid, host-tid, field-key, dir)
+\procedure kind.gm-create-linked(type-tid, host-tid, field-key, dir, copy)
 <!-- Open the shared graph-modal in CREATE mode for a new <<type-tid>> instance
      linked to <<host-tid>>:
        dir=in  — the new instance points at the host through ITS field
@@ -278,6 +299,11 @@ type: text/vnd.tiddlywiki
        dir=out — the host's field <<field-key>> gets the new instance
                  (kind.gm-link-created after save); if that field has an
                  `inverse` the new kind defines, the draft is seeded with it.
+     copy=yes (kind.spawns) also prefills the draft from the host: every field
+     of the new kind that the host has, except the link field, computed fields
+     and fields with their own `default` (kind.spawn-copy-keys); ref values the
+     field does not accept are dropped, groups become their members
+     (kind.spawn-ref-string). Defaults then fill what is still blank.
      Inverse sync (inverse.js) mirrors the other end of any inverse pair once
      the instance is saved; drafts under $:/state/ are not instances, so the
      seeded link does not leak onto the host while the form is open. -->
@@ -289,6 +315,15 @@ type: text/vnd.tiddlywiki
 <%else%>
 <$list filter="[<host-tid>get[kind.type]] :map[function[kind.locate-type],<currentTiddler>] :map[function[kind.field-inverse],<currentTiddler>,<field-key>] :filter[function[kind.is-ref-typed],<type-tid>,<currentTiddler>]" variable="inv-key">
 <$action-setfield $tiddler=<<draft>> $field=<<inv-key>> $value={{{ [function[kind.link-value],<type-tid>,<inv-key>,<host-tid>] }}}/>
+</$list>
+<%endif%>
+<%if [<copy>match[yes]] %>
+<$list filter="[function[kind.spawn-copy-keys],<type-tid>,<host-tid>,<field-key>]" variable="ck">
+<%if [function[kind.is-ref-typed],<type-tid>,<ck>] %>
+<$action-setfield $tiddler=<<draft>> $field=<<ck>> $value={{{ [function[kind.spawn-ref-string],<type-tid>,<ck>,<host-tid>] }}}/>
+<%else%>
+<$action-setfield $tiddler=<<draft>> $field=<<ck>> $value={{{ [<host-tid>get<ck>] }}}/>
+<%endif%>
 </$list>
 <%endif%>
 <$transclude $variable="kind.apply-defaults-to" type-tid=<<type-tid>> target-tid=<<draft>>/>
@@ -433,6 +468,44 @@ type: text/vnd.tiddlywiki
 </div>
 <%endif%>
 <%endif%>
+\end
+
+<!-- Spawns: `kind.spawns` on a type lists what its instances create, as
+     `<kind>` or `<kind>:<field>` entries (field = the new instance's ref back
+     to the host, default `parent`), e.g. `conversation` on jour-fixe. Each
+     entry is a ＋ button in the host's field bar (stream-view) that opens the
+     create form with the link set and the host's fields copied
+     (kind.gm-create-linked copy=yes). -->
+\function kind.spawn-entries(type-tid) [<type-tid>get[kind.spawns]enlist-input[]]
+\function kind.spawn-kind(entry) [<entry>split[:]first[]]
+\function kind.spawn-field(entry) [<entry>split[:]nth[2]!is[blank]] ~[[parent]]
+\function kind.inst-type(inst) [<inst>get[kind.type]] :map[function[kind.locate-type],<currentTiddler>]
+\function kind.inst-values(inst, field-key) [function[kind.inst-type],<inst>] :filter[function[kind.field-cardinality],<currentTiddler>,<field-key>match[multi]] :map:flat[<inst>get<field-key>enlist-input[]] ~[<inst>get<field-key>!is[blank]]
+\function kind.spawn-copy-keys(type-tid, src, link-key) [function[kind.field-keys],<type-tid>] -[<link-key>] :filter[function[kind.is-computed-typed],<type-tid>,<currentTiddler>count[]match[0]] :filter[function[kind.field-default],<type-tid>,<currentTiddler>count[]match[0]] :filter[<src>get<currentTiddler>!is[blank]]
+\function kind.ref-accepts(type-tid, field-key, inst) [<inst>has[kind.type]!has[kind.fields]] :filter[function[kind.ref-types],<type-tid>,<field-key>count[]match[0]] ~[function[kind.member-accepted],<type-tid>,<field-key>,<inst>] +[then[yes]]
+\function kind.ref-link-one(type-tid, field-key, value) [function[kind.ref-accepts],<type-tid>,<field-key>,<value>then<value>] ~[function[kind.group-members-for],<type-tid>,<field-key>,<value>]
+\function kind.spawn-ref-values(type-tid, field-key, src) [function[kind.inst-values],<src>,<field-key>] :map:flat[function[kind.ref-link-one],<type-tid>,<field-key>,<currentTiddler>] +[unique[]]
+\function kind.spawn-ref-string(type-tid, field-key, src) [function[kind.field-cardinality],<type-tid>,<field-key>match[multi]] :map[function[kind.spawn-ref-values],<type-tid>,<field-key>,<src>format:titlelist[]join[ ]] ~[function[kind.spawn-ref-values],<type-tid>,<field-key>,<src>first[]]
+
+\procedure kind.spawn-buttons(host, host-type)
+<!-- ＋ <Kind> buttons for the host's kind.spawns entries -->
+<$list filter="[function[kind.spawn-entries],<host-type>]" variable="sp">
+<$let sp-tid={{{ [function[kind.spawn-kind],<sp>] :map[function[kind.locate-type],<currentTiddler>] }}} sp-field={{{ [function[kind.spawn-field],<sp>] }}}>
+<%if [<sp-tid>!is[blank]] %>
+<$let sp-cap={{{ [<sp-tid>get[kind.caption]!is[blank]] ~[<sp-tid>get[kind.type]] }}}>
+<$button class="tc-btn-invisible kind-spawn-btn" tooltip={{{ [<sp-cap>addprefix[New ]addsuffix[ from this, prefilled]] }}}>
+<$transclude $variable="kind.gm-create-linked" type-tid=<<sp-tid>> host-tid=<<host>> field-key=<<sp-field>> dir="in" copy="yes"/>
+<$text text={{{ [<sp-cap>addprefix[＋ ]] }}}/>
+</$button>
+</$let>
+<%endif%>
+</$let>
+</$list>
+\end
+
+\procedure kind.link-group(type-tid, target-tid, field-key, group)
+<!-- Appends the members of <group> that <field-key> accepts (not the group); existing values keep their order -->
+<$action-listops $tiddler=<<target-tid>> $field=<<field-key>> $filter="[<target-tid>get<field-key>enlist-input[]] =[function[kind.group-members-for],<type-tid>,<field-key>,<group>] +[unique[]]"/>
 \end
 
 \procedure kind.cockpit-toggle(host)

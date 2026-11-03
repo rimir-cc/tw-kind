@@ -62,6 +62,14 @@ Give the `ref` field an `inverse` naming the field on the target, e.g. on //conv
 </$fill>
 </$transclude>
 
+!! Q: How do I make a team stand for its persons?
+
+Set `kind.group-of: members` on the team type (its `members` field is a multi ref to person). A multi field that takes persons but not teams now also offers teams; picking or dropping one adds its members. If a field should keep the team itself, add `team` to its `ref-types`.
+
+!! Q: How do I quick-create meetings from a jour fixe?
+
+Set `kind.spawns: conversation` on the jour-fixe type (the conversation kind needs a `parent` ref that takes jour fixes; use `conversation:<field>` for another link field). Each jour fixe then shows ''＋ Meeting''. Fields both kinds have are copied; give the jour fixe's `participants` the team itself and each new meeting gets the team's current members. Give a field a `default` on the conversation kind (e.g. caption `[get[parent]get[caption]] [<now YYYY-0MM-0DD>] +[join[ ]]`) where it should be computed instead of copied.
+
 !! Q: How do I hide the cockpit or give a kind its own one?
 
 Set `kind.cockpit` on the type tiddler. `none` hides the panel for that kind. Any other value is the title of a tiddler that is shown instead of the generic panel, with `currentTiddler` (and `<<host>>`) set to the instance; it can `\import $:/plugins/rimir/kind/engine` and reuse `kind.iview-click-toggle`, `kind.iview-link`, `kind.iview-detail` and `kind.instance-content`. Cockpits that depend on one data model (fixed field names, status values, kind ranking) belong with that model, not in kind.

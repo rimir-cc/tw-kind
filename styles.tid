@@ -1091,6 +1091,17 @@ input.kind-text-arg {
 	border-color: <<colour primary>>;
 	box-shadow: inset 0 0 0 1px <<colour primary>>;
 }
+.kind-spawn-btn {
+	padding: 2px 8px;
+	border: 1px solid <<colour tiddler-border>>;
+	border-radius: 4px;
+	color: <<colour primary>>;
+	white-space: nowrap;
+}
+.kind-spawn-btn:hover {
+	border-color: <<colour primary>>;
+	background: <<colour tiddler-info-background>>;
+}
 .kcp-toggle {
 	padding: 2px 8px;
 	border: 1px solid <<colour tiddler-border>>;

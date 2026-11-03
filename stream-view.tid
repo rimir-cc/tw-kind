@@ -13,7 +13,8 @@ type: text/vnd.tiddlywiki
      Optional:
        tiddler-bar — "yes" for the tiddler's own bar (set by viewtemplate,
                      not by stream rows): right-aligned, and ends with the
-                     ▸ Connections toggle of the generic cockpit
+                     ＋ spawn buttons (kind.spawns) and the ▸ Connections
+                     toggle of the generic cockpit
 -->
 
 <$let
@@ -89,8 +90,11 @@ type: text/vnd.tiddlywiki
 </$button>
 </$list>
 
-<%if [<tiddler-bar>match[yes]] :filter[function[kind.cockpit-host],<target-tid>] :filter[function[kind.cockpit-generic-on],<type-tid>] %>
+<%if [<tiddler-bar>match[yes]] :filter[function[kind.cockpit-host],<target-tid>] %>
+<$transclude $variable="kind.spawn-buttons" host=<<target-tid>> host-type=<<type-tid>>/>
+<%if [function[kind.cockpit-generic-on],<type-tid>] %>
 <$transclude $variable="kind.cockpit-toggle" host=<<target-tid>>/>
+<%endif%>
 <%endif%>
 
 </div>

@@ -107,7 +107,7 @@ type: text/vnd.tiddlywiki
 <$let search-val={{{ [<search-state>get[text]] }}}>
 <%if [<search-val>!is[blank]] %>
 <div class="kind-dropdown">
-<$list filter="[function[kind.ref-candidates],<type-tid>,<field-key>] :filter[search:caption,title<search-val>] +[limit[10]]" variable="opt" emptyMessage="<div class='kind-dropdown-empty'>no matches</div>">
+<$list filter="[function[kind.ref-candidates],<type-tid>,<field-key>] :filter[search:caption,title<search-val>] +[limit[10]]" variable="opt">
 <$button class="kind-dropdown-item tc-btn-invisible">
 <%if [<is-multi>!is[blank]] %>
 <$action-listops $tiddler=<<target-tid>> $field=<<field-key>> $subfilter="+[toggle<opt>]"/>
@@ -119,6 +119,18 @@ type: text/vnd.tiddlywiki
 <$text text={{{ [function[kind.resolve-ref],<opt>] }}}/>
 </$button>
 </$list>
+<!-- groups (multi fields only): picking one adds its members -->
+<$list filter="[function[kind.ref-group-candidates],<type-tid>,<field-key>] :filter[search:caption,title<search-val>] +[limit[5]]" variable="grp">
+<$button class="kind-dropdown-item kind-dropdown-group tc-btn-invisible" tooltip="Adds the members, not the group">
+<$transclude $variable="kind.link-group" type-tid=<<type-tid>> target-tid=<<target-tid>> field-key=<<field-key>> group=<<grp>>/>
+<$action-deletetiddler $tiddler=<<search-state>>/>
+<$transclude $variable="kind.apply-defaults-to" type-tid=<<type-tid>> target-tid=<<target-tid>>/>
+<$text text={{{ [function[kind.group-option-label],<type-tid>,<field-key>,<grp>] }}}/>
+</$button>
+</$list>
+<%if [function[kind.ref-candidates],<type-tid>,<field-key>] [function[kind.ref-group-candidates],<type-tid>,<field-key>] :filter[search:caption,title<search-val>] +[first[]] +[count[]match[0]] %>
+<div class='kind-dropdown-empty'>no matches</div>
+<%endif%>
 </div>
 <%endif%>
 </$let>

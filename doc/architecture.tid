@@ -81,6 +81,14 @@ A `ref` field def may carry `"inverse": "<field>"`. `inverse.js` (library) keeps
 
 These are the only JS modules in kind: every other part is wikitext, but ref fields are written from many places (field editors, generated palette action strings, wizard drafts, other plugins), and only a change listener sees all of them.
 
+!! Groups
+
+A group kind names its members field in `kind.group-of`. Nothing is stored about groups on the linking side: a field that does not take the group kind but takes its member kind gets the members, once, when the group is linked. Later changes to the group do not propagate. The rule exists twice, kept in step: wikitext (`kind.group-for` / `kind.group-members-for`, used by the ref picker, the palette's multi-ref stage and spawns) and JS (`schema.groupMembers`, used by rimir/ports). Single fields never take groups, groups are one level (a member that is a group is dropped), and a field whose `ref-types` is empty (any kind) links groups as themselves.
+
+!! Spawns
+
+`kind.spawns` reuses the cockpit's create flow: `kind.gm-create-linked` with `dir=in` sets the link field, and `copy=yes` copies the host's values for every field of the new kind except the link field, computed fields and fields with a `default` (the kind's own default wins). Ref values go through `kind.ref-link-one`: kept if accepted, expanded if a group, else dropped. `kind.apply-defaults-to` runs afterwards, so defaults can build on the link and the copied values (e.g. a caption from the parent's caption).
+
 !! Cockpit
 
 `cockpit.tid` (`$:/tags/ViewTemplate`, after `viewtemplate`) dispatches on the type's `kind.cockpit`: blank = generic panel, `none` = nothing, else a custom cockpit tiddler. The generic panel needs no per-model knowledge: outgoing sections come from the kind's own ref fields, incoming sections from every (source kind, field) whose `ref-types` name this kind. A source field whose `inverse` is a ref field of this kind is skipped there, because the same relation already shows as the outgoing field.
