@@ -31,7 +31,7 @@ The engine uses `multi-arg jsonget` (the form with comma-separated path argument
 
 !! ViewTemplate auto-registration
 
-`viewtemplate.tid` is tagged `$:/tags/ViewTemplate` with `list-after: $:/core/ui/ViewTemplate/subtitle`. TiddlyWiki's ViewTemplate cascade renders all matching templates in order; ours runs right after the subtitle (modifier and date), so the field bar appears below it, above the tags and the body. TW wraps the bar, and the inline pieces inside it, in `<p>`s; styles.tid gives those `display: contents`, so their margins add no height.
+`viewtemplate.tid` is tagged `$:/tags/ViewTemplate` with `list-after: $:/core/ui/ViewTemplate/subtitle`. TiddlyWiki's ViewTemplate cascade renders all matching templates in order; ours runs right after the subtitle (modifier and date), so the field bar appears below it, above the tags and the body. TW wraps the bar, and the inline pieces inside it, in `<p>`s; styles.tid gives those `display: contents`, so their margins add no height. While the tiddler is folded (core state `$:/state/folded/<title>` = `hide`) the bar and the cockpit are not rendered (`kind.unfolded`), like the core subtitle and body.
 
 The `<%if [<currentTiddler>has[kind.type]] %>` guard means the template is silently a no-op for non-instance tiddlers.
 

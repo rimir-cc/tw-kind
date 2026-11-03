@@ -5,8 +5,12 @@ tags: $:/tags/ViewTemplate
 title: $:/plugins/rimir/kind/viewtemplate
 type: text/vnd.tiddlywiki
 
+\import $:/plugins/rimir/kind/engine
+
 <!-- tiddler-bar=yes: the tiddler's own field bar — right-aligned and with the
-     cockpit's Connections toggle; stream rows reuse stream-view without it. -->
+     cockpit's Connections toggle; stream rows reuse stream-view without it.
+     Not rendered while the tiddler is folded (kind.unfolded). -->
+<%if [function[kind.unfolded],<currentTiddler>] %>
 <$let target-tid=<<currentTiddler>> tiddler-bar="yes">
 <%if [<currentTiddler>has[kind.type]] %>
 <$transclude $tiddler="$:/plugins/rimir/kind/stream-view"/>
@@ -21,3 +25,4 @@ type: text/vnd.tiddlywiki
 </$list>
 <%endif%>
 </$let>
+<%endif%>

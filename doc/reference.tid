@@ -192,6 +192,7 @@ In ''both'' layouts ''Enter'' on a row commits it as the field value AND finalis
 |`kind.ref-accepts(type-tid, field-key, inst)` `kind.member-accepted(…)` `kind.ref-accepts-key(…)` |Whether a field takes an instance (`yes`), the instance's kind if named in `ref-types`, whether `ref-types` names a key |
 |`kind.spawn-entries(type-tid)` `kind.spawn-kind(entry)` `kind.spawn-field(entry)` |`kind.spawns` entries, split into kind and link field (default `parent`) |
 |`kind.focus-on(type-tid)` `kind.focus-children(host)` |`yes` if the kind enables focus; what the focus rules find for `host`, grouped by rule (latest modified first within a rule, no repeats), minus `host` and its own stream rows (`stream-list`) |
+|`kind.unfolded(tid)` |`show` unless `tid` is folded in the story (core `$:/state/folded/<tid>` = `hide`); gates the field bar and the cockpit |
 |`kind.focus-parent(host)` `kind.focus-rules-tid(host)` `kind.focus-rules(host)` |The tiddlers whose `parent` is `host` (for use in rules); the rules tiddler for `host`'s kind (else the shipped default); its rule lines (no blanks, no `#` comments) |
 |`kind.spawn-copy-keys(type-tid, src, link-key)` `kind.spawn-ref-values(…)` `kind.spawn-ref-string(…)` `kind.inst-values(inst, field-key)` `kind.inst-type(inst)` |What a spawn copies: field keys, the ref values after group expansion (as field value), an instance's values by its own cardinality, its type tiddler |
 

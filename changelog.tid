@@ -4,6 +4,7 @@ type: text/vnd.tiddlywiki
 ! Changelog
 
 |!Version |!Date |!Changes |
+|v0.1.96 |2026-11-03 |Fix: a folded tiddler no longer shows the field bar and the cockpit (they ended up below the core unfold bar since 0.1.95); both check the core fold state via `kind.unfolded` and are not rendered while folded. |
 |v0.1.95 |2026-11-03 |Tiddler field bar sits below the subtitle (modified date) instead of above it, and is compact: the `<p>` wrappers TW puts around the bar and its inline pieces take no box any more (`display: contents`), which removes the extra space above and below it (also in stream rows). |
 |v0.1.94 |2026-11-03 |''Focus rules'': `$:/config/rimir/kind/focus/<kind-key>` holds one filter per line (`<host>` = the focused instance, `#` comments); each line is its own filter, results are grouped by line and latest modified first within a line, without repeats. No rules tiddler = the shipped default (`parent` children, as before). New `kind.focus-parent`; the type-builder offers ''＋ rules'' / ''rules'' next to the focus checkbox. FAQ example for a person (children, open stakeholder topics, informed notes). |
 |v0.1.93 |2026-11-03 |''New kind instance'' page toolbar button: pick a kind of the active namespace, fill the create form, the new instance opens. `kind.gm-create` is the shared create entry (`kind.gm-add-child` now delegates to it); the create-modal header leaves out "under …" without a host. The quick-start steps link to the type-builder tab. |

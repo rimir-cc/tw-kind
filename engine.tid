@@ -114,6 +114,9 @@ type: text/vnd.tiddlywiki
      draft), whose kind uses the generic panel and has relations at all. These
      read only type tiddlers; instance scans happen inside the open panel. -->
 \function kind.cockpit-host(tid) [<tid>has[kind.type]!has[kind.fields]!has[draft.of]]
+<!-- Not folded in the story (core fold state $:/state/folded/<tid> = hide):
+     the field bar and the cockpit hide with the subtitle and the body. -->
+\function kind.unfolded(tid) [<tid>addprefix[$:/state/folded/]get[text]] :else[[show]] -[[hide]]
 \function kind.cockpit-relations(type-tid) [function[kind.out-fields],<type-tid>] [function[kind.in-sources],<type-tid>] +[first[]]
 \function kind.cockpit-generic-on(type-tid) [function[kind.cockpit-mode],<type-tid>match[generic]] :filter[function[kind.cockpit-relations],<type-tid>] +[then[yes]]
 \function kind.cockpit-open-state(host) [[$:/state/rimir/kind/cockpit/open/]addsuffix<host>]
