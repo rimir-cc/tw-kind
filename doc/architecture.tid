@@ -89,6 +89,10 @@ A group kind names its members field in `kind.group-of`. Nothing is stored about
 
 `kind.spawns` reuses the cockpit's create flow: `kind.gm-create-linked` with `dir=in` sets the link field, and `copy=yes` copies the host's values for every field of the new kind except the link field, computed fields and fields with a `default` (the kind's own default wins). Ref values go through `kind.ref-link-one`: kept if accepted, expanded if a group, else dropped. `kind.apply-defaults-to` runs afterwards, so defaults can build on the link and the copied values (e.g. a caption from the parent's caption).
 
+!! New kind instance
+
+`create-button.tid` is a PageControls button with a popup. The kind list (`kind.create-menu-types`: all kinds of the active namespace, sorted by `kind.type-label`) is inside the `$reveal`, so it renders only while the popup is open. A pick calls `kind.gm-create` without a host and with `after-create="kind.gm-link-created"`, which opens the saved instance (no link to write without a host). `kind.gm-add-child` is `kind.gm-create` with a host, so the graph tooltip, the dashboard and the toolbar share one create path. The icon is a stroke SVG; page controls colour icons through `fill`, so styles.tid sets `fill: none` and the stroke colour for `.tc-image-create-kind`.
+
 !! Focus
 
 `focus-button.tid` is a ViewToolbar button. Rendering it costs only the type lookup that decides whether it shows (`kind.cockpit-host` + `kind.focus-on`); the `parent` scan runs in the click action (`kind.focus-actions`), which writes `$:/StoryList` directly, like the core close-others. Streams nodes also carry `parent`; the host's own rows are in its `stream-list` and are excluded, so only separately created children (tasks, notes, meetings, …) open.

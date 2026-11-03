@@ -1139,3 +1139,26 @@ input.kind-text-arg {
 .kcp-add-menu .tc-btn-invisible:hover {
 	background: <<colour dropdown-tab-background-selected>>;
 }
+
+/* === page toolbar create-button popup === */
+.kind-create-popup {
+	max-height: 60vh;
+	overflow-y: auto;
+	text-align: left;
+}
+.kind-create-popup .kind-editor-label { margin-bottom: 6px; }
+.kind-create-item {
+	display: flex;
+	align-items: center;
+	gap: 6px;
+	width: 100%;
+	padding: 3px 6px;
+	border-radius: 4px;
+	text-align: left;
+}
+.kind-create-item:hover { background: <<colour tiddler-info-background>>; }
+.kind-create-icon { width: 1.4em; text-align: center; }
+/* stroke icon: the page controls colour svgs through `fill` */
+.tc-page-controls svg.tc-image-create-kind { fill: none; stroke: <<colour sidebar-controls-foreground>>; }
+.tc-page-controls button:hover svg.tc-image-create-kind { stroke: <<colour sidebar-controls-foreground-hover>>; }
+.tc-page-controls button.tc-selected svg.tc-image-create-kind { stroke: <<colour sidebar-controls-foreground-hover>>; }

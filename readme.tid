@@ -15,6 +15,7 @@ Lightweight schema engine for TiddlyWiki. Define each type's fields, constraints
 * ''Two-way links'' — a `ref` field with `"inverse": "<field>"` keeps the target's field in sync: linking Anna to a conversation's participants lists the conversation under Anna's conversations, unlinking removes it — whatever wrote the link (editor, palette, [[rimir/ports|$:/plugins/rimir/ports]], manual edit)
 * ''Groups'' — mark a kind as a group of another (`kind.group-of: members` on //team//, whose `members` field takes persons). A multi field that takes persons but not teams also offers teams; linking one adds its current members, nothing records the team. Fields that take teams link the team itself. Works the same in the ref picker, the palette and when dropping a port (rimir/ports).
 * ''Spawns'' — `kind.spawns: conversation` on //jour-fixe// puts a ''＋ Meeting'' button into each jour fixe's field bar. It opens the create form with `parent` set to the jour fixe and every same-named field copied (participants, location, …); teams become their members, fields with their own `default` are left to it.
+* ''New kind instance'' — a page toolbar button (below the wiki title) lists the kinds of the active namespace; picking one opens the create form, and the new instance opens after ''Create''. The list renders only while the popup is open. Hide it under ControlPanel → Appearance → Toolbars → Page Toolbar.
 * ''Focus'' — kinds with `kind.focus: yes` get a toolbar button (close-others icon) on their instances: the story becomes the instance, then every tiddler whose `parent` it is, latest modified first; the rest is closed. Rows of the instance's own stream stay inside it. Children are looked up on click only.
 * ''Configurable stream-river view'' — each type chooses which fields appear in its in-river field bar; empty = bar hidden
 * ''Type picker / assign'' — the field bar's leading type icon is a button: click it to change the instance's kind or ''✕ Remove type''. Tiddlers with no kind can show an optional ''＋ type'' dropdown under the title to assign one — toggled by `$:/config/rimir/kind/type-selector-enable` (default on) and scoped by a qualifying filter, both in Settings
@@ -31,7 +32,7 @@ No external prerequisites for the core schema/UI. `date` / `datetime` fields use
 
 !! Quick start
 
-# Open the ''type-builder'' tab and define a new type (key, caption, icon, namespaces, title-formula, fields JSON).
+# Open the [[type-builder|$:/plugins/rimir/kind/type-builder]] tab and define a new type (key, caption, icon, namespaces, title-formula, fields JSON).
 # Open the ''creator'' tab, pick the type, fill the fields, click Create.
 # Open the resulting tiddler in the story river — the stream-view field bar appears at the top.
 # Use the ''validator'' tab for a wiki-wide constraint scan.

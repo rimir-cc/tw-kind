@@ -1,0 +1,37 @@
+title: $:/plugins/rimir/kind/create-button
+tags: $:/tags/PageControls
+list-after: $:/core/ui/Buttons/new-tiddler
+caption: {{$:/plugins/rimir/kind/images/create-button}} new kind instance
+description: Create a new kind instance: pick the kind, then fill the create form
+type: text/vnd.tiddlywiki
+
+\whitespace trim
+\import $:/plugins/rimir/kind/engine
+<!-- Page toolbar button: a popup lists the kinds of the active namespace; a
+     pick opens the shared graph-modal create form (kind.gm-create). The kind
+     list renders only while the popup is open. -->
+<$let popup-state="$:/state/popup/rimir/kind/create-button" active-ns={{{ [function[kind.active-ns]] }}}>
+<span class="kind-create-button tc-popup-keep">
+<$button popup=<<popup-state>> tooltip="Create a new kind instance" aria-label="new kind instance" class=<<tv-config-toolbar-class>> selectedClass="tc-selected">
+<%if [<tv-config-toolbar-icons>match[yes]] %>
+{{$:/plugins/rimir/kind/images/create-button}}
+<%endif%>
+<%if [<tv-config-toolbar-text>match[yes]] %>
+<span class="tc-btn-text">new kind instance</span>
+<%endif%>
+</$button>
+<$reveal state=<<popup-state>> type="popup" position="below" animate="yes" class="tc-popup-keep">
+<div class="kind-type-picker-popup kind-create-popup">
+<div class="kind-editor-label">Create kind instance</div>
+<$list filter="[function[kind.create-menu-types],<active-ns>]" variable="t" emptyMessage="""<em>No kinds in this namespace.</em>""">
+<$button class="tc-btn-invisible kind-create-item">
+<$action-deletetiddler $tiddler=<<popup-state>>/>
+<$transclude $variable="kind.gm-create" type-tid=<<t>> after-create="kind.gm-link-created"/>
+<span class="kind-create-icon"><$text text={{{ [<t>get[kind.icon]] }}}/></span>
+<$text text={{{ [function[kind.type-label],<t>] }}}/>
+</$button>
+</$list>
+</div>
+</$reveal>
+</span>
+</$let>

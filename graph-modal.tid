@@ -91,8 +91,10 @@ Cancel
 <$let link-field={{{ [<gm-state>get[link-field]] }}}>
 <$text text={{{ [<type-tid>get[kind.icon]] [[Create]] +[join[ ]] }}}/><$text text=" "/>
 <strong><$text text={{{ [<type-tid>get[kind.caption]!is[blank]] ~[<type-key>] }}}/></strong>
+<%if [<host-tid>!is[blank]] %>
 <$text text={{{ [<link-field>is[blank]then[ under ]] ~[[ for ]] }}}/>
 <code><$text text={{{ [<host-tid>get[caption]] ~[<host-tid>] }}}/></code>
+<%endif%>
 <%if [<link-field>!is[blank]] %>
 <span class="kind-graph-modal-sub"><$text text={{{ [<gm-state>get[link-dir]match[out]then<host-tid>get[kind.type]] :map[function[kind.locate-type],<currentTiddler>] ~[<type-tid>] :map[function[kind.field-caption],<currentTiddler>,<link-field>] +[addprefix[ — ]] }}}/></span>
 <%endif%>
