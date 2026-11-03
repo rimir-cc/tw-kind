@@ -15,9 +15,10 @@ type: text/vnd.tiddlywiki
      Generic panel: one section per own ref field (outgoing) and one per
      (source kind, field) pointing here (incoming). Each section's ＋ creates a
      new instance through the graph-modal and links it (kind.gm-create-linked).
-     It starts collapsed behind a "Connections" toggle, open state per instance
-     in $:/state/rimir/kind/cockpit/open/<instance>; while collapsed none of its
-     contents are rendered, so the instance scans only run once it is opened. -->
+     It starts collapsed; the ▸ Connections toggle (kind.cockpit-toggle) sits in
+     the tiddler's field bar (stream-view), open state per instance in
+     $:/state/rimir/kind/cockpit/open/<instance>. While collapsed nothing of the
+     panel is rendered, so its instance scans only run once it is opened. -->
 
 \procedure kind.cockpit-add(kinds, field-key, dir)
 <!-- ＋ of one section: direct for a single target kind, a kind menu otherwise -->
@@ -126,7 +127,7 @@ type: text/vnd.tiddlywiki
 </$let>
 \end
 
-<%if [<currentTiddler>has[kind.type]!has[kind.fields]!has[draft.of]] %>
+<%if [function[kind.cockpit-host],<currentTiddler>] %>
 <$let
   host=<<currentTiddler>>
   host-type={{{ [<currentTiddler>get[kind.type]] :map[function[kind.locate-type],<currentTiddler>] }}}
@@ -134,20 +135,8 @@ type: text/vnd.tiddlywiki
 <$let mode={{{ [function[kind.cockpit-mode],<host-type>] }}}>
 <%if [<host-type>is[blank]] [<mode>match[none]] +[first[]] %>
 <%elseif [<mode>match[generic]] %>
-<%if [function[kind.out-fields],<host-type>] [function[kind.in-sources],<host-type>] +[first[]] %>
-<$let open-state={{{ [[$:/state/rimir/kind/cockpit/open/]addsuffix<host>] }}}>
-<%if [<open-state>get[text]match[yes]] %>
-<$button class="tc-btn-invisible kcp-toggle kcp-toggle-open" tooltip="Hide connections">
-<$action-deletetiddler $tiddler=<<open-state>>/>
-▾ Connections
-</$button>
+<%if [function[kind.cockpit-open],<host>] :filter[function[kind.cockpit-relations],<host-type>] %>
 <$transclude $variable="kind.cockpit-generic"/>
-<%else%>
-<$button class="tc-btn-invisible kcp-toggle" tooltip="Show incoming and outgoing connections" set=<<open-state>> setTo="yes">
-▸ Connections
-</$button>
-<%endif%>
-</$let>
 <%endif%>
 <%else%>
 <$transclude $tiddler=<<mode>> $mode="block"/>

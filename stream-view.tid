@@ -10,6 +10,10 @@ type: text/vnd.tiddlywiki
 
      Required vars in scope:
        target-tid — instance tiddler to display
+     Optional:
+       tiddler-bar — "yes" for the tiddler's own bar (set by viewtemplate,
+                     not by stream rows): right-aligned, and ends with the
+                     ▸ Connections toggle of the generic cockpit
 -->
 
 <$let
@@ -25,7 +29,7 @@ type: text/vnd.tiddlywiki
   mode-state={{{ [[$:/state/rimir/kind/edit-mode/]addsuffix<target-tid>] }}}
   edit-mode={{{ [<mode-state>get[text]] ~[[popup]] }}}
 >
-<div class="kind-field-bar">
+<div class={{{ [[kind-field-bar]] [<tiddler-bar>match[yes]then[kind-field-bar-tiddler]] +[join[ ]] }}}>
 
 <!-- Leading type pill = picker: click to change or remove the kind type.
      Always shown when typed, even if the type has no stream-fields. -->
@@ -84,6 +88,10 @@ type: text/vnd.tiddlywiki
 <%endif%>
 </$button>
 </$list>
+
+<%if [<tiddler-bar>match[yes]] :filter[function[kind.cockpit-host],<target-tid>] :filter[function[kind.cockpit-generic-on],<type-tid>] %>
+<$transclude $variable="kind.cockpit-toggle" host=<<target-tid>>/>
+<%endif%>
 
 </div>
 </$let>

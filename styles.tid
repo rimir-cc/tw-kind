@@ -201,6 +201,8 @@ textarea.kind-input,
 }
 /* standalone assign bar on untyped tiddlers — lighter than the full field bar */
 .kind-field-bar-assign { opacity: 0.85; }
+/* the tiddler's own field bar sits on the right; stream rows keep theirs left */
+.kind-field-bar-tiddler { justify-content: flex-end; }
 
 /* === single-instance view (card layout) === */
 .kind-view-card {
@@ -1090,19 +1092,20 @@ input.kind-text-arg {
 	box-shadow: inset 0 0 0 1px <<colour primary>>;
 }
 .kcp-toggle {
-	margin: 4px 0;
-	padding: 1px 8px;
+	padding: 2px 8px;
+	border: 1px solid <<colour tiddler-border>>;
 	border-radius: 4px;
 	color: <<colour muted-foreground>>;
-	font-size: 0.85em;
-	font-weight: 600;
+	white-space: nowrap;
 }
 .kcp-toggle:hover {
 	color: <<colour primary>>;
-	background: <<colour tiddler-info-background>>;
+	border-color: <<colour primary>>;
 }
-.kcp-toggle-open + .kpv-panel {
-	margin-top: 0;
+.kcp-toggle-open {
+	color: <<colour primary>>;
+	border-color: <<colour primary>>;
+	background: <<colour tiddler-info-background>>;
 }
 .kcp-add {
 	margin-left: 2px;

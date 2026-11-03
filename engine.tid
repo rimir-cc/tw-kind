@@ -86,6 +86,15 @@ type: text/vnd.tiddlywiki
      (source kind, field) pairs pointing at it, minus pairs that only mirror an
      outgoing field through `inverse` (shown once, on the outgoing side). -->
 \function kind.cockpit-mode(type-tid) [<type-tid>get[kind.cockpit]trim[]!is[blank]] ~[[generic]]
+<!-- Cockpit gates, shared by cockpit.tid and the Connections toggle in the
+     tiddler's field bar (stream-view): an opened instance (not a type, not a
+     draft), whose kind uses the generic panel and has relations at all. These
+     read only type tiddlers; instance scans happen inside the open panel. -->
+\function kind.cockpit-host(tid) [<tid>has[kind.type]!has[kind.fields]!has[draft.of]]
+\function kind.cockpit-relations(type-tid) [function[kind.out-fields],<type-tid>] [function[kind.in-sources],<type-tid>] +[first[]]
+\function kind.cockpit-generic-on(type-tid) [function[kind.cockpit-mode],<type-tid>match[generic]] :filter[function[kind.cockpit-relations],<type-tid>] +[then[yes]]
+\function kind.cockpit-open-state(host) [[$:/state/rimir/kind/cockpit/open/]addsuffix<host>]
+\function kind.cockpit-open(host) [function[kind.cockpit-open-state],<host>get[text]match[yes]]
 \function kind.field-inverse(type-tid, field-key) [function[kind.field-prop],<type-tid>,<field-key>,[inverse]]
 \function kind.out-fields(type-tid) [function[kind.field-keys],<type-tid>] :filter[function[kind.is-ref-typed],<type-tid>,<currentTiddler>]
 \function kind.field-target-kinds(type-tid, field-key) [function[kind.ref-types],<type-tid>,<field-key>] ~[function[kind.types-all]get[kind.type]]
@@ -424,6 +433,22 @@ type: text/vnd.tiddlywiki
 </div>
 <%endif%>
 <%endif%>
+\end
+
+\procedure kind.cockpit-toggle(host)
+<!-- ▸/▾ Connections button for the generic cockpit of <host> -->
+<$let open-state={{{ [function[kind.cockpit-open-state],<host>] }}}>
+<%if [function[kind.cockpit-open],<host>] %>
+<$button class="tc-btn-invisible kcp-toggle kcp-toggle-open" tooltip="Hide connections">
+<$action-deletetiddler $tiddler=<<open-state>>/>
+▾ Connections
+</$button>
+<%else%>
+<$button class="tc-btn-invisible kcp-toggle" tooltip="Show incoming and outgoing connections" set=<<open-state>> setTo="yes">
+▸ Connections
+</$button>
+<%endif%>
+</$let>
 \end
 
 \procedure kind.iview-click-toggle()
