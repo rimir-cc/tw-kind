@@ -203,6 +203,9 @@ textarea.kind-input,
 .kind-field-bar-assign { opacity: 0.85; }
 /* the tiddler's own field bar sits on the right; stream rows keep theirs left */
 .kind-field-bar-tiddler { justify-content: flex-end; }
+/* TW wraps the bar (and the inline pieces inside it) in <p>s whose margins
+   made the tiddler header tall; let them take no box of their own */
+p:has(> .kind-field-bar), .kind-field-bar p { display: contents; }
 
 /* === single-instance view (card layout) === */
 .kind-view-card {

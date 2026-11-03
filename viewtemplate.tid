@@ -1,6 +1,6 @@
 created: 20260520120000000
 modified: 20260520120000000
-list-after: $:/core/ui/ViewTemplate/title
+list-after: $:/core/ui/ViewTemplate/subtitle
 tags: $:/tags/ViewTemplate
 title: $:/plugins/rimir/kind/viewtemplate
 type: text/vnd.tiddlywiki
