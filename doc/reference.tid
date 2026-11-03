@@ -25,7 +25,7 @@ type: text/vnd.tiddlywiki
 |`kind.back-group-by` |No |Reverse-reference navigation (the ''Referenced by…'' action): field key whose value clusters this kind's instances in the listing (e.g. `status`). Empty = one undifferentiated group. |
 |`kind.back-sort-by` |No |Reverse-reference navigation: field key the listing sorts by, ''descending'' (newest-first). Defaults to `modified`. |
 |`kind.group-of` |No |Makes the kind a ''group'': key of its own multi ref field that holds the members (e.g. `members` on team → person). Multi fields that take a member kind but not this kind offer groups and link their members instead. |
-|`kind.focus` |No |`yes` = instances get the ''focus'' toolbar button: story = the instance plus what its focus rules find (default: its `parent` children), the rest closed. |
+|`kind.focus` |No |`yes` = instances get the ''focus'' toolbar button: story = the instance plus what its focus rules find (default: its `parent` children), the rest closed. Shift-click keeps the story and opens them right after the instance. |
 |`kind.spawns` |No |Space-separated `<kind>` or `<kind>:<field>` entries: a ''＋ <Kind>'' button per entry in the instance's field bar creates that kind with `field` (default `parent`) set to the instance and the instance's same-named fields copied. |
 |`kind.cockpit` |No |Panel under an opened instance: blank = the generic cockpit (sections per own ref field and per incoming (kind, field) pair, each with ''＋'' to create and link), `none` = no panel, any other value = title of a custom cockpit tiddler, transcluded with `currentTiddler` = the instance. |
 
@@ -210,7 +210,7 @@ In ''both'' layouts ''Enter'' on a row commits it as the field value AND finalis
 |`kind.gm-add-child(child-type-tid, host-tid)` |`kind.gm-create` with a host: a new child instance with `parent = host` (graph tooltip, dashboard). |
 |`kind.create-menu-types(active-ns)` `kind.type-label(type-tid)` |Kinds offered by the page toolbar button (active namespace, sorted by label); a kind's caption, else its key. |
 |`kind.link-group(type-tid, target-tid, field-key, group)` |Appends the members of `group` that the field accepts (existing values keep their order) |
-|`kind.focus-actions(host)` |Sets `$:/StoryList` to `host` + `kind.focus-children` and navigates to `host` |
+|`kind.focus-actions(host, add)` |Sets `$:/StoryList` to `host` + `kind.focus-children` and navigates to `host`. `add=yes` (the button passes it on Shift-click) keeps the story: the found tiddlers are taken out and put back right after `host`, nothing is closed |
 |`kind.spawn-buttons(host, host-type)` |The ''＋ <Kind>'' buttons of `kind.spawns`, rendered in the tiddler's field bar |
 |`kind.gm-create-linked(type-tid, host-tid, field-key, dir[, copy])` `kind.gm-link-created()` |Action procedures behind the cockpit ＋ — open the create modal for a new `type-tid` instance linked to `host-tid`: `dir=in` pre-sets the new instance's `field-key` to the host; `dir=out` adds the new instance to the host's `field-key` after save (the `after-create` hook `kind.gm-link-created`, which also opens the new instance) and pre-sets the inverse field when the new kind defines it. `copy=yes` (spawns) also copies the host's same-named fields into the draft (see `kind.spawn-copy-keys`). |
 

@@ -65,6 +65,12 @@ describe("kind focus", function() {
 		expect($tw.wiki.getTiddlerList("$:/StoryList")).toEqual([HOST, PREFIX + "new note", PREFIX + "old task"]);
 	});
 
+	it("with add=yes (Shift-click) keeps the story and puts the children right after the host", function() {
+		$tw.wiki.addTiddler({title: "$:/StoryList", list: $tw.utils.stringifyList(["Before", PREFIX + "old task", HOST, "After"])});
+		invoke("<$transclude $variable=\"kind.focus-actions\" host=\"" + HOST + "\" add=\"yes\"/>");
+		expect($tw.wiki.getTiddlerList("$:/StoryList")).toEqual(["Before", HOST, PREFIX + "new note", PREFIX + "old task", "After"]);
+	});
+
 	describe("with a rules tiddler", function() {
 
 		var RULES = "$:/config/rimir/kind/focus/kf-topic";

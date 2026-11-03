@@ -2,16 +2,18 @@ title: $:/plugins/rimir/kind/focus-button
 tags: $:/tags/ViewToolbar
 list-after: $:/core/ui/Buttons/close-others
 caption: {{$:/core/images/close-others-button}} focus
-description: Focus: this tiddler on top, the instances whose parent it is below (latest first), everything else closed
+description: Focus: this tiddler on top, the tiddlers its focus rules find below, everything else closed; Shift-click opens them additionally
 type: text/vnd.tiddlywiki
 
 \whitespace trim
 \import $:/plugins/rimir/kind/engine
 <!-- Shown only on instances whose kind sets kind.focus: yes. The children are
-     looked up on click only (kind.focus-actions), never while rendering. -->
+     looked up on click only (kind.focus-actions), never while rendering.
+     The actions go through the actions attribute: only there $button sets
+     <<modifier>>, which turns a Shift-click into add=yes. -->
 <%if [function[kind.cockpit-host],<currentTiddler>] :map[function[kind.inst-type],<currentTiddler>] :filter[function[kind.focus-on],<currentTiddler>] %>
-<$button tooltip="Focus: this tiddler and its children, close the rest" aria-label="focus" class=<<tv-config-toolbar-class>>>
-<$transclude $variable="kind.focus-actions" host=<<currentTiddler>>/>
+<$button tooltip="Focus: this tiddler and its children, close the rest (Shift: open them additionally)" aria-label="focus" class=<<tv-config-toolbar-class>>
+	actions="""<$transclude $variable="kind.focus-actions" host=<<currentTiddler>> add={{{ [<modifier>split[-]match[shift]then[yes]] }}}/>""">
 <%if [<tv-config-toolbar-icons>match[yes]] %>
 {{$:/core/images/close-others-button}}
 <%endif%>
