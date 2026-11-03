@@ -4,6 +4,7 @@ type: text/vnd.tiddlywiki
 ! Changelog
 
 |!Version |!Date |!Changes |
+|v0.1.97 |2026-11-03 |Field bar icons carry `data-kind-src`, `data-kind-field` and `data-kind-ref="yes"` (ref fields), so bridges can attach to a field; rimir/ports 0.1.4 drags new links out of ref field icons. |
 |v0.1.96 |2026-11-03 |Fix: a folded tiddler no longer shows the field bar and the cockpit (they ended up below the core unfold bar since 0.1.95); both check the core fold state via `kind.unfolded` and are not rendered while folded. |
 |v0.1.95 |2026-11-03 |Tiddler field bar sits below the subtitle (modified date) instead of above it, and is compact: the `<p>` wrappers TW puts around the bar and its inline pieces take no box any more (`display: contents`), which removes the extra space above and below it (also in stream rows). |
 |v0.1.94 |2026-11-03 |''Focus rules'': `$:/config/rimir/kind/focus/<kind-key>` holds one filter per line (`<host>` = the focused instance, `#` comments); each line is its own filter, results are grouped by line and latest modified first within a line, without repeats. No rules tiddler = the shipped default (`parent` children, as before). New `kind.focus-parent`; the type-builder offers ''＋ rules'' / ''rules'' next to the focus checkbox. FAQ example for a person (children, open stakeholder topics, informed notes). |

@@ -37,6 +37,9 @@ type: text/vnd.tiddlywiki
 <$transclude $tiddler="$:/plugins/rimir/kind/type-picker"/>
 
 <$list filter="[function[kind.stream-fields],<type-tid>]" variable="field-key">
+<!-- The field icon names its instance and field (data-kind-src /
+     data-kind-field; data-kind-ref="yes" on ref fields) so bridges can use it,
+     e.g. rimir/ports drags new links out of it. -->
 <!-- Stable per row (no dependency on the target field's value):
      field-icon, field-cap, popup-state. Value-derived vars (display-val,
      truncated) are scoped into a nested let around the button label only,
@@ -47,18 +50,19 @@ type: text/vnd.tiddlywiki
   field-icon={{{ [function[kind.field-icon],<type-tid>,<field-key>] }}}
   field-cap={{{ [function[kind.field-caption],<type-tid>,<field-key>] }}}
   popup-state={{{ [<target-tid>addsuffix[/kind-streambar/]addsuffix<field-key>] }}}
+  ref-field={{{ [function[kind.is-ref-typed],<type-tid>,<field-key>then[yes]] }}}
 >
 <%if [<edit-mode>match[inline]] %>
 <!-- inline edit mode: render field-input directly in the cell -->
 <span class="kind-field-cell">
-<span class="kind-field-cell-icon"><<field-icon>></span>
+<span class="kind-field-cell-icon" data-kind-ref=<<ref-field>> data-kind-src=<<target-tid>> data-kind-field=<<field-key>>><<field-icon>></span>
 <$let inline="yes"><$transclude $tiddler="$:/plugins/rimir/kind/field-input"/></$let>
 </span>
 <%else%>
 <!-- popup edit mode: click cell → field-input in popup -->
 <span class="kind-field-cell tc-popup-keep">
 <$button popup=<<popup-state>> class="tc-btn-invisible" tooltip=<<field-cap>>>
-<span class="kind-field-cell-icon"><<field-icon>></span>
+<span class="kind-field-cell-icon" data-kind-ref=<<ref-field>> data-kind-src=<<target-tid>> data-kind-field=<<field-key>>><<field-icon>></span>
 <$let
   display-val={{{ [function[kind.field-display-list],<type-tid>,<target-tid>,<field-key>] +[join[, ]] }}}
   truncated={{{ [function[kind.display],<display-val>,<bar-max-length>] }}}

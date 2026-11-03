@@ -107,6 +107,8 @@ The ＋ of a section reuses the graph-modal create form and the shared `kind.fin
 
 !! Stream-view (ViewTemplate auto-registration)
 
+Each field icon in the bar names its instance and field: `data-kind-src`, `data-kind-field`, and `data-kind-ref="yes"` on ref fields (`kind.is-ref-typed`). Kind does nothing with them; they let bridges attach to a field without knowing kind's markup (rimir/ports drags new links out of ref field icons).
+
 `viewtemplate.tid` is tagged `$:/tags/ViewTemplate` with `list-after: $:/core/ui/ViewTemplate/title`. On any tiddler with a `kind.type` field, it renders `stream-view.tid`, which reads `kind.stream-fields` from the type and emits a compact bar. Empty/missing `kind.stream-fields` = bar renders nothing (self-disabling).
 
 A click on a field cell opens a popup containing the field's editor; a top-bar toggle switches to inline-edit mode (the editor replaces the cell directly).
