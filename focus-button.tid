@@ -1,0 +1,22 @@
+title: $:/plugins/rimir/kind/focus-button
+tags: $:/tags/ViewToolbar
+list-after: $:/core/ui/Buttons/close-others
+caption: {{$:/core/images/close-others-button}} focus
+description: Focus: this tiddler on top, the instances whose parent it is below (latest first), everything else closed
+type: text/vnd.tiddlywiki
+
+\whitespace trim
+\import $:/plugins/rimir/kind/engine
+<!-- Shown only on instances whose kind sets kind.focus: yes. The children are
+     looked up on click only (kind.focus-actions), never while rendering. -->
+<%if [function[kind.cockpit-host],<currentTiddler>] :map[function[kind.inst-type],<currentTiddler>] :filter[function[kind.focus-on],<currentTiddler>] %>
+<$button tooltip="Focus: this tiddler and its children, close the rest" aria-label="focus" class=<<tv-config-toolbar-class>>>
+<$transclude $variable="kind.focus-actions" host=<<currentTiddler>>/>
+<%if [<tv-config-toolbar-icons>match[yes]] %>
+{{$:/core/images/close-others-button}}
+<%endif%>
+<%if [<tv-config-toolbar-text>match[yes]] %>
+<span class="tc-btn-text">focus</span>
+<%endif%>
+</$button>
+<%endif%>

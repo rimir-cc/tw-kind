@@ -25,6 +25,7 @@ type: text/vnd.tiddlywiki
 |`kind.back-group-by` |No |Reverse-reference navigation (the ''Referenced by…'' action): field key whose value clusters this kind's instances in the listing (e.g. `status`). Empty = one undifferentiated group. |
 |`kind.back-sort-by` |No |Reverse-reference navigation: field key the listing sorts by, ''descending'' (newest-first). Defaults to `modified`. |
 |`kind.group-of` |No |Makes the kind a ''group'': key of its own multi ref field that holds the members (e.g. `members` on team → person). Multi fields that take a member kind but not this kind offer groups and link their members instead. |
+|`kind.focus` |No |`yes` = instances get the ''focus'' toolbar button: story = the instance plus its `parent` children (latest first), the rest closed. |
 |`kind.spawns` |No |Space-separated `<kind>` or `<kind>:<field>` entries: a ''＋ <Kind>'' button per entry in the instance's field bar creates that kind with `field` (default `parent`) set to the instance and the instance's same-named fields copied. |
 |`kind.cockpit` |No |Panel under an opened instance: blank = the generic cockpit (sections per own ref field and per incoming (kind, field) pair, each with ''＋'' to create and link), `none` = no panel, any other value = title of a custom cockpit tiddler, transcluded with `currentTiddler` = the instance. |
 
@@ -189,6 +190,7 @@ In ''both'' layouts ''Enter'' on a row commits it as the field value AND finalis
 |`kind.ref-group-candidates(type-tid, field-key)` `kind.group-for(type-tid, field-key, inst)` `kind.group-members-for(type-tid, field-key, group)` `kind.group-member-note(…)` `kind.group-option-label(…)` |Group instances offered by a field; `yes` if `inst` is one; the members a link adds; "N members" and the picker label |
 |`kind.ref-accepts(type-tid, field-key, inst)` `kind.member-accepted(…)` `kind.ref-accepts-key(…)` |Whether a field takes an instance (`yes`), the instance's kind if named in `ref-types`, whether `ref-types` names a key |
 |`kind.spawn-entries(type-tid)` `kind.spawn-kind(entry)` `kind.spawn-field(entry)` |`kind.spawns` entries, split into kind and link field (default `parent`) |
+|`kind.focus-on(type-tid)` `kind.focus-children(host)` |`yes` if the kind enables focus; the tiddlers whose `parent` is `host`, minus `host`'s own stream rows (`stream-list`), latest modified first |
 |`kind.spawn-copy-keys(type-tid, src, link-key)` `kind.spawn-ref-values(…)` `kind.spawn-ref-string(…)` `kind.inst-values(inst, field-key)` `kind.inst-type(inst)` |What a spawn copies: field keys, the ref values after group expansion (as field value), an instance's values by its own cardinality, its type tiddler |
 
 !! Engine procedures (engine.tid)
@@ -203,6 +205,7 @@ In ''both'' layouts ''Enter'' on a row commits it as the field value AND finalis
 |`kind.gm-delete(entity-tid)` |Action procedure — opens the graph-modal in DELETE-confirm mode (the modal re-checks for `parent`-field children before allowing it). |
 |`kind.gm-add-child(child-type-tid, host-tid)` |Action procedure — seeds `…/graph-modal/draft` with `parent = host` + the child kind's defaults and opens the modal in create mode (reusing the editor + `kind.finalize-create`). |
 |`kind.link-group(type-tid, target-tid, field-key, group)` |Appends the members of `group` that the field accepts (existing values keep their order) |
+|`kind.focus-actions(host)` |Sets `$:/StoryList` to `host` + `kind.focus-children` and navigates to `host` |
 |`kind.spawn-buttons(host, host-type)` |The ''＋ <Kind>'' buttons of `kind.spawns`, rendered in the tiddler's field bar |
 |`kind.gm-create-linked(type-tid, host-tid, field-key, dir[, copy])` `kind.gm-link-created()` |Action procedures behind the cockpit ＋ — open the create modal for a new `type-tid` instance linked to `host-tid`: `dir=in` pre-sets the new instance's `field-key` to the host; `dir=out` adds the new instance to the host's `field-key` after save (the `after-create` hook `kind.gm-link-created`, which also opens the new instance) and pre-sets the inverse field when the new kind defines it. `copy=yes` (spawns) also copies the host's same-named fields into the draft (see `kind.spawn-copy-keys`). |
 

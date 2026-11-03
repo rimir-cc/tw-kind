@@ -89,6 +89,10 @@ A group kind names its members field in `kind.group-of`. Nothing is stored about
 
 `kind.spawns` reuses the cockpit's create flow: `kind.gm-create-linked` with `dir=in` sets the link field, and `copy=yes` copies the host's values for every field of the new kind except the link field, computed fields and fields with a `default` (the kind's own default wins). Ref values go through `kind.ref-link-one`: kept if accepted, expanded if a group, else dropped. `kind.apply-defaults-to` runs afterwards, so defaults can build on the link and the copied values (e.g. a caption from the parent's caption).
 
+!! Focus
+
+`focus-button.tid` is a ViewToolbar button. Rendering it costs only the type lookup that decides whether it shows (`kind.cockpit-host` + `kind.focus-on`); the `parent` scan runs in the click action (`kind.focus-actions`), which writes `$:/StoryList` directly, like the core close-others. Streams nodes also carry `parent`; the host's own rows are in its `stream-list` and are excluded, so only separately created children (tasks, notes, meetings, …) open.
+
 !! Cockpit
 
 `cockpit.tid` (`$:/tags/ViewTemplate`, after `viewtemplate`) dispatches on the type's `kind.cockpit`: blank = generic panel, `none` = nothing, else a custom cockpit tiddler. The generic panel needs no per-model knowledge: outgoing sections come from the kind's own ref fields, incoming sections from every (source kind, field) whose `ref-types` name this kind. A source field whose `inverse` is a ref field of this kind is skipped there, because the same relation already shows as the outgoing field.

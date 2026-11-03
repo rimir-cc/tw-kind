@@ -503,6 +503,18 @@ type: text/vnd.tiddlywiki
 </$list>
 \end
 
+<!-- Focus (kind.focus: yes on the type): the story becomes the host followed
+     by the tiddlers whose `parent` is the host, latest modified first. Rows of
+     the host's own stream (its stream-list) are left out; the host shows them.
+     Computed on click only. -->
+\function kind.focus-on(type-tid) [<type-tid>get[kind.focus]match[yes]]
+\function kind.focus-children(host) [all[tiddlers]field:parent<host>!is[draft]] -[<host>get[stream-list]enlist-input[]] +[!sort[modified]]
+
+\procedure kind.focus-actions(host)
+<$action-listops $tiddler="$:/StoryList" $field="list" $filter="[<host>] [function[kind.focus-children],<host>]"/>
+<$action-navigate $to=<<host>>/>
+\end
+
 \procedure kind.link-group(type-tid, target-tid, field-key, group)
 <!-- Appends the members of <group> that <field-key> accepts (not the group); existing values keep their order -->
 <$action-listops $tiddler=<<target-tid>> $field=<<field-key>> $filter="[<target-tid>get<field-key>enlist-input[]] =[function[kind.group-members-for],<type-tid>,<field-key>,<group>] +[unique[]]"/>
