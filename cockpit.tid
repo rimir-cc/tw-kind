@@ -14,7 +14,10 @@ type: text/vnd.tiddlywiki
                  the instance (and <<host>> / <<host-type>> set)
      Generic panel: one section per own ref field (outgoing) and one per
      (source kind, field) pointing here (incoming). Each section's ＋ creates a
-     new instance through the graph-modal and links it (kind.gm-create-linked). -->
+     new instance through the graph-modal and links it (kind.gm-create-linked).
+     It starts collapsed behind a "Connections" toggle, open state per instance
+     in $:/state/rimir/kind/cockpit/open/<instance>; while collapsed none of its
+     contents are rendered, so the instance scans only run once it is opened. -->
 
 \procedure kind.cockpit-add(kinds, field-key, dir)
 <!-- ＋ of one section: direct for a single target kind, a kind menu otherwise -->
@@ -132,7 +135,19 @@ type: text/vnd.tiddlywiki
 <%if [<host-type>is[blank]] [<mode>match[none]] +[first[]] %>
 <%elseif [<mode>match[generic]] %>
 <%if [function[kind.out-fields],<host-type>] [function[kind.in-sources],<host-type>] +[first[]] %>
+<$let open-state={{{ [[$:/state/rimir/kind/cockpit/open/]addsuffix<host>] }}}>
+<%if [<open-state>get[text]match[yes]] %>
+<$button class="tc-btn-invisible kcp-toggle kcp-toggle-open" tooltip="Hide connections">
+<$action-deletetiddler $tiddler=<<open-state>>/>
+▾ Connections
+</$button>
 <$transclude $variable="kind.cockpit-generic"/>
+<%else%>
+<$button class="tc-btn-invisible kcp-toggle" tooltip="Show incoming and outgoing connections" set=<<open-state>> setTo="yes">
+▸ Connections
+</$button>
+<%endif%>
+</$let>
 <%endif%>
 <%else%>
 <$transclude $tiddler=<<mode>> $mode="block"/>
