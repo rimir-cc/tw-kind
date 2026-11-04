@@ -9,10 +9,20 @@ type: text/vnd.tiddlywiki
 \import $:/plugins/rimir/kind/engine
 <!-- Page toolbar button: a popup lists the kinds of the active namespace; a
      pick opens the shared graph-modal create form (kind.gm-create). The kind
-     list renders only while the popup is open. -->
-<$let popup-state="$:/state/popup/rimir/kind/create-button" active-ns={{{ [function[kind.active-ns]] }}}>
+     list renders only while the popup is open. Its search field takes the
+     cursor: typing narrows the list (kind.create-menu-match), Enter picks the
+     first kind, Esc closes the popup. -->
+<!-- the kinds matching the search field; the input stays outside any $let that
+     depends on it, so typing does not re-render it -->
+\function create.matches() [<search-state>get[text]else[]] :map:flat[function[kind.create-menu-match],<active-ns>,<currentTiddler>] +[!is[blank]]
+\procedure kind.create-pick(t)
+<$action-deletetiddler $tiddler=<<popup-state>>/>
+<$action-deletetiddler $tiddler=<<search-state>>/>
+<$transclude $variable="kind.gm-create" type-tid=<<t>> after-create="kind.gm-link-created"/>
+\end
+<$let popup-state="$:/state/popup/rimir/kind/create-button" search-state="$:/temp/rimir/kind/create-search" active-ns={{{ [function[kind.active-ns]] }}}>
 <span class="kind-create-button tc-popup-keep">
-<$button popup=<<popup-state>> tooltip="Create a new kind instance" aria-label="new kind instance" class=<<tv-config-toolbar-class>> selectedClass="tc-selected">
+<$button popup=<<popup-state>> actions="""<$action-deletetiddler $tiddler=<<search-state>>/>""" tooltip="Create a new kind instance" aria-label="new kind instance" class=<<tv-config-toolbar-class>> selectedClass="tc-selected">
 <%if [<tv-config-toolbar-icons>match[yes]] %>
 {{$:/plugins/rimir/kind/images/create-button}}
 <%endif%>
@@ -23,14 +33,19 @@ type: text/vnd.tiddlywiki
 <$reveal state=<<popup-state>> type="popup" position="below" animate="yes" class="tc-popup-keep">
 <div class="kind-type-picker-popup kind-create-popup">
 <div class="kind-editor-label">Create kind instance</div>
-<$list filter="[function[kind.create-menu-types],<active-ns>]" variable="t" emptyMessage="""<em>No kinds in this namespace.</em>""">
-<$button class="tc-btn-invisible kind-create-item">
-<$action-deletetiddler $tiddler=<<popup-state>>/>
-<$transclude $variable="kind.gm-create" type-tid=<<t>> after-create="kind.gm-link-created"/>
+<$keyboard tag="div" key="escape" actions="""<$action-deletetiddler $tiddler=<<popup-state>>/><$action-deletetiddler $tiddler=<<search-state>>/>""">
+<$keyboard key="enter" actions="""<$list filter="[function[create.matches]first[]]" variable="t"><$transclude $variable="kind.create-pick" t=<<t>>/></$list>""">
+<$edit-text tiddler=<<search-state>> tag="input" class="kind-input kind-create-search" placeholder="filter kinds…" focus="yes"/>
+</$keyboard>
+<$let first={{{ [function[create.matches]first[]] }}}>
+<$list filter="[function[create.matches]]" variable="t" emptyMessage="""<em>No matching kinds.</em>""">
+<$button class={{{ [<t>match<first>then[tc-btn-invisible kind-create-item kind-create-item-first]] ~[[tc-btn-invisible kind-create-item]] }}} actions="""<$transclude $variable="kind.create-pick" t=<<t>>/>""">
 <span class="kind-create-icon"><$text text={{{ [<t>get[kind.icon]] }}}/></span>
 <$text text={{{ [function[kind.type-label],<t>] }}}/>
 </$button>
 </$list>
+</$let>
+</$keyboard>
 </div>
 </$reveal>
 </span>

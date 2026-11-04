@@ -37,6 +37,9 @@ type: text/vnd.tiddlywiki
 \function kind.is-ref-typed(type-tid, field-key) [function[kind.field-typed],<type-tid>,<field-key>match[ref]]
 \function kind.is-enum-typed(type-tid, field-key) [function[kind.field-typed],<type-tid>,<field-key>match[enum]]
 \function kind.is-computed-typed(type-tid, field-key) [function[kind.field-typed],<type-tid>,<field-key>match[$title]] [function[kind.field-typed],<type-tid>,<field-key>match[$calculated]]
+<!-- the editor's first field that takes the cursor (computed fields have no
+     input; date pickers, selects and pill rows don't take `focus`) -->
+\function kind.focus-key(type-tid) [function[kind.field-keys],<type-tid>] :filter[function[kind.field-typed],<type-tid>,<currentTiddler>else[text]!match[$title]!match[$calculated]!match[date]!match[datetime]!match[enum]] +[first[]]
 \function kind.view-field-visible(type-tid, target-tid, field-key) [<field-key>] :filter[function[kind.is-computed-typed],<type-tid>,<field-key>count[]match[0]] :filter[<target-tid>get<field-key>!is[blank]]
 
 \function kind.fields-valid(type-tid) [<type-tid>get[kind.fields]!is[blank]prefix[[]]
@@ -82,6 +85,9 @@ type: text/vnd.tiddlywiki
 \function kind.top-level-types() [function[kind.types-all]] :filter[<currentTiddler>!has[kind.parent-kinds]]
 \function kind.type-label(type-tid) [<type-tid>get[kind.caption]!is[blank]] ~[<type-tid>get[kind.type]]
 \function kind.create-menu-types(active-ns) [function[kind.types-all]] :filter[function[kind.belongs-to-ns],<active-ns>] :sort:string:caseinsensitive[function[kind.type-label],<currentTiddler>]
+<!-- yes when the kind's label contains q (any case); a blank q matches all -->
+\function kind.label-matches(type-tid, q) [<q>is[blank]then[yes]] ~[function[kind.type-label],<type-tid>search:title:literal<q>then[yes]]
+\function kind.create-menu-match(active-ns, q) [function[kind.create-menu-types],<active-ns>] :filter[function[kind.label-matches],<currentTiddler>,<q>]
 \function kind.child-kinds-of(parent-key) [function[kind.types-all]] :filter[function[kind.parent-kinds-include],<currentTiddler>,<parent-key>!is[blank]]
 
 \function kind.has-ref-field-to(type-tid, target-key) [<type-tid>get[kind.fields]jsonindexes[]] :filter[<type-tid>get[kind.fields]jsonget<currentTiddler>,[typed]match[ref]] :filter[function[kind.field-array-flat],<type-tid>,<currentTiddler>,[ref-types]match<target-key>] +[first[]]

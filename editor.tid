@@ -10,6 +10,8 @@ type: text/vnd.tiddlywiki
      Optional:
        type-key   — fallback when the target tiddler doesn't yet carry kind.type
                     (creator passes this so the editor can render against an unborn draft)
+       focus-first — if "yes", the cursor starts in the first field that takes it
+                    (kind.focus-key)
 -->
 
 <$let
@@ -20,6 +22,7 @@ type: text/vnd.tiddlywiki
 <%else%>
 <$let
   type-tid={{{ [function[kind.locate-type],<type-key>] }}}
+  focus-key={{{ [<focus-first>match[yes]] :then[function[kind.focus-key],<type-tid>] }}}
 >
 <%if [<type-tid>is[blank]] %>
 <div class="kind-err">no type definition found for kind.type="<<type-key>>"</div>
@@ -35,7 +38,9 @@ type: text/vnd.tiddlywiki
  <$text text={{{ [function[kind.field-caption],<type-tid>,<field-key>] }}}/>
 </th>
 <td class="kind-editor-value">
+<$let autofocus={{{ [<field-key>match<focus-key>then[yes]] }}}>
 <$transclude $tiddler="$:/plugins/rimir/kind/field-input"/>
+</$let>
 </td>
 </tr>
 <%endif%>

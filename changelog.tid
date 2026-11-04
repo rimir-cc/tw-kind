@@ -4,6 +4,7 @@ type: text/vnd.tiddlywiki
 ! Changelog
 
 |!Version |!Date |!Changes |
+|v0.1.99 |2026-11-04 |Create form (graph-modal) starts with the cursor in the first field that takes it (`kind.focus-key`, editor `focus-first`); ''Esc'' closes the modal in every mode. Page toolbar create popup gets a search field with the cursor: typing narrows the kinds (`kind.create-menu-match`), ''Enter'' picks the first, ''Esc'' closes. |
 |v0.1.98 |2026-11-03 |Focus: Shift-click on the focus button keeps the story and opens the found tiddlers additionally, right after the instance (`kind.focus-actions` gets `add`). |
 |v0.1.97 |2026-11-03 |Field bar icons carry `data-kind-src`, `data-kind-field` and `data-kind-ref="yes"` (ref fields), so bridges can attach to a field; rimir/ports 0.1.4 drags new links out of ref field icons. |
 |v0.1.96 |2026-11-03 |Fix: a folded tiddler no longer shows the field bar and the cockpit (they ended up below the core unfold bar since 0.1.95); both check the core fold state via `kind.unfolded` and are not rendered while folded. |

@@ -24,6 +24,9 @@ type: text/vnd.tiddlywiki
   type-tid={{{ [[$:/state/rimir/kind/graph-modal]get[kind-tid]] }}}
   host-tid={{{ [[$:/state/rimir/kind/graph-modal]get[host]] }}}
 >
+<!-- Esc closes the modal in every mode (= Close / Cancel); it reaches the
+     keyboard widget while the cursor is anywhere in the panel -->
+<$keyboard key="escape" actions="""<$action-deletetiddler $tiddler="$:/state/rimir/kind/graph-modal/draft"/><$action-deletetiddler $tiddler=<<gm-state>>/>""">
 
 <%if [<edit-tid>!is[blank]] %>
 
@@ -101,7 +104,9 @@ Cancel
 </$let>
 </div>
 
+<$let focus-first="yes">
 <$transclude $tiddler="$:/plugins/rimir/kind/editor"/>
+</$let>
 
 <div class="kind-graph-modal-footer">
 <$button disabled={{{ [function[kind.any-invalid],<type-tid>,<type-key>,<target-tid>!is[blank]then[yes]] }}}>
@@ -123,4 +128,5 @@ Cancel
 </$let>
 
 <%endif%>
+</$keyboard>
 </$let>
