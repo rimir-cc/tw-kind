@@ -313,7 +313,7 @@ type: text/vnd.tiddlywiki
 <$transclude $variable="kind.gm-create" type-tid=<<child-type-tid>> host-tid=<<host-tid>>/>
 \end
 
-\procedure kind.gm-create-linked(type-tid, host-tid, field-key, dir, copy)
+\procedure kind.gm-create-linked(type-tid, host-tid, field-key, dir, copy, seed, after-link, ctx-a, ctx-b)
 <!-- Open the shared graph-modal in CREATE mode for a new <<type-tid>> instance
      linked to <<host-tid>>:
        dir=in  — the new instance points at the host through ITS field
@@ -326,6 +326,13 @@ type: text/vnd.tiddlywiki
      and fields with their own `default` (kind.spawn-copy-keys); ref values the
      field does not accept are dropped, groups become their members
      (kind.spawn-ref-string). Defaults then fill what is still blank.
+     Optional `seed` (JSON object {"<field>": "<title or text>"}) is applied
+     after link + copy and before the defaults, so it overrides copied values:
+     ref fields via kind.link-value (multi → title list), others verbatim;
+     unknown keys, blank values and invalid JSON are ignored. Optional
+     `after-link` (NAME of a global procedure) + `ctx-a`/`ctx-b` are stored on
+     the modal state; kind.gm-link-created runs the procedure after the link
+     step with <<createTiddler-title>>, <<ctx-a>>, <<ctx-b>> set.
      Inverse sync (inverse.js) mirrors the other end of any inverse pair once
      the instance is saved; drafts under $:/state/ are not instances, so the
      seeded link does not leak onto the host while the form is open. -->
@@ -348,8 +355,19 @@ type: text/vnd.tiddlywiki
 <%endif%>
 </$list>
 <%endif%>
+<$list filter="[<seed>jsonindexes[]] :intersection[function[kind.field-keys],<type-tid>]" variable="sk">
+<$let sv={{{ [<seed>jsonget<sk>] }}}>
+<%if [<sv>!is[blank]] %>
+<%if [function[kind.is-ref-typed],<type-tid>,<sk>] %>
+<$action-setfield $tiddler=<<draft>> $field=<<sk>> $value={{{ [function[kind.link-value],<type-tid>,<sk>,<sv>] }}}/>
+<%else%>
+<$action-setfield $tiddler=<<draft>> $field=<<sk>> $value=<<sv>>/>
+<%endif%>
+<%endif%>
+</$let>
+</$list>
 <$transclude $variable="kind.apply-defaults-to" type-tid=<<type-tid>> target-tid=<<draft>>/>
-<$action-setfield $tiddler="$:/state/rimir/kind/graph-modal" kind-tid=<<type-tid>> host=<<host-tid>> link-field=<<field-key>> link-dir=<<dir>> after-create="kind.gm-link-created"/>
+<$action-setfield $tiddler="$:/state/rimir/kind/graph-modal" kind-tid=<<type-tid>> host=<<host-tid>> link-field=<<field-key>> link-dir=<<dir>> after-create="kind.gm-link-created" after-link=<<after-link>> ctx-a=<<ctx-a>> ctx-b=<<ctx-b>>/>
 </$let>
 \end
 
@@ -357,7 +375,9 @@ type: text/vnd.tiddlywiki
 <!-- after-create hook of kind.gm-create-linked and the page toolbar
      create-button (runs inside finalize-create, so <<createTiddler-title>> is
      the saved title): for dir=out add the new instance to the host's field,
-     then open the new instance. -->
+     run the optional after-link procedure of the modal state (with
+     <<createTiddler-title>>, <<ctx-a>>, <<ctx-b>>), then open the new
+     instance. -->
 <$let
   gm="$:/state/rimir/kind/graph-modal"
   new-tid=<<createTiddler-title>>
@@ -375,6 +395,11 @@ type: text/vnd.tiddlywiki
 <%endif%>
 </$let>
 <%endif%>
+<$let after-link={{{ [<gm>get[after-link]] }}} ctx-a={{{ [<gm>get[ctx-a]] }}} ctx-b={{{ [<gm>get[ctx-b]] }}}>
+<$list filter="[<after-link>!is[blank]]" variable="_al">
+<$transclude $variable=<<after-link>>/>
+</$list>
+</$let>
 <$action-navigate $to=<<new-tid>>/>
 </$let>
 </$let>

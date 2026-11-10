@@ -107,6 +107,8 @@ The generic panel sits behind a per-instance toggle (`$:/state/rimir/kind/cockpi
 
 The ＋ of a section reuses the graph-modal create form and the shared `kind.finalize-create` save tail (`kind.gm-create-linked`). The link to the host is written in one of two ways: incoming — pre-set in the draft, so the form shows it and required constraints pass; outgoing — written onto the host by the `after-create` hook (`kind.gm-link-created`), which has the saved title as `<<createTiddler-title>>`. The opposite end of an `inverse` pair is left to inverse sync (outgoing also pre-sets it in the draft so the form shows it).
 
+Bridges can extend the flow without new modal code: optional `seed` (JSON of field values) is applied to the draft after link and copy but before `kind.apply-defaults-to`, and optional `after-link` (a global procedure name, with `ctx-a`/`ctx-b`) is stored on the modal state and run by `kind.gm-link-created` after the link step, with `<<createTiddler-title>>` in scope. Both default to no effect.
+
 !! Stream-view (ViewTemplate auto-registration)
 
 Each field icon in the bar names its instance and field: `data-kind-src`, `data-kind-field`, and `data-kind-ref="yes"` on ref fields (`kind.is-ref-typed`). Kind does nothing with them; they let bridges attach to a field without knowing kind's markup (rimir/ports drags new links out of ref field icons).
