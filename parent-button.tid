@@ -1,0 +1,25 @@
+title: $:/plugins/rimir/kind/parent-button
+tags: $:/tags/ViewToolbar
+list-after: $:/plugins/rimir/kind/focus-button
+caption: {{$:/core/images/chevron-up}} parent
+description: Parent: open the kind instance's parent right above it
+type: text/vnd.tiddlywiki
+
+\whitespace trim
+\import $:/plugins/rimir/kind/engine
+<!-- Shown only on kind instances whose `parent` names an existing tiddler
+     (kind.up-target). kind.up-actions puts the parent right above this
+     tiddler in the story (moving it if already open) and scrolls to it. -->
+<$let up={{{ [function[kind.up-target],<currentTiddler>] }}}>
+<%if [<up>!is[blank]] %>
+<$button tooltip={{{ [[Open parent above: ]addsuffix<up>] }}} aria-label="parent" class=<<tv-config-toolbar-class>>
+	actions="""<$transclude $variable="kind.up-actions" host=<<currentTiddler>>/>""">
+<%if [<tv-config-toolbar-icons>match[yes]] %>
+{{$:/core/images/chevron-up}}
+<%endif%>
+<%if [<tv-config-toolbar-text>match[yes]] %>
+<span class="tc-btn-text">parent</span>
+<%endif%>
+</$button>
+<%endif%>
+</$let>

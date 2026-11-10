@@ -99,6 +99,10 @@ A group kind names its members field in `kind.group-of`. Nothing is stored about
 
 Shift-click: `$button` sets `<<modifier>>` only for its `actions` attribute, not for action widgets among its children, so the button calls `kind.focus-actions` from `actions` and passes `add=yes` when the modifier contains `shift`. In that mode two `action-listops` run: the first removes the found tiddlers from the story, the second rebuilds it as `allbefore<host>`, host, found tiddlers, `allafter<host>`. They run one after the other, so the second sees the first's write. The two modes are two positive `<%if%>`s, not `<%if%>`/`<%else%>`: actions in an `<%else%>` branch never fire.
 
+!! Parent button
+
+`parent-button.tid` is a ViewToolbar button next to focus. Rendering it costs one lookup, `kind.up-target`: the instance must be a kind instance (`kind.cockpit-host`, so Streams nodes — which also carry `parent` — get no button), and `parent` must name an existing tiddler other than the instance (a title-list value uses its first entry). The click (`kind.up-actions`) works like Shift-focus: one `action-listops` takes the parent out of the story, a second rebuilds it as `allbefore<host>`, parent, host, `allafter<host>`; then it navigates to the parent. An instance that is not in the story only navigates. `parent` is hard-coded, like the rest of kind (add child, auto-children, focus default rules, spawns).
+
 !! Cockpit
 
 `cockpit.tid` (`$:/tags/ViewTemplate`, after `viewtemplate`) dispatches on the type's `kind.cockpit`: blank = generic panel, `none` = nothing, else a custom cockpit tiddler. The generic panel needs no per-model knowledge: outgoing sections come from the kind's own ref fields, incoming sections from every (source kind, field) whose `ref-types` name this kind. A source field whose `inverse` is a ref field of this kind is skipped there, because the same relation already shows as the outgoing field.

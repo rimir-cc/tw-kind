@@ -4,6 +4,7 @@ type: text/vnd.tiddlywiki
 ! Changelog
 
 |!Version |!Date |!Changes |
+|v0.1.101 |2026-11-10 |''Parent'' toolbar button (chevron-up) on kind instances whose `parent` names an existing tiddler: opens the parent right above the instance in the story (moves it there if already open). `kind.up-target`, `kind.up-actions`. |
 |v0.1.100 |2026-11-09 |`kind.gm-create-linked` gains optional `seed` (JSON of field values applied before defaults) and `after-link` (procedure run after the link step, with `ctx-a`/`ctx-b`), for rimir/kind-work-focus. |
 |v0.1.99 |2026-11-04 |Create form (graph-modal) starts with the cursor in the first field that takes it (`kind.focus-key`, editor `focus-first`); ''Esc'' closes the modal in every mode. Page toolbar create popup gets a search field with the cursor: typing narrows the kinds (`kind.create-menu-match`), ''Enter'' picks the first, ''Esc'' closes. |
 |v0.1.98 |2026-11-03 |Focus: Shift-click on the focus button keeps the story and opens the found tiddlers additionally, right after the instance (`kind.focus-actions` gets `add`). |
