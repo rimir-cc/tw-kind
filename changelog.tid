@@ -4,6 +4,7 @@ type: text/vnd.tiddlywiki
 ! Changelog
 
 |!Version |!Date |!Changes |
+|v0.1.103 |2026-11-11 |Fix: picking a day for a `date` field (editor, field bar inline or popup) saved the 17-char timestamp (`20261111` became `20261111000000000`); the date input now passes `fieldFormat="YYYYMMDD"` to the datepicker, like the cascade palette stores dates. `datetime` is unchanged. |
 |v0.1.102 |2026-11-11 |''Instance filter'': `$:/config/rimir/kind/instance-filter` (a filter, e.g. `[!status[archived]]`) applied to kind's instance lists via `kind.visible`; `…/instance-filter/apply-to` = `pickers` (shipped) `cockpit` `overview`. Linked values stay visible (palette toggle/leaf lists use `kind.ref-candidates-keep`). Missing config = unchanged. Ref field dropdown: ↓/↑ highlight, ''Enter'' links, ''Esc'' clears the search (on an empty search the graph modal closes); the search input of a multi field keeps the cursor after a pick. |
 |v0.1.101 |2026-11-10 |''Parent'' toolbar button (chevron-up) on kind instances whose `parent` names an existing tiddler: opens the parent right above the instance in the story (moves it there if already open). `kind.up-target`, `kind.up-actions`. |
 |v0.1.100 |2026-11-09 |`kind.gm-create-linked` gains optional `seed` (JSON of field values applied before defaults) and `after-link` (procedure run after the link step, with `ctx-a`/`ctx-b`), for rimir/kind-work-focus. |

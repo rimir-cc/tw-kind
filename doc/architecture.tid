@@ -30,8 +30,8 @@ There are no separate per-field tiddlers, no inheritance slots, no enum tiddlers
 |`text` |single-line `<$edit-text>` |plain string |
 |`longtext` |textarea |plain string |
 |`number` |numeric input |plain string |
-|`date` |`<$edit-date>` |TW date format |
-|`datetime` |`<$edit-date>` with time |TW datetime format |
+|`date` |`<$edit-date fieldFormat="YYYYMMDD">` |8-char date; the datepicker's default `fieldFormat` would write the 17-char timestamp |
+|`datetime` |`<$edit-date>` with time |17-char TW timestamp (datepicker default) |
 |`url` |single-line `<$edit-text type="url">` |plain string; live format check requires `http://` or `https://` prefix |
 |`email` |single-line `<$edit-text type="email">` |plain string; live format check `local@domain.tld` |
 |`phone` |single-line `<$edit-text type="tel">` |plain string; live format check for German numbers (`+49` or `0` prefix) |

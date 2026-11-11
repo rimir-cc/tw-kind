@@ -31,7 +31,9 @@ type: text/vnd.tiddlywiki
 <$edit-text tiddler=<<target-tid>> field=<<field-key>> type="number" tag="input" class="kind-input" focus=<<do-focus>>/>
 
 <%elseif [<field-typed>match[date]] %>
-<$edit-date tiddler=<<target-tid>> field=<<field-key>>/>
+<!-- date = 8-char YYYYMMDD (same as the cascade palette and scribe); the
+     datepicker's own default fieldFormat is the 17-char TW timestamp -->
+<$edit-date tiddler=<<target-tid>> field=<<field-key>> fieldFormat="YYYYMMDD"/>
 
 <%elseif [<field-typed>match[datetime]] %>
 <$edit-date tiddler=<<target-tid>> field=<<field-key>> showTime="yes" use24hour="yes"/>

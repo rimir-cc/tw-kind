@@ -59,8 +59,8 @@ type: text/vnd.tiddlywiki
 |`text` |single-line input |Free-form short string |
 |`longtext` |textarea |Free-form long text |
 |`number` |numeric input |Stored as string; validate as needed |
-|`date` |TW date picker |TW date format |
-|`datetime` |TW date picker w/ time |TW datetime format, 24h |
+|`date` |TW date picker |`YYYYMMDD` (8 chars, same as the cascade palette) |
+|`datetime` |TW date picker w/ time |TW timestamp `YYYYMMDDHHmmssSSS` (17 chars, UTC), 24h |
 |`url` |Single-line input (`type="url"`) |Format-checked: must start with `http://` or `https://` (when non-blank) |
 |`email` |Single-line input (`type="email"`) |Format-checked: `local@domain.tld` shape (when non-blank) |
 |`phone` |Single-line input (`type="tel"`) |Format-checked for German numbers (`+49` or `0` prefix, when non-blank) |
