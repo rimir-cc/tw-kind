@@ -85,6 +85,20 @@ Yes. Create the kind's rules tiddler (type-builder: ''＋ rules'' next to the fo
 
 The story then shows the person, the children, the open topics and the notes, in that order, each group latest first.
 
+!! Q: How do I hide archived instances in pickers?
+
+Put a filter into `$:/config/rimir/kind/instance-filter` (Settings → ''Instance filter''), e.g. `[!status[archived]]`. kind runs it on the candidate list of every ref picker (editor/creator/graph-modal dropdown, group candidates, palette ref lists, wizard pickers, rimir/ports), so an archived topic is no longer offered. Status values stay your model's business: kind only applies the filter.
+
+`$:/config/rimir/kind/instance-filter/apply-to` names where it applies: `pickers` (shipped), `cockpit` (incoming rows of the generic cockpit), `overview` (Instances Overview nodes). Values already linked are never hidden: the field bar, the editor pills and the outgoing cockpit sections show them, and the palette toggle lists keep them so they can be unlinked.
+
+To also hide what sits below an archived instance, write a `$:/tags/Global` function and call it from the filter. One level (the instance or its `parent` archived):
+
+```
+\function my.live() [!status[archived]] :filter[get[parent]status[archived]count[]match[0]]
+```
+
+with `[my.live[]]` as the instance filter; for deeper trees make the function walk up the `parent` chain. Globals are in scope wherever the page template renders (story, graph modal, overview). The cascade palette imports only `$:/tags/Macro` tiddlers, so there a Global function is not found; tag the function tiddler `$:/tags/Macro` as well if you use the palette pickers.
+
 !! Q: How do I hide the cockpit or give a kind its own one?
 
 Set `kind.cockpit` on the type tiddler. `none` hides the panel for that kind. Any other value is the title of a tiddler that is shown instead of the generic panel, with `currentTiddler` (and `<<host>>`) set to the instance; it can `\import $:/plugins/rimir/kind/engine` and reuse `kind.iview-click-toggle`, `kind.iview-link`, `kind.iview-detail` and `kind.instance-content`. Cockpits that depend on one data model (fixed field names, status values, kind ranking) belong with that model, not in kind.

@@ -61,7 +61,7 @@ A graph of every [[kind|$:/plugins/rimir/kind]] instance in the wiki. Nodes star
   searchMode={{{ [[$:/config/rimir/kind/instances-overview/search-mode]get[text]] ~[[fit]] }}}
 >
 <$transclude $variable="kg-graph"
-  nodeFilter="[all[tiddlers]has[kind.type]!has[kind.fields]] :filter[function[kg.type-shown],<currentTiddler>,<hiddenTypes>]"
+  nodeFilter="[all[tiddlers]has[kind.type]!has[kind.fields]] :filter[function[kg.type-shown],<currentTiddler>,<hiddenTypes>] +[function[kind.visible],[overview]]"
   selFields=<<selFields>>
   dataTiddler="$:/config/rimir/kind/instances-overview/structure"
   physics="no"

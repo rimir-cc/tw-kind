@@ -71,8 +71,11 @@ type: text/vnd.tiddlywiki
 <$let
   search-state={{{ [[$:/state/rimir/kind/ta/]addsuffix<target-tid>addsuffix[/]addsuffix<field-key>] }}}
   is-multi={{{ [<field-card>match[multi]] }}}
-  cur={{{ [<target-tid>get<field-key>] }}}
 >
+<!-- Only the pills depend on the field value (own $let), so linking a value
+     does not re-render the search input of a multi field: the cursor stays in
+     it for the next pick. -->
+<$let cur={{{ [<target-tid>get<field-key>] }}}>
 <%if [<is-multi>!is[blank]] %>
 <!-- multi-ref: show selected pills above search input -->
 <div class="kind-pill-row">
@@ -100,35 +103,32 @@ type: text/vnd.tiddlywiki
 </span>
 <%endif%>
 <%endif%>
+</$let>
 
-<!-- search input (always available for multi; only when empty for single) -->
-<%if [<is-multi>!is[blank]] [<cur>is[blank]] %>
-<$edit-text tiddler=<<search-state>> field="text" tag="input" placeholder="search…" class="kind-input" focus=<<do-focus>>/>
-<$let search-val={{{ [<search-state>get[text]] }}}>
+<!-- search input (always available for multi; only when empty for single).
+     ↓/↑ move the highlight through the dropdown, Enter links the highlighted
+     entry (else the first), Esc clears the search (kind.ref-key). The input
+     sits outside the $let on the search text, so typing does not re-render it. -->
+<%if [<is-multi>!is[blank]] ~[<target-tid>!has<field-key>then[yes]] %>
+<$keyboard key="down up enter escape" tag="span" class="kind-ref-search" actions="""<$transclude $variable="kind.ref-key" type-tid=<<type-tid>> target-tid=<<target-tid>> field-key=<<field-key>> search-state=<<search-state>> key=<<event-key>>/>""">
+<$edit-text tiddler=<<search-state>> field="text" tag="input" placeholder="search…" class="kind-input" focus=<<do-focus>> inputActions="""<$action-deletetiddler $tiddler={{{ [<search-state>addsuffix[/hi]] }}}/>"""/>
+</$keyboard>
+<$let search-val={{{ [<search-state>get[text]] }}} hi={{{ [function[kind.ref-hi],<search-state>] }}}>
 <%if [<search-val>!is[blank]] %>
 <div class="kind-dropdown">
-<$list filter="[function[kind.ref-candidates],<type-tid>,<field-key>] :filter[search:caption,title<search-val>] +[limit[10]]" variable="opt">
-<$button class="kind-dropdown-item tc-btn-invisible">
-<%if [<is-multi>!is[blank]] %>
-<$action-listops $tiddler=<<target-tid>> $field=<<field-key>> $subfilter="+[toggle<opt>]"/>
+<$list filter="[function[kind.ref-menu],<type-tid>,<field-key>,<search-val>]" variable="opt" counter="idx">
+<$let is-group={{{ [function[kind.group-for],<type-tid>,<field-key>,<opt>] }}}>
+<$button class={{{ kind-dropdown-item tc-btn-invisible [<is-group>then[kind-dropdown-group]] [<idx>match<hi>then[kind-dropdown-hi]] +[join[ ]] }}} tooltip={{{ [<is-group>then[Adds the members, not the group]] }}}>
+<$transclude $variable="kind.ref-pick" type-tid=<<type-tid>> target-tid=<<target-tid>> field-key=<<field-key>> opt=<<opt>> search-state=<<search-state>>/>
+<%if [<is-group>!is[blank]] %>
+<$text text={{{ [function[kind.group-option-label],<type-tid>,<field-key>,<opt>] }}}/>
 <%else%>
-<$action-setfield $tiddler=<<target-tid>> $field=<<field-key>> $value=<<opt>>/>
-<%endif%>
-<$action-deletetiddler $tiddler=<<search-state>>/>
-<$transclude $variable="kind.apply-defaults-to" type-tid=<<type-tid>> target-tid=<<target-tid>>/>
 <$text text={{{ [function[kind.resolve-ref],<opt>] }}}/>
+<%endif%>
 </$button>
+</$let>
 </$list>
-<!-- groups (multi fields only): picking one adds its members -->
-<$list filter="[function[kind.ref-group-candidates],<type-tid>,<field-key>] :filter[search:caption,title<search-val>] +[limit[5]]" variable="grp">
-<$button class="kind-dropdown-item kind-dropdown-group tc-btn-invisible" tooltip="Adds the members, not the group">
-<$transclude $variable="kind.link-group" type-tid=<<type-tid>> target-tid=<<target-tid>> field-key=<<field-key>> group=<<grp>>/>
-<$action-deletetiddler $tiddler=<<search-state>>/>
-<$transclude $variable="kind.apply-defaults-to" type-tid=<<type-tid>> target-tid=<<target-tid>>/>
-<$text text={{{ [function[kind.group-option-label],<type-tid>,<field-key>,<grp>] }}}/>
-</$button>
-</$list>
-<%if [function[kind.ref-candidates],<type-tid>,<field-key>] [function[kind.ref-group-candidates],<type-tid>,<field-key>] :filter[search:caption,title<search-val>] +[first[]] +[count[]match[0]] %>
+<%if [function[kind.ref-menu],<type-tid>,<field-key>,<search-val>] +[count[]match[0]] %>
 <div class='kind-dropdown-empty'>no matches</div>
 <%endif%>
 </div>

@@ -92,7 +92,7 @@ type: text/vnd.tiddlywiki
 <$list filter="[function[kind.in-sources],<host-type>]" variable="source">
 <$list filter="[function[kind.in-fields],<host-type>,<source>]" variable="fk">
 <$let sort-field={{{ [function[kind.back-sort-field-eff],<source>] }}}>
-<$let n={{{ [function[kind.referencing-instances],<host>,<source>,<fk>count[]] }}}>
+<$let n={{{ [function[kind.cockpit-incoming],<host>,<source>,<fk>] +[count[]] }}}>
 <div class={{{ [<n>match[0]then[kpv-section kpv-section-empty]] ~[[kpv-section]] }}}>
 <$transclude $variable="kind.cockpit-head"
   icon={{{ [<source>get[kind.icon]] }}}
@@ -103,7 +103,7 @@ type: text/vnd.tiddlywiki
   dir="in"/>
 <%if [<n>!match[0]] %>
 <div class="kpv-rows">
-<$list filter="[function[kind.referencing-instances],<host>,<source>,<fk>] +[!sort<sort-field>]" variable="inst">
+<$list filter="[function[kind.cockpit-incoming],<host>,<source>,<fk>] +[!sort<sort-field>]" variable="inst">
 <div class={{{ [<inst>match<selected>then[kpv-row kpv-row-active]] ~[[kpv-row]] }}}>
 <span class="kpv-row-icon"><$text text={{{ [<source>get[kind.icon]] }}}/></span>
 <span class="kpv-row-cap"><$transclude $variable="kind.iview-link" t=<<inst>> host=<<host>>/></span>

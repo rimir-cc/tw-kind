@@ -56,3 +56,25 @@ Tiddlers that already have a kind type show the type icon in the field bar as a 
 <strong>Qualifying filter:</strong>
 <$edit-text tiddler="$:/config/rimir/kind/type-selector-filter" field="text" tag="input" class="kind-input" default="[all[current]!is[system]!has[draft.of]]" style="width:24em;"/>
 </div>
+
+!! Instance filter
+
+<div style="font-size:0.9em;opacity:0.75;margin-bottom:6px;">
+A filter applied to kind's own lists of instances, e.g. <code>[!status[archived]]</code> to stop offering archived instances. Empty = every instance is listed. Values already linked in a field always stay visible (field bar, editor pills, outgoing cockpit sections, palette toggle lists). The filter may call <code>$:/tags/Global</code> functions, except in the cascade palette (it imports only <code>$:/tags/Macro</code>).
+</div>
+
+<div class="kind-ns-row">
+<strong>Filter:</strong>
+<$edit-text tiddler="$:/config/rimir/kind/instance-filter" field="text" tag="input" class="kind-input" placeholder="[!status[archived]]" style="width:24em;"/>
+</div>
+
+<div class="kind-ns-row">
+<strong>Applies to:</strong>
+<$list filter="pickers cockpit overview" variable="surface">
+<$checkbox tiddler="$:/config/rimir/kind/instance-filter/apply-to" listField="text" checked=<<surface>>> <<surface>></$checkbox>&nbsp;&nbsp;
+</$list>
+</div>
+
+<div style="font-size:0.85em;opacity:0.75;margin-top:4px;">
+//pickers//: ref field dropdowns (editor, creator, graph modal), group candidates, palette ref lists, wizard pickers, rimir/ports. //cockpit//: the incoming rows of the generic cockpit. //overview//: the nodes of the Instances Overview graph.
+</div>

@@ -6,4 +6,5 @@ cc: }
 dq: "
 comma: ,
 colon: :
+pass: [!is[blank]]
 

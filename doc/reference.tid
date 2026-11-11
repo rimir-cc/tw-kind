@@ -85,6 +85,8 @@ All constraints are blocking — they show up in red in the validator and disabl
 |!Path |!Purpose |
 |`$:/config/rimir/kind/active-namespace` |Active namespace; empty = all |
 |`$:/config/rimir/kind/focus/<kind-key>` |''Focus rules'' of a kind: one filter per line, `#` lines are comments, `<host>` = the focused instance. Each line is its own filter starting from all tiddlers, so a `:filter` in one rule does not narrow another. Results are grouped by line, latest modified first within a line; a tiddler found by an earlier line is not repeated. Absent = the shipped `$:/plugins/rimir/kind/focus/default-rules` (the instance's `parent` children). The type-builder's ''＋ rules'' creates it from the default. |
+|`$:/config/rimir/kind/instance-filter` |''Instance filter'': a filter run on kind's instance lists (e.g. `[!status[archived]]`); missing/empty = no filtering. May call `$:/tags/Global` functions where the page template imports them (not in the cascade palette). Linked values always stay visible |
+|`$:/config/rimir/kind/instance-filter/apply-to` |Where the instance filter applies: `pickers` (ref dropdowns, group candidates, palette ref lists, wizard pickers, ports), `cockpit` (incoming rows), `overview` (Instances Overview nodes). Shipped: `pickers` |
 |`$:/config/rimir/kind/streambar-max-length` |Truncation threshold for the stream-view field bar (default 20) |
 |`$:/config/rimir/kind/instances-overview/edge-fields` |''Instances Overview'': ref-field keys drawn as edges, stored in the `edges` field (titlelist; ships defaulting to `parent`). The field is named `edges`, NOT `fields`: a custom field literally named `fields` collides with the TiddlyWeb sync wire-format's reserved `fields` container and is silently dropped on every browser→server save |
 |`$:/config/rimir/kind/instances-overview/hidden-types` |''Instances Overview'': type keys hidden from the graph (titlelist; empty/absent = all types shown) |
@@ -168,7 +170,12 @@ In ''both'' layouts ''Enter'' on a row commits it as the field value AND finalis
 |`kind.constraint-num(type-tid, field-key, prefix)` |Numeric value of `min:N` / `max:N` |
 |`kind.options(type-tid, field-key)` |Enum option strings |
 |`kind.ref-types(type-tid, field-key)` |Allowed ref target type keys |
-|`kind.ref-candidates(type-tid, field-key)` |All currently-existing target instances. When `ref-types` is empty, falls back to all kind-instances in the wiki (any `kind.type`). |
+|`kind.ref-candidates(type-tid, field-key)` |All currently-existing target instances that the instance filter keeps (surface `pickers`). When `ref-types` is empty, falls back to all kind-instances in the wiki (any `kind.type`). |
+|`kind.ref-candidates-all(type-tid, field-key)` |Same without the instance filter |
+|`kind.ref-candidates-keep(type-tid, field-key, target-tid)` |`kind.ref-candidates`, plus the values `target-tid` already links in the field (palette toggle/leaf lists, so a hidden value can be unlinked) |
+|`kind.visible(surface)` |Use as `+[function[kind.visible],[<surface>]]`: keeps what `$:/config/rimir/kind/instance-filter` keeps when `surface` is listed in `…/instance-filter/apply-to`, else passes the list through |
+|`kind.cockpit-incoming(host-tid, source-tid, field-key)` |The generic cockpit's incoming rows: `kind.referencing-instances` through `kind.visible` (surface `cockpit`) |
+|`kind.ref-menu(type-tid, field-key, q)` `kind.ref-pick(…)` `kind.ref-key(…)` `kind.ref-hi(search-state)` |Ref field dropdown: entries for search `q` (10 candidates, then 5 groups); link one entry (group → members, multi → toggle, single → set); keyboard handler (↓ ↑ Enter Esc; Esc on an empty search runs `<<kind.esc-outer>>` if defined); the highlighted row (state `<search-state>/hi`) |
 |`kind.eval-title(type-tid, target-tid)` |Computed title for an instance |
 |`kind.title-fixed(type-tid)` |`yes` when the kind's title is set once on creation (`kind.title-fixed`) |
 |`kind.title-preview-label(type-tid)` |Label for the title preview in create forms: `title on save` (fixed) / `computed title` |

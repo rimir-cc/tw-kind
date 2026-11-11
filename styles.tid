@@ -108,6 +108,8 @@ textarea.kind-input,
 	color: <<colour foreground>>;
 }
 .kind-dropdown-item:hover { background: <<colour tiddler-info-background>>; }
+.kind-dropdown-item.kind-dropdown-hi { background: <<colour tiddler-info-background>>; outline: 1px solid <<colour primary>>; outline-offset: -1px; }
+.kind-ref-search { display: block; }
 .kind-dropdown-empty {
 	padding: 6px 8px;
 	color: <<colour muted-foreground>>;

@@ -54,7 +54,35 @@ type: text/vnd.tiddlywiki
 
 \function kind.ref-candidates-typed(type-tid, field-key) [function[kind.ref-types],<type-tid>,<field-key>] :map:flat[function[kind.instances-of],<currentTiddler>]
 \function kind.ref-candidates-any(type-tid, field-key) [function[kind.ref-types],<type-tid>,<field-key>count[]match[0]] :map:flat[all[shadows+tiddlers]has[kind.type]!has[kind.fields]!prefix[$:/state/]!prefix[$:/temp/]]
-\function kind.ref-candidates(type-tid, field-key) [function[kind.ref-candidates-typed],<type-tid>,<field-key>] [function[kind.ref-candidates-any],<type-tid>,<field-key>] +[unique[]]
+\function kind.ref-candidates-all(type-tid, field-key) [function[kind.ref-candidates-typed],<type-tid>,<field-key>] [function[kind.ref-candidates-any],<type-tid>,<field-key>] +[unique[]]
+\function kind.ref-candidates(type-tid, field-key) [function[kind.ref-candidates-all],<type-tid>,<field-key>] +[function[kind.visible],[pickers]]
+<!-- Candidates for a picker that shows the field's current state (palette
+     toggle/leaf lists): values already linked stay in, even if the instance
+     filter hides them, so they can still be seen and unlinked. -->
+\function kind.ref-candidates-keep(type-tid, field-key, target-tid) [function[kind.ref-candidates-all],<type-tid>,<field-key>] :filter[function[kind.keep-linked],<target-tid>,<field-key>]
+\function kind.keep-linked(target-tid, field-key) [<target-tid>get<field-key>enlist-input[]match<currentTiddler>] [<currentTiddler>function[kind.visible],[pickers]] +[first[]]
+
+<!-- Instance filter: wiki-level visibility for kind's own instance lists.
+     $:/config/rimir/kind/instance-filter holds a filter run on a list of
+     instances (e.g. [!status[archived]]); $:/config/rimir/kind/instance-filter/apply-to
+     names the surfaces it applies to (pickers cockpit overview; shipped:
+     pickers). `+[function[kind.visible],[<surface>]]` keeps what the filter
+     keeps; without a filter, or for a surface not listed, it passes the list
+     through unchanged (kind.instance-filter-text falls back to the pass-all
+     filter in _brackets!!pass). Linked values are never hidden where a field
+     is shown (field bar, editor pills, cockpit outgoing sections).
+     The filter runs in the caller's widget scope, so $:/tags/Global functions
+     work wherever the page template imported them (story, graph modal,
+     instances overview).
+     TODO cascade-palette: the palette mounts its own widget tree on
+     document.body and imports only $:/tags/Macro (cascade-palette-startup.js),
+     so a filter that calls a $:/tags/Global function finds no function there
+     (palette ref toggle/leaf lists, wizard flat/tree pickers). Fix in
+     cascade-palette: import [subfilter{$:/core/config/GlobalImportFilter}]
+     instead of the Macro tag. -->
+\function kind.instance-filter-on() [[$:/config/rimir/kind/instance-filter/apply-to]get[text]enlist-input[]match<surface>]
+\function kind.instance-filter-text() [[$:/config/rimir/kind/instance-filter]get[text]trim[]!is[blank]] :filter[function[kind.instance-filter-on]] ~[{$:/plugins/rimir/kind/_brackets!!pass}]
+\function kind.visible(surface) [subfilter<kind.instance-filter-text>]
 
 <!-- Groups: a kind with `kind.group-of: <field>` is a group; its members are the
      values of that (multi) ref field, e.g. team → members → person. A multi ref
@@ -69,7 +97,7 @@ type: text/vnd.tiddlywiki
 \function kind.group-accepted-member-kinds(type-tid, field-key, group-type-tid) [function[kind.group-field],<group-type-tid>] :map:flat[function[kind.ref-types],<group-type-tid>,<currentTiddler>] :filter[function[kind.ref-accepts-key],<type-tid>,<field-key>,<currentTiddler>]
 \function kind.group-fits(type-tid, field-key, group-type-tid) [<group-type-tid>get[kind.type]] :filter[function[kind.ref-accepts-key],<type-tid>,<field-key>,<currentTiddler>count[]match[0]] :filter[function[kind.group-accepted-member-kinds],<type-tid>,<field-key>,<group-type-tid>]
 \function kind.group-kinds-for(type-tid, field-key) [function[kind.field-cardinality],<type-tid>,<field-key>match[multi]] :map:flat[function[kind.group-kinds-all]] :filter[function[kind.group-fits],<type-tid>,<field-key>,<currentTiddler>]
-\function kind.ref-group-candidates(type-tid, field-key) [function[kind.group-kinds-for],<type-tid>,<field-key>] :map:flat[<currentTiddler>get[kind.type]] :map:flat[function[kind.instances-of],<currentTiddler>]
+\function kind.ref-group-candidates(type-tid, field-key) [function[kind.group-kinds-for],<type-tid>,<field-key>] :map:flat[<currentTiddler>get[kind.type]] :map:flat[function[kind.instances-of],<currentTiddler>] +[function[kind.visible],[pickers]]
 \function kind.group-for(type-tid, field-key, inst) [function[kind.field-cardinality],<type-tid>,<field-key>match[multi]] :map[<inst>get[kind.type]] :map[function[kind.locate-type],<currentTiddler>] :filter[function[kind.group-fits],<type-tid>,<field-key>,<currentTiddler>] +[then[yes]]
 \function kind.member-accepted(type-tid, field-key, member) [<member>has[kind.type]!has[kind.fields]get[kind.type]] :filter[function[kind.ref-accepts-key],<type-tid>,<field-key>,<currentTiddler>]
 \function kind.group-members-for(type-tid, field-key, group) [function[kind.group-for],<type-tid>,<field-key>,<group>] :map[<group>get[kind.type]] :map[function[kind.locate-type],<currentTiddler>] :map[function[kind.group-field],<currentTiddler>] :map:flat[<group>get<currentTiddler>enlist-input[]] :filter[function[kind.member-accepted],<type-tid>,<field-key>,<currentTiddler>]
@@ -103,6 +131,8 @@ type: text/vnd.tiddlywiki
 \function kind.field-back-nav-on(type-tid, field-key) [function[kind.field-prop],<type-tid>,<field-key>,[back-nav]] ~[[]] +[!match[no]]
 \function kind.nav-back-fields-of(type-tid, target-key) [function[kind.ref-back-fields-of],<type-tid>,<target-key>] :filter[function[kind.field-back-nav-on],<type-tid>,<currentTiddler>]
 \function kind.referencing-instances(host-tid, source-tid, field-key) [<source-tid>get[kind.type]] :map:flat[function[kind.instances-of],<currentTiddler>] :filter[get<field-key>enlist-input[]match<host-tid>]
+<!-- The cockpit's incoming rows: referrers, minus what the instance filter hides (apply-to: cockpit) -->
+\function kind.cockpit-incoming(host-tid, source-tid, field-key) [function[kind.referencing-instances],<host-tid>,<source-tid>,<field-key>] +[function[kind.visible],[cockpit]]
 \function kind.rel-has-instances(host-tid, source-tid, field-key) [function[kind.referencing-instances],<host-tid>,<source-tid>,<field-key>] +[first[]]
 \function kind.back-source-kinds(host-tid) [<host-tid>get[kind.type]] :map:flat[function[kind.kinds-with-back-ref-to],<currentTiddler>]
 \function kind.qual-back-fields(host-tid, source-tid) [<host-tid>get[kind.type]] :map:flat[function[kind.nav-back-fields-of],<source-tid>,<currentTiddler>] :filter[function[kind.rel-has-instances],<host-tid>,<source-tid>,<currentTiddler>!is[blank]]
@@ -598,6 +628,69 @@ type: text/vnd.tiddlywiki
 <$action-listops $tiddler="$:/StoryList" $field="list" $filter="[list[$:/StoryList]allbefore<host>] [<up>] [<host>] [list[$:/StoryList]allafter<host>]"/>
 <%endif%>
 <$action-navigate $to=<<up>>/>
+<%endif%>
+</$let>
+\end
+
+<!-- Ref field dropdown (field-input.tid): the entries for search text q —
+     up to 10 candidates, then up to 5 groups (multi fields) — in one list, so
+     the keyboard highlight (state <search-state>/hi, 1-based) and the mouse
+     address the same rows. kind.ref-pick links one entry: a group adds its
+     members (kind.link-group), else multi toggles / single sets; then the
+     search closes and the defaults re-run. kind.ref-key handles ↓ ↑ Enter Esc
+     in the search input; Esc on an empty search runs <<kind.esc-outer>> if the
+     surrounding UI defines it (the graph modal closes itself). -->
+\function kind.ref-menu-cands(type-tid, field-key, q) [function[kind.ref-candidates],<type-tid>,<field-key>] :filter[search:caption,title<q>] +[limit[10]]
+\function kind.ref-menu-groups(type-tid, field-key, q) [function[kind.ref-group-candidates],<type-tid>,<field-key>] :filter[search:caption,title<q>] +[limit[5]]
+\function kind.ref-menu(type-tid, field-key, q) [function[kind.ref-menu-cands],<type-tid>,<field-key>,<q>] [function[kind.ref-menu-groups],<type-tid>,<field-key>,<q>]
+\function kind.ref-hi(search-state) [<search-state>addsuffix[/hi]get[text]] ~[[0]]
+
+\procedure kind.ref-pick(type-tid, target-tid, field-key, opt, search-state)
+<$let
+  is-group={{{ [function[kind.group-for],<type-tid>,<field-key>,<opt>] }}}
+  is-multi={{{ [function[kind.field-cardinality],<type-tid>,<field-key>match[multi]] }}}
+>
+<%if [<is-group>!is[blank]] %>
+<$transclude $variable="kind.link-group" type-tid=<<type-tid>> target-tid=<<target-tid>> field-key=<<field-key>> group=<<opt>>/>
+<%endif%>
+<%if [<is-group>is[blank]] :filter[<is-multi>!is[blank]] %>
+<$action-listops $tiddler=<<target-tid>> $field=<<field-key>> $subfilter="+[toggle<opt>]"/>
+<%endif%>
+<%if [<is-group>is[blank]] :filter[<is-multi>is[blank]] %>
+<$action-setfield $tiddler=<<target-tid>> $field=<<field-key>> $value=<<opt>>/>
+<%endif%>
+</$let>
+<$action-deletetiddler $tiddler=<<search-state>>/>
+<$action-deletetiddler $tiddler={{{ [<search-state>addsuffix[/hi]] }}}/>
+<$transclude $variable="kind.apply-defaults-to" type-tid=<<type-tid>> target-tid=<<target-tid>>/>
+\end
+
+\procedure kind.ref-key(type-tid, target-tid, field-key, search-state, key)
+<$let
+  q={{{ [<search-state>get[text]] }}}
+  hi-state={{{ [<search-state>addsuffix[/hi]] }}}
+  hi={{{ [function[kind.ref-hi],<search-state>] }}}
+  n={{{ [function[kind.ref-menu],<type-tid>,<field-key>,<q>] +[count[]] }}}
+>
+<%if [<key>match[ArrowDown]] :filter[<q>!is[blank]] %>
+<$action-setfield $tiddler=<<hi-state>> text={{{ [<hi>add[1]] :map[<n>compare:integer:lt<currentTiddler>then<n>else<currentTiddler>] }}}/>
+<%endif%>
+<%if [<key>match[ArrowUp]] :filter[<q>!is[blank]] %>
+<$action-setfield $tiddler=<<hi-state>> text={{{ [<hi>subtract[1]] :map[[1]compare:integer:gt<currentTiddler>then[1]else<currentTiddler>] }}}/>
+<%endif%>
+<%if [<key>match[Enter]] :filter[<q>!is[blank]] %>
+<$let opt={{{ [function[kind.ref-menu],<type-tid>,<field-key>,<q>nth<hi>] ~[function[kind.ref-menu],<type-tid>,<field-key>,<q>first[]] }}}>
+<%if [<opt>!is[blank]] %>
+<$transclude $variable="kind.ref-pick" type-tid=<<type-tid>> target-tid=<<target-tid>> field-key=<<field-key>> opt=<<opt>> search-state=<<search-state>>/>
+<%endif%>
+</$let>
+<%endif%>
+<%if [<key>match[Escape]] :filter[<q>!is[blank]] %>
+<$action-deletetiddler $tiddler=<<search-state>>/>
+<$action-deletetiddler $tiddler=<<hi-state>>/>
+<%endif%>
+<%if [<key>match[Escape]] :filter[<q>is[blank]] %>
+<$transclude $variable="kind.esc-outer"/>
 <%endif%>
 </$let>
 \end

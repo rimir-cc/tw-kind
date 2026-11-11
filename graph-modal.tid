@@ -4,6 +4,11 @@ type: text/vnd.tiddlywiki
 
 \whitespace trim
 \import $:/plugins/rimir/kind/engine
+<!-- Closes the modal (Esc, and Esc on an empty ref search via field-input) -->
+\procedure kind.esc-outer()
+<$action-deletetiddler $tiddler="$:/state/rimir/kind/graph-modal/draft"/>
+<$action-deletetiddler $tiddler="$:/state/rimir/kind/graph-modal"/>
+\end
 
 <!-- Modal overlay for the kind-graph tooltip actions (see
      $:/plugins/rimir/kind/graph). Three modes, keyed off fields on
@@ -25,8 +30,10 @@ type: text/vnd.tiddlywiki
   host-tid={{{ [[$:/state/rimir/kind/graph-modal]get[host]] }}}
 >
 <!-- Esc closes the modal in every mode (= Close / Cancel); it reaches the
-     keyboard widget while the cursor is anywhere in the panel -->
-<$keyboard key="escape" actions="""<$action-deletetiddler $tiddler="$:/state/rimir/kind/graph-modal/draft"/><$action-deletetiddler $tiddler=<<gm-state>>/>""">
+     keyboard widget while the cursor is anywhere in the panel. A ref field's
+     search input handles Esc itself (clears the search); on an empty search
+     it runs kind.esc-outer, i.e. the same close. -->
+<$keyboard key="escape" actions=<<kind.esc-outer>>>
 
 <%if [<edit-tid>!is[blank]] %>
 

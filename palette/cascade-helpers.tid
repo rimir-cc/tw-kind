@@ -367,8 +367,8 @@ type: text/vnd.tiddlywiki
      children. :map:flat (not :map) keeps ALL children, not just the first. -->
 \function kind.wiz-roots-filter(step-tid) [<step-tid>get[ca-step-pick-roots]] ~[[$:/config/rimir/kind/wizard/pick-roots]get[text]]
 \function kind.wiz-seed-roots(rf) [[__wizroot__]subfilter<rf>]
-\function kind.wiz-root-nodes(step-tid) [function[kind.wiz-roots-filter],<step-tid>] :map:flat[function[kind.wiz-seed-roots],<currentTiddler>]
-\function kind.wiz-child-nodes(node) [<node>] :map:flat[subfilter{$:/config/rimir/kind/wizard/pick-children}]
+\function kind.wiz-root-nodes(step-tid) [function[kind.wiz-roots-filter],<step-tid>] :map:flat[function[kind.wiz-seed-roots],<currentTiddler>] +[function[kind.visible],[pickers]]
+\function kind.wiz-child-nodes(node) [<node>] :map:flat[subfilter{$:/config/rimir/kind/wizard/pick-children}] +[function[kind.visible],[pickers]]
 \function kind.wiz-has-children(node) [function[kind.wiz-child-nodes],<node>] +[first[]]
 
 <!-- Extra JSON keys shared by every tree node row (leaf + drill):
